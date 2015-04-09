@@ -1,0 +1,87 @@
+body {
+	background-color: #FFFFFF;
+}
+
+#client-gui {
+    width: 50%;
+    margin-left: 25%;
+    text-align: center;
+}
+
+#client-prefs {
+    width: 200px;
+    height: 300px;
+    text-align: left;
+    float: left;
+    margin-top: 25px;
+}
+
+#client-canvas {
+    float: right;
+    margin-top: 25px;
+}
+
+#server-gui {
+    width: 50%;
+    margin-left: 25%;
+    text-align: center;
+}
+
+#server-prefs {
+    width: 200px;
+    height: 300px;
+    text-align: left;
+    float: left;
+    margin-top: 25px;
+}
+
+#server-canvas {
+    float: right;
+    margin-top: 25px;
+}
+
+#song-search {
+    width: 200px;
+    margin-left: auto;
+    margin-right: auto;
+    float: center;
+}
+
+.center {
+	display: block;
+	text-align: center;
+	margin-top: 100;
+}
+
+.block {
+    height: 500px;
+    text-align: center;
+}
+
+.centered {
+    display: inline-block;
+    vertical-align: middle;
+    width: 300px;
+}
+
+canvas {
+    height: 400px;
+    width: 400px;
+    display: block;
+    border: 1px solid #000000;
+    border-radius: 5px;
+}
+
+h2.title {
+    text-align: center;
+}
+
+h4.title {
+    text-align: center;
+}
+
+#wrapper {
+    margin-left: auto;
+    margin-right: auto;
+    width: auto;
+}
