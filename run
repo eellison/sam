@@ -41,6 +41,6 @@ cp /course/cs032/data/maps/maps.sqlite3 /ltmp/$USER >/dev/null
 # The funny symbol: "$@" passes the command-line arguments on from
 # this script to your Java program.
 
-java -cp $TARGET:$CP edu.brown.cs.$USER.$PROJECT.Main "$@"
+java -cp $TARGET:$CP edu.brown.cs.group.sam.Main "$@"
 
 rm -rf /ltmp/$USER/maps.sqlite3
