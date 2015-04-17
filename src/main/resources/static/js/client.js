@@ -87,7 +87,8 @@ function draw_clients(clients) {
 }
 
 $("#client-connect").click(function(event) {
-	var url = $("server-url")[0];
+	var url = $("#server-url").val();
+	alert(url);
 	setupClient(url);
 });
 
