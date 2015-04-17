@@ -1,6 +1,9 @@
 package edu.brown.cs.group.sam;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
@@ -11,6 +14,8 @@ import spark.Response;
 import spark.Route;
 import spark.Spark;
 import spark.TemplateViewRoute;
+import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
+import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
 import edu.brown.cs.group.sam.server.MusicServer;
 import edu.brown.cs.group.sam.server.Server;
 import edu.brown.cs.group.sam.sparkgui.SparkGui;
@@ -34,11 +39,17 @@ public class SamGui extends SparkGui {
   private String serverAddress;
   private int serverPort;
   private Server server;
+  private AmplitudePanner ap;
+  private Map<String, ClientPoint> allClients;
+  private AtomicInteger clientId;
 
   public SamGui(int port, String address, int sPort) {
     this.port = port;
     this.serverAddress = address;
     this.serverPort = sPort;
+    ap = new AmplitudePanner();
+    allClients = new HashMap<String, ClientPoint>();
+    clientId = new AtomicInteger();
   }
 
   /**
@@ -56,9 +67,11 @@ public class SamGui extends SparkGui {
     Spark.get("/server", new ServerHandler(), super.getEngine());
     Spark.get("/client", new ClientHandler(), super.getEngine());
     Spark.get("/songs", new SongsHandler(), super.getEngine());
-
     // set up post handlers for interactions with gui
     Spark.post("/startServer", new StartServerHandler());
+    Spark.get("/volume", new VolumeHandler(ap));
+    Spark.get("/connect", new ConnectClientHandler(clientId));
+    Spark.get("/allClients", new ClientPosHandler(ap));
   }
 
   /**
@@ -156,6 +169,121 @@ public class SamGui extends SparkGui {
       return new ModelAndView(variables, "songs.ftl");
     }
   }
+  /**
+   * Class that returns output volume for a class
+   * @author eselliso
+   *
+   */
+  private static class VolumeHandler implements Route {
+
+    private AmplitudePanner ap;
+    /**
+     * Constructed with ap
+     * @param ap - amplitude panner needed
+     */
+    public VolumeHandler(AmplitudePanner ap) {
+      this.ap = ap;
+    }
+    /**
+     * Method that handles get volume output of clients
+     * page on the front-end.
+     *
+     * @param req the request
+     * @param res the response
+     */
+    @Override
+    public Object handle(Request req, Response res) {
+      
+      Map<String, String> map = req.params();
+      String id = map.get("id");
+      double weight = ap.getVolume(id);
+      Map<String, Object> variables =
+          ImmutableMap.of("volume", weight);
+      return GSON.toJson(variables);
+    }
+  }
+  /**
+   * Class that returns all positions of clients 
+   * @author eselliso
+   *
+   */
+  private static class ClientPosHandler implements Route {
+    
+    private AmplitudePanner ap;
+
+    public ClientPosHandler(AmplitudePanner ap) {
+      this.ap = ap;
+    }
+    
+    @Override
+    public Object handle(Request request, Response response) {
+      
+      Map<String, ClientPoint> allClients = ap.getClients();
+      Map<String, Object> variables =
+          ImmutableMap.of("clients", allClients);
+      return GSON.toJson(variables);
+    }
+  }
+  
+  private class ConnectClientHandler implements Route {
+    
+    AtomicInteger clientNum;
+    
+    public ConnectClientHandler(AtomicInteger clientCounter) {
+      clientNum = clientCounter;
+    }
+       
+    @Override
+    public Object handle(Request request, Response response) {
+      
+      int clientNumber = clientNum.incrementAndGet();
+      
+      String message = "Successful";
+      
+      int success = 0;
+      
+      
+      Map<String, Object> variables =
+          ImmutableMap.of("message", message, "id", clientNumber, "success", 0);
+      return GSON.toJson(variables);
+
+    }
+    
+    
+  }
+  
+  
+  private class UpdatePosHandler implements Route {
+
+    AmplitudePanner ap;
+    
+    public UpdatePosHandler(AmplitudePanner ap) {
+      this.ap = ap;
+    }
+    
+    @Override
+    public Object handle(Request request, Response response) {
+      
+      Map<String, String> map = request.params();
+      
+      String id = map.get("id");
+      Double x = Double.parseDouble(map.get("x"));
+      Double y = Double.parseDouble(map.get("y"));
+      double[] pos = {x, y};
+      ClientPoint client = ap.getClients().get(id);
+      if (client!=null) {
+        ap.removeClient(client);
+      }
+      client = new ClientPoint(pos, id, 1);
+      ap.addClient(client);
+      String message = "Success";
+      Map<String, Object> variables =
+          ImmutableMap.of("message", message, "success", 0);
+      return GSON.toJson(variables);
+    }
+
+  }
+
 
   /**
    * Class that handles the gui request to start the
