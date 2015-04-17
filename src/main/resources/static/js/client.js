@@ -42,6 +42,11 @@ function updateVolume() {
 
 var updateVolumeTimer = setInterval(updateVolume, 100);
 
+$("client-volume").on("input", function(e) {
+	console.log($(this).value);
+	max_volume = $(this).value / 10;
+});
+
 function setupClient(url) {
 	var io = require('socket.io')();
 	io.on('connection', function(socket){});
