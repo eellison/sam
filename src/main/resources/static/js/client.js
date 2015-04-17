@@ -1,5 +1,6 @@
 var clientsCanvas = $("#clients-canvas");
 var playing = true;
+var max_volume = 1;
 var volume = 1;
 
 $("#clients-canvas").click(function(event){
@@ -34,7 +35,7 @@ var updateSongTitleTimer = setInterval(updateSongTitle, 10000000);
 function updateVolume() {
 	$.post("/volume", {}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
-		volume = min(responseObject.volume, volume);
+		volume = min(responseObject.volume, max_volume);
 		console.log(volume);
 	});
 }
