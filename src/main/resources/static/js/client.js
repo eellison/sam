@@ -25,7 +25,7 @@ $("#clients-canvas").click(function(event) {
 		var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
 		alert("x:" + xPos + " y:" + yPos);
 
-		$.post("/updatePosition", {id : client_id, x : xPos, y : yPos}, function(responseJSON) {
+		$.post("http://" + server_url + "/updatePosition", {id : client_id, x : xPos, y : yPos}, function(responseJSON) {
 			
 		});
 	}
@@ -62,7 +62,7 @@ $("client-volume").on("input", function(e) {
 
 /* Update Client Positions */
 function updateClientPositions() {
-	$.get("/clientPositions", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
+	$.get("http://" + server_url + "/clientPositions", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject;
 
