@@ -21,8 +21,8 @@ public class Main {
     // parse the arguments
     OptionParser parser = new OptionParser();
 
-    OptionSpec<Integer> portSpec = parser.accepts("port")
-        .withRequiredArg().ofType(Integer.class);
+    OptionSpec<Integer> portSpec =
+        parser.accepts("port").withRequiredArg().ofType(Integer.class);
 
     OptionSet options = null;
     try {

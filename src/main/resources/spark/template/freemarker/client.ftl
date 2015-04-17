@@ -27,6 +27,14 @@
 		<canvas id="clients-canvas">
 			
 		</canvas>
+		<form class="form-inline">
+		<p id="song-title">
+			Song by Artist
+		</p>
+		<p id="song-length">
+			1:00/4:00
+		</p>
+		</form>
 	</div>
 </div>
 </#assign>
