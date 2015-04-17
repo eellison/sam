@@ -48,36 +48,10 @@ public class SparkGui {
    *
    * @return the free marker engine
    */
-//  
-//  Map<String, Object> variables =
-//      ImmutableMap.of("traffic", pointMap);
-//  return GSON.toJson(variables);
   public FreeMarkerEngine getEngine() {
     return freeMarker;
   }
   
-  private static class VolumeHandler implements Route {
-
-    private AmplitudePanner _ap;
-
-    public VolumeHandler(AmplitudePanner ap) {
-      _ap = ap;
-    }
-
-    @Override
-    public Object handle(Request req, Response res) {
-      
-      Map<String, String> map = req.params();
-      
-      String id = map.get("id");
-      double weight = _ap.getVolume(id);
-
-      Map<String, Object> variables =
-          ImmutableMap.of("volume", weight);
-      return new ModelAndView(variables, "info.ftl");
-    }
-  }
-
 
   /**
    * Method that generates the free marker engine for

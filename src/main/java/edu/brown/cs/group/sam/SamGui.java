@@ -70,8 +70,9 @@ public class SamGui extends SparkGui {
     // set up post handlers for interactions with gui
     Spark.post("/startServer", new StartServerHandler());
     Spark.get("/volume", new VolumeHandler(ap));
-    Spark.get("/connect", new ConnectClientHandler(clientId));
-    Spark.get("/allClients", new ClientPosHandler(ap));
+    Spark.get("/connectClient", new ConnectClientHandler(clientId));
+    Spark.get("/clientPosition", new ClientPosHandler(ap));
+    Spark.get("/updatePosition", new UpdatePosHandler(ap));
   }
 
   /**
@@ -239,9 +240,6 @@ public class SamGui extends SparkGui {
       int clientNumber = clientNum.incrementAndGet();
       
       String message = "Successful";
-      
-      int success = 0;
-      
       
       Map<String, Object> variables =
           ImmutableMap.of("message", message, "id", clientNumber, "success", 0);
