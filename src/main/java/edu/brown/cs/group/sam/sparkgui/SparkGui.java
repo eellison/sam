@@ -2,9 +2,21 @@ package edu.brown.cs.group.sam.sparkgui;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
+import com.google.common.collect.ImmutableMap;
+
+import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
 import freemarker.template.Configuration;
+import spark.ModelAndView;
+import spark.Request;
+import spark.Response;
+import spark.Route;
 import spark.Spark;
+import spark.TemplateViewRoute;
 import spark.template.freemarker.FreeMarkerEngine;
 
 /**
@@ -39,6 +51,7 @@ public class SparkGui {
   public FreeMarkerEngine getEngine() {
     return freeMarker;
   }
+  
 
   /**
    * Method that generates the free marker engine for

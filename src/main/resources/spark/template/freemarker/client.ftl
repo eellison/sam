@@ -8,7 +8,7 @@
 		</div>
 		<div class="form-group">
 			<label for="server">Password</label>
-			<input type="password" id="server-url" class="form-control" placeholder="password1234"></input>
+			<input type="password" id="server-password" class="form-control" placeholder="password1234"></input>
 		</div>
 		<div class="form-group">
 			<label for="clientname">Client Name</label>
@@ -40,6 +40,7 @@
 </#assign>
 
 <#assign pagescripts>
+	<script src="js/socket.io.js"></script>
 	<script src="js/client.js"></script>
 </#assign>
 <#include "main.ftl">
