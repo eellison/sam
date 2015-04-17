@@ -40,6 +40,7 @@
 </#assign>
 
 <#assign pagescripts>
+	<script src="js/socket.io.js"></script>
 	<script src="js/client.js"></script>
 </#assign>
 <#include "main.ftl">
