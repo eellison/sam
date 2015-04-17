@@ -1,5 +1,6 @@
 var clientsCanvas = $("#clients-canvas");
 var playing = true;
+var volume = 1;
 
 $("#clients-canvas").click(function(event){
 	var x = event.pageX - $("#clients-canvas")[0].offsetLeft;
@@ -29,6 +30,16 @@ function updateSongTitle() {
 }
 
 var updateSongTitleTimer = setInterval(updateSongTitle, 10000000);
+
+function updateVolume() {
+	$.post("/volume", {}, function(responseJSON) {
+		var responseObject = JSON.parse(responseJSON);
+		volume = min(responseObject.volume, volume);
+		console.log(volume);
+	});
+}
+
+var updateVolumeTimer = setInterval(updateVolume, 100);
 
 function setupClient(url) {
 	var io = require('socket.io')();
