@@ -16,7 +16,7 @@
 			    <input type="range" id="client-volume" min="0" max="10" value="7"></input>
 		    </div>
 		</div>
-		<button class="btn btn-default btn-block btn-primary">Create</button>
+		<button class="btn btn-default btn-block btn-primary" id="server-create">Create</button>
 	</div>
 	<div id="server-canvas">
 		<label for="=clientpositions">Client Positions</label></br>

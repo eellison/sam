@@ -5,3 +5,8 @@ $("#clients-canvas").click(function(event){
 	var y = event.pageY - $("#clients-canvas")[0].offsetTop;
 	alert("x:" + x + " y:" + y);
 });
+
+$("#server-create").click(function(event) {
+	$.post("/startServer", {}, function(responseJSON) {});
+	alert("started server");
+});

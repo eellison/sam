@@ -7,6 +7,11 @@ $("#clients-canvas").click(function(event){
 	alert("x:" + x + " y:" + y);
 });
 
+$("#client-connect").click(function(event) {
+	var url = $("server-url")[0];
+	setupClient(url);
+});
+
 function updateSongTime() {
 	$.post("/songTime", {}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
@@ -14,7 +19,7 @@ function updateSongTime() {
 	});
 }
 
-var updateSongTimeTimer = setInterval(updateSongTime, 1000);
+var updateSongTimeTimer = setInterval(updateSongTime, 10000000);
 
 function updateSongTitle() {
 	$.post("/songTitle", {}, function(responseJSON) {
@@ -23,4 +28,11 @@ function updateSongTitle() {
 	});
 }
 
-var updateSongTitleTimer = setInterval(updateSongTitle, 1000);
+var updateSongTitleTimer = setInterval(updateSongTitle, 10000000);
+
+function setupClient(url) {
+	var io = require('socket.io')();
+	io.on('connection', function(socket){});
+	var port = url;
+	io.listen(port);
+}

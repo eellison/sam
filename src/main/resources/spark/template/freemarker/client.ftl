@@ -20,7 +20,7 @@
 			    <input type="range" id="client-volume" min="0" max="10" value="7"></input>
 		    </div>
 		</div>
-		<button class="btn btn-default btn-block btn-primary">Connect</button>
+		<button class="btn btn-default btn-block btn-primary" id="client-connect">Connect</button>
 	</div>
 	<div id="client-canvas">
 		<label for="=clientpositions">Click and drag your sound source</label></br>
