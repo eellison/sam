@@ -14,7 +14,7 @@ function updateSongTime() {
 	});
 }
 
-var updateSongTimeTimer = setInterval(getSongTime, 1000);
+var updateSongTimeTimer = setInterval(updateSongTime, 1000);
 
 function updateSongTitle() {
 	$.post("/songTitle", {}, function(responseJSON) {
@@ -23,4 +23,4 @@ function updateSongTitle() {
 	});
 }
 
-var updateSongTitleTimer = setInterval(getSongTitle, 1000);
+var updateSongTitleTimer = setInterval(updateSongTitle, 1000);
