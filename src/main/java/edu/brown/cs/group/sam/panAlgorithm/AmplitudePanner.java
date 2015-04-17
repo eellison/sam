@@ -197,7 +197,6 @@ public class AmplitudePanner {
 
     Coordinate[] coordinates = convexHull.getConvexHull().getCoordinates();
     dist = Double.MAX_VALUE;
-    MultiPoint closestLine = null;
 
     for (int i = 0; i < pointN; i++) {
       Coordinate c = coordinates[i];

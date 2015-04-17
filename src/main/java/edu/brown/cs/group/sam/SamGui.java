@@ -2,7 +2,6 @@ package edu.brown.cs.group.sam;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.ImmutableMap;
@@ -47,9 +46,9 @@ public class SamGui extends SparkGui {
     this.port = port;
     this.serverAddress = address;
     this.serverPort = sPort;
-    ap = new AmplitudePanner();
-    allClients = new HashMap<String, ClientPoint>();
-    clientId = new AtomicInteger();
+    this.ap = new AmplitudePanner();
+    this.allClients = new HashMap<String, ClientPoint>();
+    this.clientId = new AtomicInteger();
   }
 
   /**
@@ -67,6 +66,7 @@ public class SamGui extends SparkGui {
     Spark.get("/server", new ServerHandler(), super.getEngine());
     Spark.get("/client", new ClientHandler(), super.getEngine());
     Spark.get("/songs", new SongsHandler(), super.getEngine());
+
     // set up post handlers for interactions with gui
     Spark.post("/startServer", new StartServerHandler());
     Spark.get("/volume", new VolumeHandler(ap));
@@ -176,7 +176,6 @@ public class SamGui extends SparkGui {
    *
    */
   private static class VolumeHandler implements Route {
-
     private AmplitudePanner ap;
     /**
      * Constructed with ap
@@ -203,13 +202,13 @@ public class SamGui extends SparkGui {
       return GSON.toJson(variables);
     }
   }
+
   /**
    * Class that returns all positions of clients 
    * @author eselliso
    *
    */
   private static class ClientPosHandler implements Route {
-    
     private AmplitudePanner ap;
 
     public ClientPosHandler(AmplitudePanner ap) {
@@ -227,7 +226,6 @@ public class SamGui extends SparkGui {
   }
   
   private class ConnectClientHandler implements Route {
-    
     AtomicInteger clientNum;
     
     public ConnectClientHandler(AtomicInteger clientCounter) {
@@ -244,26 +242,20 @@ public class SamGui extends SparkGui {
       Map<String, Object> variables =
           ImmutableMap.of("message", message, "id", clientNumber, "success", 0);
       return GSON.toJson(variables);
-
     }
-    
-    
   }
-  
-  
-  private class UpdatePosHandler implements Route {
 
+  private class UpdatePosHandler implements Route {
     AmplitudePanner ap;
-    
+
     public UpdatePosHandler(AmplitudePanner ap) {
       this.ap = ap;
     }
-    
+
     @Override
     public Object handle(Request request, Response response) {
-      
       Map<String, String> map = request.params();
-      
+
       String id = map.get("id");
       Double x = Double.parseDouble(map.get("x"));
       Double y = Double.parseDouble(map.get("y"));
@@ -279,9 +271,7 @@ public class SamGui extends SparkGui {
           ImmutableMap.of("message", message, "success", 0);
       return GSON.toJson(variables);
     }
-
   }
-
 
   /**
    * Class that handles the gui request to start the

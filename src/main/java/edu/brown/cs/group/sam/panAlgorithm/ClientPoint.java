@@ -9,17 +9,12 @@ public class ClientPoint {
 	private Point point;
 	private String id, name;
 	private double weighting;
-	private double x;
-	private double y;
-	
+
 	public ClientPoint(double[] point, String id, double weighting) {
 
 		this.point = LocalGeo.createPoint(new Coordinate(point[0], point[1]));
 		this.weighting = weighting;
 		this.id = id;
-		this.x = point[0];
-		this.y = point[1];
-		
 	}
 
 	public String getId() {
@@ -59,5 +54,4 @@ public class ClientPoint {
 	public String getName() {
 		return name;
 	}
-
 }

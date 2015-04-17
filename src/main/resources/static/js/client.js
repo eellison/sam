@@ -13,6 +13,9 @@ var server_url = "";
 var client_id = "";
 var connected = false;
 
+// socket io connection
+var socket_server_url = "";
+
 //Updating
 var updateSongTimeTimer;
 var updateSongTitleTimer;
@@ -88,14 +91,12 @@ function draw_clients(clients) {
 
 $("#client-connect").click(function(event) {
 	var url = $("#server-url").val();
-	alert(url);
 	setupClient(url);
 });
 
 function setupClient(url) {
 	$.get("http://" + url + "/connectClient", function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
-		alert(responseObject.status);
 		
 		if (!responseObject.error) {
 			server_url = url;
@@ -104,8 +105,8 @@ function setupClient(url) {
 
 			var updateSongTimeTimer = setInterval(updateSongTime, 10000000);
 			var updateSongTitleTimer = setInterval(updateSongTitle, 10000000);
-			var updateVolumeTimer = setInterval(updateVolume, 100);
-			var updateClientPositions = setInterval(updateClientPositions, 100);
+			var updateVolumeTimer = setInterval(updateVolume, 100000000);
+			var updateClientPositions = setInterval(updateClientPositions, 100000000);
 		} else {
 			connected = false;
 		}
@@ -120,17 +121,35 @@ function setupClient(url) {
 /* everything below is used for playing music as it is streamed from the server*/
 var audioCtx = new (window.AudioContext || window.webkitAudioContext);
 
-// use 2 channels to model stereo output
-var channels = 2;
+// can use 2 channels to model stereo output
+var channels = 1;// 2;
 
-var arrayBuffer = audioCtx.createBuffer(channels, audioCtx.sampleRate * channels, audioCtx.sampleRate);
+var frameCount = audioCtx.sampleRate * channels;
 
-$.post("/getData", {}, function(responseJSON) {
-	var response = JSON.parse(responseJSON);
+var arrayBuffer = audioCtx.createBuffer(channels, frameCount, audioCtx.sampleRate);
 
-	updateData(response.data);
-});
+// this function fills the buffer with data streamed from backend
+function buffer(array) {
+	for (var channel = 0; channel < channels; channel++) {
+		var buffering = myArrayBuffer.getChannelData(channel);
+		
+		for (var i = 0; i < frameCount; i++) {
+			buffering[i] = b[i];
+		}
+	}
+}
 
+// audio node used to play the audiobuffer
+var source = audioCtx.createBufferSource();
+
+// set the buffer in the source
+source.buffer = arrayBuffer;
+
+// connect source so we can hear it
+source.connect(audioCtx.destination);
+
+// start the source playing
+source.start();
 
 // window.onload = init;
 // var context;    // Audio context
