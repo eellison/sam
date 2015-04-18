@@ -1,14 +1,41 @@
 $(".form-group #directory-select").change(function() {
 	var soundFiles = findSoundFiles($( ".form-group #directory-select" )[0].files);
 
-	console.log(soundFiles);
-
 	soundFiles.forEach(function(elem) {
-		ID3.loadTags(elem.webkitRelativePath, function() {
-			var tags = ID3.getAllTags(elem.webkitRelativePath);
-			console.log(tags);
+//		var song = elem;
+
+//		if (!isMp3(elem)) {
+//			var postParameters = {
+//				file: elem,
+//				processData: false,
+//				contentType: false
+//			};
+//
+//			$.post("/mp3encode", postParameters, function(responseJSON) {
+//				song = JSON.parse(responseJSON);
+//				console.log(song);
+//			});
+//		}
+
+		var url = elem.webkitRelativePath;
+
+		ID3.loadTags(url, function() { //song.elem.name
+			var tags = ID3.getAllTags(url);
+
+			if (tags) {
+				console.log(tags["TAL"].data + ", "
+					+ tags["TP1"].data + ", "
+					+ tags["TT2"].data + ", "
+					+ tags["TYE"].data);
+				var info = tags["TAL"].data + ", "
+					+ tags["TP1"].data + ", "
+					+ tags["TT2"].data + ", "
+					+ tags["TYE"].data;
+				$( ".songs-div .songs-ul" ).append( "<li id=\"" + info + "\">" + info + "</li>" );
+			}
 		},
 		{tags: ["TAL", "TP1", "TT2", "TYE"]});
+
 	});
 });
 
@@ -26,6 +53,10 @@ function findSoundFiles(files) {
 
 function isAudio(file) {
     return file.type.indexOf("audio") !== -1;
+}
+
+function isMp3(file) {
+	return file.type.indexOf("mp3") !== -1;
 }
 
 //- send post request that has the path to the song

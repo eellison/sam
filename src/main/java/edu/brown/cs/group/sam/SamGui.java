@@ -1,19 +1,25 @@
 package edu.brown.cs.group.sam;
 
+import it.sauronsoftware.jave.EncoderException;
+import it.sauronsoftware.jave.InputFormatException;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
-
 import spark.ModelAndView;
+import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 import spark.Spark;
 import spark.TemplateViewRoute;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
+
+import edu.brown.cs.group.sam.mp3converter.Mp3Encoder;
 import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
 import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
 import edu.brown.cs.group.sam.server.MusicServer;
@@ -73,6 +79,7 @@ public class SamGui extends SparkGui {
     Spark.get("/connectClient", new ConnectClientHandler(clientId));
     Spark.get("/clientPosition", new ClientPosHandler(ap));
     Spark.get("/updatePosition", new UpdatePosHandler(ap));
+    Spark.post("/mp3encode", new Mp3EncodeHandler());
   }
 
   /**
@@ -300,6 +307,39 @@ public class SamGui extends SparkGui {
 
       return GSON.toJson(variables);
     }
+  }
+
+  /**
+   * Route for encoding most audio files to .mp3.
+   *
+   * @author yk46
+   *
+   */
+  private class Mp3EncodeHandler implements Route {
+
+    @Override
+    public Object handle(Request req, Response res) {
+      System.out.println("HI");
+      QueryParamsMap qm = req.queryMap();
+      File song = GSON.fromJson(qm.value("song"), File.class);
+      System.out.println(song.getName());
+
+      try {
+        return GSON.toJson(Mp3Encoder.encode(song));
+      } catch (IllegalArgumentException e) {
+        // TODO Auto-generated catch block
+        System.err.println("1");
+      } catch (InputFormatException e) {
+        // TODO Auto-generated catch block
+        System.err.println("2");
+      } catch (EncoderException e) {
+        // TODO Auto-generated catch block
+        System.err.println("3");
+      }
+
+      return song;
+    }
+    
   }
 
   public void shutdown() {
