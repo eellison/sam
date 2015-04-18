@@ -131,50 +131,45 @@ function setupSocketConnection(url, port) {
 	});
 
 	socket.on('data', function(data) {
-		var byte_array = JSON.parse(data);
+		var response = JSON.parse(data);
+		var song_bytes = response.song;
 
-		if (song_started) {
+		if (!song_started) {
+			var total_length = response.totalLength;
+			
 			// set up sound 
-			setup_sound(byte_array);
-			//setup_sound(total_length);
+			setup_sound(total_length);
 
 			// buffer the input
-			//buffer(byteArray);
+			buffer(song_bytes);
 
 			// start sound
-			//start_sound();
+			start_sound();
 
 			song_started = true;
 		} else {
-
+			buffer(song_bytes);
 		}
 	})
 }
 
+// declare variables used for playing music:
+var audioCtx;
 var array_buffer;
-
-var buf;
+var buffered;
+var buffer_source;
 
 // function used to setup sound output for the client
-function setup_sound(array) {
-	var audioCtx = new (window.AudioContext || window.webkitAudioContext);
+function setup_sound(length) {
+	audioCtx = new (window.AudioContext || window.webkitAudioContext);
 	
-	// can use 2 channels to model stereo output
-	var channels = 1; // 2;
-
+	var channels = 1; 				// 2; // can use 2 channels to model stereo output
 	var frame_count = audioCtx.sampleRate * channels;
 	//array_buffer = audioCtx.createBuffer(channels, frame_count, audioCtx.sampleRate);
-	array_buffer = new ArrayBuffer(array.length);
+
+	array_buffer = new ArrayBuffer(length);
 	buffered = new Uint8Array(array_buffer);
-
-	for (var i = 0; i < array.length; i++) {
-		buffered[i] = array[i];
-	}
-
-	context.decodeAudioData(array_buffer, function(buffer) {
-		buf = buffer;
-		start_sound();
-	})
+	buffer_source = audioCtx.createBuffer(channels, frame_count, audioCtx.sampleRate);
 }
 
 function start_sound() {
@@ -182,8 +177,7 @@ function start_sound() {
 	var source = audioCtx.createBufferSource();
 
 	// set the buffer in the source
-	//source.buffer = array_buffer;
-	source.buffer = buf;
+	source.buffer = buffer_source;
 
 	// connect source so we can hear it
 	source.connect(audioCtx.destination);
@@ -192,16 +186,29 @@ function start_sound() {
 	source.start();
 }
 
-
+var buf_count = 0;
+var src_count = 0;
 // this function fills the buffer with data streamed from backend
 function buffer(array) {
-	for (var channel = 0; channel < channels; channel++) {
-		var buffering = array_buffer.getChannelData(channel);
-		
-		for (var i = 0; i < array.length; i++) {
-			buffering[i] = array[i];
-		}
+	for (var i = 0; i < array.length; i++) {
+		buffered[buf_count] = array[i];
+		buf_count++;
 	}
+
+	audioCtx.decodeAudioData(array_buffer, function(buffer) {
+		for (var i = 0; i < buffer.length; i++) {
+			buffer_source[src_count] = buffer[i];
+			src_count++;
+		}
+	});
+
+	// for (var channel = 0; channel < channels; channel++) {
+	// 	var buffering = array_buffer.getChannelData(channel);
+		
+	// 	for (var i = 0; i < array.length; i++) {
+	// 		buffering[i] = array[i];
+	// 	}
+	// }
 }
 
 // window.onload = init;
@@ -243,3 +250,27 @@ function buffer(array) {
 //     // Play immediately
 //     source.start(0);
 // }
+
+function playByteArray(byteArray) {
+    var arrayBuffer = new ArrayBuffer(byteArray.length);
+    var bufferView = new Uint8Array(arrayBuffer);
+    for (i = 0; i < byteArray.length; i++) {
+      bufferView[i] = byteArray[i];
+    }
+
+    context.decodeAudioData(arrayBuffer, function(buffer) {
+        buf = buffer;
+        play();
+    });
+}
+
+// Play the loaded file
+function play() {
+    // Create a source node from the buffer
+    var source = context.createBufferSource();
+    source.buffer = buf;
+    // Connect to the final output node (the speakers)
+    source.connect(context.destination);
+    // Play immediately
+    source.start(0);
+}
