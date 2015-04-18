@@ -7,16 +7,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import com.corundumstudio.socketio.BroadcastOperations;
-import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
 
 public class MusicServer extends Server {
-	/* a GSON object for communicating with the GUI */
-  private static final Gson GSON = new Gson();
-
   public MusicServer(String address, int port) {
     super(address, port);
   }
@@ -32,11 +26,7 @@ public class MusicServer extends Server {
       byte[] b = new byte[length];
 
       while (stream.read(b, 0, length) != -1) {
-      	Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
-        		.put("song", b).build();
-
-        String jsonObject = GSON.toJson(variables);
-        br.sendEvent("data", jsonObject);
+        br.sendEvent("data", b);
 
         if (newSong) {
           newSong = false;

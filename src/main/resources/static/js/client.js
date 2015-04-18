@@ -131,17 +131,18 @@ function setupSocketConnection(url, port) {
 	});
 
 	socket.on('data', function(data) {
-		var responseObject = JSON.parse(data);
+		var byte_array = JSON.parse(data);
 
 		if (song_started) {
 			// set up sound 
-			setup_sound();
+			setup_sound(byte_array);
+			//setup_sound(total_length);
 
 			// buffer the input
-			buffer(responseObject.song);
+			//buffer(byteArray);
 
 			// start sound
-			start_sound();
+			//start_sound();
 
 			song_started = true;
 		} else {
@@ -152,15 +153,28 @@ function setupSocketConnection(url, port) {
 
 var array_buffer;
 
+var buf;
+
 // function used to setup sound output for the client
-function setup_sound() {
+function setup_sound(array) {
 	var audioCtx = new (window.AudioContext || window.webkitAudioContext);
 	
 	// can use 2 channels to model stereo output
 	var channels = 1; // 2;
 
 	var frame_count = audioCtx.sampleRate * channels;
-	array_buffer = audioCtx.createBuffer(channels, frame_count, audioCtx.sampleRate);
+	//array_buffer = audioCtx.createBuffer(channels, frame_count, audioCtx.sampleRate);
+	array_buffer = new ArrayBuffer(array.length);
+	buffered = new Uint8Array(array_buffer);
+
+	for (var i = 0; i < array.length; i++) {
+		buffered[i] = array[i];
+	}
+
+	context.decodeAudioData(array_buffer, function(buffer) {
+		buf = buffer;
+		start_sound();
+	})
 }
 
 function start_sound() {
@@ -168,7 +182,8 @@ function start_sound() {
 	var source = audioCtx.createBufferSource();
 
 	// set the buffer in the source
-	source.buffer = array_buffer;
+	//source.buffer = array_buffer;
+	source.buffer = buf;
 
 	// connect source so we can hear it
 	source.connect(audioCtx.destination);
