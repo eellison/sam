@@ -48,7 +48,7 @@ public abstract class Server {
 
   public abstract void broadcast();
 
-  public void setData(byte[] data) {
+  protected void setData(byte[] data) {
     this.data = data;
   }
 

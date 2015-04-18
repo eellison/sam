@@ -1,5 +1,6 @@
 //Song
 var playing = true;
+var song_started = false;
 
 //Volume
 var max_volume = 1;
@@ -15,6 +16,7 @@ var connected = false;
 
 // socket io connection
 var socket_server_url = "";
+var socket_server_port = "";
 
 //Updating
 var updateSongTimeTimer;
@@ -97,11 +99,15 @@ $("#client-connect").click(function(event) {
 function setupClient(url) {
 	$.get("http://" + url + "/connectClient", function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
-		
+
 		if (!responseObject.error) {
 			server_url = url;
 			client_id = responseObject.id;
+			socket_server_url = responseObject.server_url;
+			socket_server_port = responseObject.server_port;
 			connected = true;
+
+			setupSocketConnection(socket_server_url, socket_server_port);
 
 			var updateSongTimeTimer = setInterval(updateSongTime, 10000000);
 			var updateSongTitleTimer = setInterval(updateSongTitle, 10000000);
@@ -111,45 +117,92 @@ function setupClient(url) {
 			connected = false;
 		}
 	});
-
-	var io = require('socket.io')();
-	io.on('connection', function(socket){});
-	var port = url;
-	io.listen(port);
 }
 
 /* everything below is used for playing music as it is streamed from the server*/
-var audioCtx = new (window.AudioContext || window.webkitAudioContext);
+function setupSocketConnection(url, port) {
+	var socket = io('http://' + url + ':' + port);
+	socket.on('connect', function() {
+ 		console.log("Client connected");
+	});
 
-// can use 2 channels to model stereo output
-var channels = 1;// 2;
+	socket.on('disconnect', function() {
+		console.log("Client disconnected");
+	});
 
-var frameCount = audioCtx.sampleRate * channels;
+	socket.on('data', function(data) {
+		var byte_array = JSON.parse(data);
 
-var arrayBuffer = audioCtx.createBuffer(channels, frameCount, audioCtx.sampleRate);
+		if (song_started) {
+			// set up sound 
+			setup_sound(byte_array);
+			//setup_sound(total_length);
+
+			// buffer the input
+			//buffer(byteArray);
+
+			// start sound
+			//start_sound();
+
+			song_started = true;
+		} else {
+
+		}
+	})
+}
+
+var array_buffer;
+
+var buf;
+
+// function used to setup sound output for the client
+function setup_sound(array) {
+	var audioCtx = new (window.AudioContext || window.webkitAudioContext);
+	
+	// can use 2 channels to model stereo output
+	var channels = 1; // 2;
+
+	var frame_count = audioCtx.sampleRate * channels;
+	//array_buffer = audioCtx.createBuffer(channels, frame_count, audioCtx.sampleRate);
+	array_buffer = new ArrayBuffer(array.length);
+	buffered = new Uint8Array(array_buffer);
+
+	for (var i = 0; i < array.length; i++) {
+		buffered[i] = array[i];
+	}
+
+	context.decodeAudioData(array_buffer, function(buffer) {
+		buf = buffer;
+		start_sound();
+	})
+}
+
+function start_sound() {
+	// audio node used to play the audiobuffer
+	var source = audioCtx.createBufferSource();
+
+	// set the buffer in the source
+	//source.buffer = array_buffer;
+	source.buffer = buf;
+
+	// connect source so we can hear it
+	source.connect(audioCtx.destination);
+
+	// start the source playing
+	source.start();
+}
+
 
 // this function fills the buffer with data streamed from backend
 function buffer(array) {
 	for (var channel = 0; channel < channels; channel++) {
-		var buffering = myArrayBuffer.getChannelData(channel);
+		var buffering = array_buffer.getChannelData(channel);
 		
-		for (var i = 0; i < frameCount; i++) {
-			buffering[i] = b[i];
+		for (var i = 0; i < array.length; i++) {
+			buffering[i] = array[i];
 		}
 	}
 }
-
-// audio node used to play the audiobuffer
-var source = audioCtx.createBufferSource();
-
-// set the buffer in the source
-source.buffer = arrayBuffer;
-
-// connect source so we can hear it
-source.connect(audioCtx.destination);
-
-// start the source playing
-source.start();
 
 // window.onload = init;
 // var context;    // Audio context
