@@ -34,7 +34,6 @@ public abstract class Server {
       public void onConnect(SocketIOClient client) {
         // client connected to server
         System.err.println("Server: Client connected");
-        broadcast();
       }
     });
 

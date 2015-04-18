@@ -17,7 +17,6 @@ import spark.TemplateViewRoute;
 import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
 import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
 import edu.brown.cs.group.sam.server.MusicServer;
-import edu.brown.cs.group.sam.server.Server;
 import edu.brown.cs.group.sam.sparkgui.SparkGui;
 
 /**
@@ -290,7 +289,7 @@ public class SamGui extends SparkGui {
         server.run(); 
       } else {
       	// just for testing: set file and broadcast
-      	String path = "/home/plscott/course/cs032/sam/";
+      	String path = "/home/plscott/course/cs032/sam/bittersweet.mp3";
       	File file = new File(path);
       	server.setMusicFile(file);
       	server.broadcast();

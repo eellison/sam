@@ -1,5 +1,6 @@
 //Song
 var playing = true;
+var song_started = false;
 
 //Volume
 var max_volume = 1;
@@ -118,6 +119,7 @@ function setupClient(url) {
 	});
 }
 
+/* everything below is used for playing music as it is streamed from the server*/
 function setupSocketConnection(url, port) {
 	var socket = io('http://' + url + ':' + port);
 	socket.on('connect', function() {
@@ -128,43 +130,64 @@ function setupSocketConnection(url, port) {
 		console.log("Client disconnected");
 	});
 
-	socket.on('data', function() {
-		alert("RECEIVED SONG DATA");
+	socket.on('data', function(data) {
+		var responseObject = JSON.parse(data);
+
+		if (song_started) {
+			// set up sound 
+			setup_sound();
+
+			// buffer the input
+			buffer(responseObject.song);
+
+			// start sound
+			start_sound();
+
+			song_started = true;
+		} else {
+
+		}
 	})
 }
 
-/* everything below is used for playing music as it is streamed from the server*/
-var audioCtx = new (window.AudioContext || window.webkitAudioContext);
+var array_buffer;
 
-// can use 2 channels to model stereo output
-var channels = 1;// 2;
+// function used to setup sound output for the client
+function setup_sound() {
+	var audioCtx = new (window.AudioContext || window.webkitAudioContext);
+	
+	// can use 2 channels to model stereo output
+	var channels = 1; // 2;
 
-var frameCount = audioCtx.sampleRate * channels;
+	var frame_count = audioCtx.sampleRate * channels;
+	array_buffer = audioCtx.createBuffer(channels, frame_count, audioCtx.sampleRate);
+}
 
-var arrayBuffer = audioCtx.createBuffer(channels, frameCount, audioCtx.sampleRate);
+function start_sound() {
+	// audio node used to play the audiobuffer
+	var source = audioCtx.createBufferSource();
+
+	// set the buffer in the source
+	source.buffer = array_buffer;
+
+	// connect source so we can hear it
+	source.connect(audioCtx.destination);
+
+	// start the source playing
+	source.start();
+}
+
 
 // this function fills the buffer with data streamed from backend
 function buffer(array) {
 	for (var channel = 0; channel < channels; channel++) {
-		var buffering = myArrayBuffer.getChannelData(channel);
+		var buffering = array_buffer.getChannelData(channel);
 		
-		for (var i = 0; i < frameCount; i++) {
-			buffering[i] = b[i];
+		for (var i = 0; i < array.length; i++) {
+			buffering[i] = array[i];
 		}
 	}
 }
-
-// audio node used to play the audiobuffer
-var source = audioCtx.createBufferSource();
-
-// set the buffer in the source
-source.buffer = arrayBuffer;
-
-// connect source so we can hear it
-source.connect(audioCtx.destination);
-
-// start the source playing
-source.start();
 
 // window.onload = init;
 // var context;    // Audio context
