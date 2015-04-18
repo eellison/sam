@@ -1,25 +1,32 @@
 $(".form-group #directory-select").change(function() {
 	var soundFiles = findSoundFiles($( ".form-group #directory-select" )[0].files);
-	
-});
 
-function endsWithIgnoreCase(str, suffix) {
-    return str.toLowerCase().indexOf(suffix.toLowerCase(), str.length - suffix.length) !== -1;
-}
+	console.log(soundFiles);
+
+	soundFiles.forEach(function(elem) {
+		ID3.loadTags(elem.webkitRelativePath, function() {
+			var tags = ID3.getAllTags(elem.webkitRelativePath);
+			console.log(tags);
+		},
+		{tags: ["TAL", "TP1", "TT2", "TYE"]});
+	});
+});
 
 function findSoundFiles(files) {
 	var soundFiles = [];
-	var acceptedTypes = [".mp3", ".wav"];
 
 	for (var i = 0; i < files.length; i++) {
-		for (var j = 0; j < acceptedTypes.length; j++) {
-			if (endsWithIgnoreCase(files[i], acceptedTypes[j])) {
-				soundFiles.push(files[i]);
-				break;
-			}
+		if (isAudio(files[i])) {
+			soundFiles.push(files[i]);
 		}
 	}
 
 	return soundFiles;
 }
 
+function isAudio(file) {
+    return file.type.indexOf("audio") !== -1;
+}
+
+//- send post request that has the path to the song
+//http://www.sauronsoftware.it/projects/jave/manual.php?PHPSESSID=r6ctdckspp5nusoo4c3v9e42b6#10
