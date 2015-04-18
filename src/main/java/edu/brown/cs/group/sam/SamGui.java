@@ -289,7 +289,7 @@ public class SamGui extends SparkGui {
         server.run(); 
       } else {
       	// just for testing: set file and broadcast
-      	String path = "/Users/Peter/Desktop/bittersweet.mp3";
+      	String path = "/Users/Peter/Desktop/test.mp3";
       	File file = new File(path);
       	server.setMusicFile(file);
       	server.broadcast();
