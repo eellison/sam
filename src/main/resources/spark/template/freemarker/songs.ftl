@@ -1,6 +1,9 @@
 <#assign content>
 
-
+<div class="songs-div">
+	<ul id="songs-ul">
+	</ul>
+</div>
 
 <div class="form-group">
     <label for="fileupload">Select Your Music Folder</label>
