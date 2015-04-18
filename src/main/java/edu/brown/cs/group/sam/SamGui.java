@@ -1,5 +1,6 @@
 package edu.brown.cs.group.sam;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,7 +38,7 @@ public class SamGui extends SparkGui {
   private int port;
   private String serverAddress;
   private int serverPort;
-  private Server server;
+  private MusicServer server;
   private AmplitudePanner ap;
   private Map<String, ClientPoint> allClients;
   private AtomicInteger clientId;
@@ -231,16 +232,17 @@ public class SamGui extends SparkGui {
     public ConnectClientHandler(AtomicInteger clientCounter) {
       clientNum = clientCounter;
     }
-       
+
     @Override
     public Object handle(Request request, Response response) {
-      
       int clientNumber = clientNum.incrementAndGet();
-      
       String message = "Successful";
-      
-      Map<String, Object> variables =
-          ImmutableMap.of("message", message, "id", clientNumber, "success", 0);
+
+      Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
+      		.put("message", message).put("id", clientNumber)
+      		.put("server_url", serverAddress).put("server_port", serverPort)
+      		.put("success", 0).build();
+
       return GSON.toJson(variables);
     }
   }
@@ -286,6 +288,12 @@ public class SamGui extends SparkGui {
       if (server == null) {
         server = new MusicServer(serverAddress, serverPort);
         server.run(); 
+      } else {
+      	// just for testing: set file and broadcast
+      	String path = "/home/plscott/course/cs032/sam/";
+      	File file = new File(path);
+      	server.setMusicFile(file);
+      	server.broadcast();
       }
 
       Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()

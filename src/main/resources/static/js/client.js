@@ -15,6 +15,7 @@ var connected = false;
 
 // socket io connection
 var socket_server_url = "";
+var socket_server_port = "";
 
 //Updating
 var updateSongTimeTimer;
@@ -97,11 +98,15 @@ $("#client-connect").click(function(event) {
 function setupClient(url) {
 	$.get("http://" + url + "/connectClient", function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
-		
+
 		if (!responseObject.error) {
 			server_url = url;
 			client_id = responseObject.id;
+			socket_server_url = responseObject.server_url;
+			socket_server_port = responseObject.server_port;
 			connected = true;
+
+			setupSocketConnection(socket_server_url, socket_server_port);
 
 			var updateSongTimeTimer = setInterval(updateSongTime, 10000000);
 			var updateSongTitleTimer = setInterval(updateSongTitle, 10000000);
@@ -111,11 +116,21 @@ function setupClient(url) {
 			connected = false;
 		}
 	});
+}
 
-	var io = require('socket.io')();
-	io.on('connection', function(socket){});
-	var port = url;
-	io.listen(port);
+function setupSocketConnection(url, port) {
+	var socket = io('http://' + url + ':' + port);
+	socket.on('connect', function() {
+ 		console.log("Client connected");
+	});
+
+	socket.on('disconnect', function() {
+		console.log("Client disconnected");
+	});
+
+	socket.on('data', function() {
+		alert("RECEIVED SONG DATA");
+	})
 }
 
 /* everything below is used for playing music as it is streamed from the server*/
