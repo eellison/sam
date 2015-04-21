@@ -4,7 +4,9 @@ import it.sauronsoftware.jave.EncoderException;
 import it.sauronsoftware.jave.InputFormatException;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,7 +19,6 @@ import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
 import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
 import edu.brown.cs.group.sam.server.MusicServer;
 import edu.brown.cs.group.sam.sparkgui.SparkGui;
-
 import spark.ModelAndView;
 import spark.QueryParamsMap;
 import spark.Request;
@@ -238,8 +239,18 @@ public class SamGui extends SparkGui {
     public Object handle(Request request, Response response) {
 
       Map<String, ClientPoint> allClients = ap.getClients();
+      List<HashMap<String, Object>> clientInfo = new ArrayList<HashMap<String, Object>>();
+      for (ClientPoint c: allClients.values()) {
+        
+        HashMap<String, Object> client = new HashMap<String, Object>();
+        client.put("x", c.getPoint().getCoordinate().x);
+        client.put("y", c.getPoint().getCoordinate().y);
+        client.put("id", c.getId());
+        clientInfo.add(client);
+      } 
       Map<String, Object> variables =
-          ImmutableMap.of("clients", allClients);
+          ImmutableMap.of("clients", clientInfo);
+      
       return GSON.toJson(variables);
     }
   }
@@ -291,6 +302,8 @@ public class SamGui extends SparkGui {
       String x1 = map.value("x");
       String y1 = map.value("y");
       String id = map.value("id");
+      String name = request.queryMap().value("name");
+
 
       System.out.println(x1);
       System.out.println(request);
