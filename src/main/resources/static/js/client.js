@@ -136,22 +136,18 @@ function setupSocketConnection(url, port) {
 		var song_bytes = response.song;
 
 		if (!song_started) {
-			alert("Setting up sound");
 			// set up sound 
 			setup_sound();
 
-			alert("buffering sound");
 			// buffer the input
 			buffer(song_bytes);
 
-			alert("started sound");
 			// start sound
 			start_sound();
 
-			alert("song has been started");
 			song_started = true;
 		} else {
-			buffer(song_bytes);
+			//buffer(song_bytes);
 		}
 	})
 }
@@ -168,7 +164,7 @@ function setup_sound() {
 	channels = 1; 				// 2; // can use 2 channels to model stereo output
 	var frame_count = audio_ctx.sampleRate * channels;
 
-	buffer_source = audio_ctx.createBuffer(channels, frame_count, audio_ctx.sampleRate);
+	//buffer_source = audio_ctx.createBuffer(channels, frame_count, audio_ctx.sampleRate);
 }
 
 function start_sound() {
@@ -195,13 +191,15 @@ function buffer(array) {
 	}
 
 	audio_ctx.decodeAudioData(array_buffer, function(buffer) {
-		for (var channel = 0; channel < channels; channel++) {
-			var decoded_data = buffer.getChannelData(channel);
-			var now_buffering = buffer_source.getChannelData(channel);
+		buffer_source = buffer;
 
-			for (var i = 0; i < decoded_data.length; i++) {
-				now_buffering[i] = decoded_data[i];
-			}
-		}
+		// for (var channel = 0; channel < channels; channel++) {
+		// 	var decoded_data = buffer.getChannelData(channel);
+		// 	var now_buffering = buffer_source.getChannelData(channel);
+
+		// 	for (var i = 0; i < decoded_data.length; i++) {
+		// 		now_buffering[i] = decoded_data[i];
+		// 	}
+		// }
 	});
 }
