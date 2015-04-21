@@ -14,7 +14,7 @@ import com.google.gson.Gson;
 import edu.brown.cs.group.sam.mp3converter.Mp3Encoder;
 import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
 import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
-import edu.brown.cs.group.sam.server.MusicServer;
+import edu.brown.cs.group.sam.Server.MusicServer;
 import edu.brown.cs.group.sam.sparkgui.SparkGui;
 
 import spark.ModelAndView;
@@ -261,11 +261,17 @@ public class SamGui extends SparkGui {
 
     @Override
     public Object handle(Request request, Response response) {
-      Map<String, String> map = request.params();
-
-      String id = map.get("id");
-      Double x = Double.parseDouble(map.get("x"));
-      Double y = Double.parseDouble(map.get("y"));
+      QueryParamsMap map = request.queryMap();
+      
+      String x1 = map.value("x");
+      String y1 = map.value("y");
+      String id = map.value("id");
+      
+      
+      System.out.println(x1);
+      System.out.println(request);
+      Double x = Double.parseDouble(x1);
+      Double y = Double.parseDouble(y1);
       double[] pos = { x, y };
       ClientPoint client = ap.getClients().get(id);
       if (client != null) {
