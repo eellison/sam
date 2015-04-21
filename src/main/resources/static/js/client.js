@@ -69,9 +69,11 @@ $("client-volume").on("change", function(e) {
 /* Update Client Positions */
 function updateClientPositions() {
 	$.get("http://" + server_url + "/clientPositions", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
+		console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject;
-
+		
+		console.log(clients)
 		draw_clients(clients);
 	});
 }
