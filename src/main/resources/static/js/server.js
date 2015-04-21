@@ -4,21 +4,26 @@ var CANVAS_SIZE = 400;
 var clientsCanvas = $("#clients-canvas");
 
 var running = false;
+var focus_x = 200;
+var focus_y = 200;
+var saved_clients = null;
 
 $("#clients-canvas").click(function(event){
 	if (running) {
 		var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 		var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
 		alert("x:" + xPos + " y:" + yPos);
-		draw_focus(xPos, yPos);
+		focus_x = xPos;
+		focus_y = yPos;
 
+		draw(saved_clients);
 		$.post("/changeFocus", {x : xPos, y : yPos}, function(responseJSON) {
 			
 		});
 	}
 });
 
-function draw_focus(x, y) {
+function draw(clients) {
 	// Get the canvas
 	var canvas = $("#clients-canvas")[0];
 	canvas.width = CANVAS_SIZE;
@@ -29,9 +34,15 @@ function draw_focus(x, y) {
 	ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
 	ctx.beginPath();
-	ctx.arc(x, y, 10, 0, 2 * Math.PI);
+	ctx.arc(focus_x, focus_y, 10, 0, 2 * Math.PI);
 	ctx.fillStyle = "black";
 	ctx.fill();
+
+	for (client in clients) {
+		ctx.beginPath();
+		ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
+		ctx.stroke();
+	}
 }
 
 /* Update Client Positions */
@@ -42,25 +53,9 @@ function updateClientPositions() {
 		var clients = responseObject;
 		
 		console.log(clients)
-		draw_clients(clients);
+		draw(clients);
+		saved_clients = clients;
 	});
-}
-
-function draw_clients(clients) {
-	// Get the canvas
-	var canvas = $("#clients-canvas")[0];
-	canvas.width = CANVAS_SIZE;
-	canvas.height = CANVAS_SIZE;
-
-	//Get 2D context for canvas drawing
-	var ctx = canvas.getContext("2d");
-	ctx.clearRect(CANVAS_SIZE, CANVAS_SIZE);
-
-	for (client in clients) {
-		ctx.beginPath();
-		ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
-		ctx.stroke();
-	}
 }
 
 $("#server-create").click(function(event) {
