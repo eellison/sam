@@ -15,6 +15,7 @@ public class ClientPoint {
 		this.point = LocalGeo.createPoint(new Coordinate(point[0], point[1]));
 		this.weighting = weighting;
 		this.id = id;
+		name = "";
 	}
 
 	public String getId() {
