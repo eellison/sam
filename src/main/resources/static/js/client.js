@@ -83,6 +83,7 @@ function draw_clients(clients) {
 
 	//Get 2D context for canvas drawing
 	var ctx = canvas.getContext("2d");
+	ctx.clearRect(CANVAS_SIZE, CANVAS_SIZE);
 
 	for (client in clients) {
 		ctx.beginPath();

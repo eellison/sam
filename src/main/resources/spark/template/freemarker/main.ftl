@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="css/html5bp.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="slider/css/slider.css">
   </head>
   <body>
     <div id="wrapper">
