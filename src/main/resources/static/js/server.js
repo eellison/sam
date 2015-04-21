@@ -1,14 +1,22 @@
+//Drawing
+var CANVAS_SIZE = 400;
+
 var clientsCanvas = $("#clients-canvas");
 
+var running = false;
+var updateClientPositions = null;
+
 $("#clients-canvas").click(function(event){
-	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
-	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-	alert("x:" + xPos + " y:" + yPos);
-	draw_focus(xPos, yPos);
-	
-	$.post("http://" + server_url + "/changeFocus", {x : xPos, y : yPos}, function(responseJSON) {
-		
-	});
+	if (running) {
+		var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
+		var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
+		alert("x:" + xPos + " y:" + yPos);
+		draw_focus(xPos, yPos);
+
+		$.post("/changeFocus", {x : xPos, y : yPos}, function(responseJSON) {
+			
+		});
+	}
 });
 
 function draw_focus(x, y) {
@@ -19,17 +27,18 @@ function draw_focus(x, y) {
 
 	//Get 2D context for canvas drawing
 	var ctx = canvas.getContext("2d");
-	ctx.clearRect(CANVAS_SIZE, CANVAS_SIZE);
+	ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
 	ctx.beginPath();
-	ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
+	ctx.arc(x, y, 10, 0, 2 * Math.PI);
 	ctx.fillStyle = "black";
 	ctx.fill();
 }
 
 /* Update Client Positions */
 function updateClientPositions() {
-	$.get("http://" + server_url + "/clientPositions", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
+	console.log("updating client positions");
+	$.get("/clientPositions", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
 		console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject;
@@ -57,7 +66,10 @@ function draw_clients(clients) {
 }
 
 $("#server-create").click(function(event) {
-	$.post("/startServer", {}, function(responseJSON) {});
+	$.post("/startServer", {}, function(responseJSON) {
+		running = true;
+	});
+
 	alert("Started server");
-	var updateClientPositions = setInterval(updateClientPositions, 1000);
+	updateClientPositions = setInterval(updateClientPositions, 1000);
 });

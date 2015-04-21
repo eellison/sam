@@ -72,7 +72,7 @@ function updateClientPositions() {
 		console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject;
-		
+
 		console.log(clients)
 		draw_clients(clients);
 	});
@@ -86,7 +86,7 @@ function draw_clients(clients) {
 
 	//Get 2D context for canvas drawing
 	var ctx = canvas.getContext("2d");
-	ctx.clearRect(CANVAS_SIZE, CANVAS_SIZE);
+	ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
 	for (client in clients) {
 		ctx.beginPath();
@@ -113,10 +113,10 @@ function setupClient(url) {
 
 			setupSocketConnection(socket_server_url, socket_server_port);
 
-			var updateSongTimeTimer = setInterval(updateSongTime, 10000000);
-			var updateSongTitleTimer = setInterval(updateSongTitle, 10000000);
-			var updateVolumeTimer = setInterval(updateVolume, 100000000);
-			var updateClientPositions = setInterval(updateClientPositions, 100000000);
+			var updateSongTimeTimer = setInterval(updateSongTime, 1000);
+			var updateSongTitleTimer = setInterval(updateSongTitle, 1000);
+			var updateVolumeTimer = setInterval(updateVolume, 1000);
+			var updateClientPositions = setInterval(updateClientPositions, 1000);
 		} else {
 			connected = false;
 		}
