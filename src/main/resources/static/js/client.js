@@ -68,7 +68,7 @@ $("client-volume").on("change", function(e) {
 
 /* Update Client Positions */
 function updateClientPositions() {
-	$.get("http://" + server_url + "/clientPositions", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
+	$.get("/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
 		console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject;
@@ -116,7 +116,7 @@ function setupClient(url) {
 			var updateSongTimeTimer = setInterval(updateSongTime, 1000);
 			var updateSongTitleTimer = setInterval(updateSongTitle, 1000);
 			var updateVolumeTimer = setInterval(updateVolume, 1000);
-			var updateClientPositions = setInterval(updateClientPositions, 1000);
+			var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
 		} else {
 			connected = false;
 		}

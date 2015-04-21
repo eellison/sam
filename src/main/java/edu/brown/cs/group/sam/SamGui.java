@@ -15,9 +15,9 @@ import com.vividsolutions.jts.geom.Coordinate;
 import edu.brown.cs.group.sam.mp3converter.Mp3Encoder;
 import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
 import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
-import edu.brown.cs.group.sam.panAlgorithm.LocalGeo;
 import edu.brown.cs.group.sam.server.MusicServer;
 import edu.brown.cs.group.sam.sparkgui.SparkGui;
+
 import spark.ModelAndView;
 import spark.QueryParamsMap;
 import spark.Request;
@@ -76,7 +76,7 @@ public class SamGui extends SparkGui {
     Spark.post("/startServer", new StartServerHandler());
     Spark.get("/volume", new VolumeHandler(ap));
     Spark.get("/connectClient", new ConnectClientHandler(clientId));
-    Spark.get("/clientPosition", new ClientPosHandler(ap));
+    Spark.get("/clients", new ClientPosHandler(ap));
     Spark.post("/updatePosition", new UpdatePosHandler(ap));
     Spark.post("/mp3encode", new Mp3EncodeHandler());
     Spark.post("/changeFocus", new FocusHandler(ap));
@@ -176,7 +176,7 @@ public class SamGui extends SparkGui {
 
   /**
    * Class that returns output volume for a class
-   * 
+   *
    * @author eselliso
    *
    */
@@ -185,7 +185,7 @@ public class SamGui extends SparkGui {
 
     /**
      * Constructed with ap
-     * 
+     *
      * @param ap - amplitude panner needed
      */
     public VolumeHandler(AmplitudePanner ap) {
@@ -211,7 +211,7 @@ public class SamGui extends SparkGui {
 
   /**
    * Class that returns all positions of clients
-   * 
+   *
    * @author eselliso
    *
    */
@@ -253,29 +253,33 @@ public class SamGui extends SparkGui {
       return GSON.toJson(variables);
     }
   }
+
   /**
    * Class to handle updating of position
+   *
    * @author eselliso
    *
    */
   private class UpdatePosHandler implements Route {
     AmplitudePanner ap;
+
     /**
      * Instantiated withh reference to the Amplitude Panner
+     *
      * @param ap
      */
     public UpdatePosHandler(AmplitudePanner ap) {
       this.ap = ap;
     }
+
     @Override
     public Object handle(Request request, Response response) {
       QueryParamsMap map = request.queryMap();
-      
+
       String x1 = map.value("x");
       String y1 = map.value("y");
       String id = map.value("id");
-      
-      
+
       System.out.println(x1);
       System.out.println(request);
       Double x = Double.parseDouble(x1);
@@ -293,29 +297,34 @@ public class SamGui extends SparkGui {
       return GSON.toJson(variables);
     }
   }
+
   /**
    * Handles changing focus
+   *
    * @author eselliso
    *
    */
   private class FocusHandler implements Route {
     AmplitudePanner ap;
+
     /**
      * Instantiated withh reference to the Amplitude Panner
+     *
      * @param ap
      */
     public FocusHandler(AmplitudePanner ap) {
       this.ap = ap;
     }
+
     @Override
     public Object handle(Request request, Response response) {
       QueryParamsMap map = request.queryMap();
-      
+
       String x1 = map.value("x");
-      String y1 = map.value("y");            
+      String y1 = map.value("y");
       Double x = Double.parseDouble(x1);
       Double y = Double.parseDouble(y1);
-      
+
       Coordinate c1 = new Coordinate(x, y);
       ap.calcluteVolume(c1);
       String message = "Success";
@@ -324,7 +333,6 @@ public class SamGui extends SparkGui {
       return GSON.toJson(variables);
     }
   }
-
 
   /**
    * Class that handles the gui request to start the music server.

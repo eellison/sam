@@ -4,7 +4,6 @@ var CANVAS_SIZE = 400;
 var clientsCanvas = $("#clients-canvas");
 
 var running = false;
-var updateClientPositions = null;
 
 $("#clients-canvas").click(function(event){
 	if (running) {
@@ -37,8 +36,7 @@ function draw_focus(x, y) {
 
 /* Update Client Positions */
 function updateClientPositions() {
-	console.log("updating client positions");
-	$.get("/clientPositions", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
+	$.get("/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
 		console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject;
@@ -71,5 +69,5 @@ $("#server-create").click(function(event) {
 	});
 
 	alert("Started server");
-	updateClientPositions = setInterval(updateClientPositions, 1000);
+	var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
 });
