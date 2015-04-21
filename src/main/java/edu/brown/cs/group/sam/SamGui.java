@@ -243,7 +243,7 @@ public class SamGui extends SparkGui {
       for (ClientPoint c: allClients.values()) {
         
         HashMap<String, Object> client = new HashMap<String, Object>();
-        Object[] clientI = new Object[3];
+        Object[] clientI = new Object[2];
         clientI[0] = c.getPoint().getCoordinate().x;
         clientI[1] = c.getPoint().getCoordinate().y;
 //        clientI[2] = c.getId();
