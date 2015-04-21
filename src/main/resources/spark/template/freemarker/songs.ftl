@@ -2,7 +2,7 @@
 
 <div class="songs-div">
 	<ul id="songs-ul">
-		<li>hi</li>
+		
 	</ul>
 </div>
 

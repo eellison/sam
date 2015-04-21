@@ -2,20 +2,19 @@ $(".form-group #directory-select").change(function() {
 	var soundFiles = findSoundFiles($( ".form-group #directory-select" )[0].files);
 
 	soundFiles.forEach(function(elem) {
-//		var song = elem;
+		console.log(elem);
+		var song = elem;
 
-//		if (!isMp3(elem)) {
-//			var postParameters = {
-//				file: elem,
-//				processData: false,
-//				contentType: false
-//			};
-//
-//			$.post("/mp3encode", postParameters, function(responseJSON) {
-//				song = JSON.parse(responseJSON);
-//				console.log(song);
-//			});
-//		}
+		if (!isMp3(elem)) {
+			var postParameters = {
+				filePath: "/home/yk46/course/cs032/projects/sam/src/main/resources/static/testdirectory/song1.wav"
+			};
+
+			$.post("/mp3encode", postParameters, function(responseJSON) {
+				song = JSON.parse(responseJSON);
+				console.log(song);
+			});
+		}
 
 		var url = elem.webkitRelativePath;
 
@@ -27,8 +26,12 @@ $(".form-group #directory-select").change(function() {
 					+ tags["TP1"].data + ", "
 					+ tags["TT2"].data + ", "
 					+ tags["TYE"].data;
-				console.log(info);
-				$( ".songs-div .songs-ul" ).append( "<li id=\"" + info + "\">" + info + "</li>" );
+				var song = document.createElement("li");
+				song.appendChild(document.createTextNode(info));
+				song.addEventListener('click', function(e) {
+					var song_info = $(this).text();
+				});
+				$( "#songs-ul" ).append(song);
 			}
 		},
 		{tags: ["TAL", "TP1", "TT2", "TYE"]});

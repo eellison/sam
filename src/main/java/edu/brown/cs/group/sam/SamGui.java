@@ -319,10 +319,9 @@ public class SamGui extends SparkGui {
 
     @Override
     public Object handle(Request req, Response res) {
-      System.out.println("HI");
       QueryParamsMap qm = req.queryMap();
-      File song = GSON.fromJson(qm.value("song"), File.class);
-      System.out.println(song.getName());
+      String song = GSON.fromJson(qm.value("filePath"), String.class);
+      System.out.println(song);
 
       try {
         return GSON.toJson(Mp3Encoder.encode(song));
