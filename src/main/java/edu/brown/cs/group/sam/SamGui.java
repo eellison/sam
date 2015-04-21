@@ -8,6 +8,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
+
+import edu.brown.cs.group.sam.mp3converter.Mp3Encoder;
+import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
+import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
+import edu.brown.cs.group.sam.Server.MusicServer;
+import edu.brown.cs.group.sam.sparkgui.SparkGui;
+
 import spark.ModelAndView;
 import spark.QueryParamsMap;
 import spark.Request;
@@ -16,21 +25,11 @@ import spark.Route;
 import spark.Spark;
 import spark.TemplateViewRoute;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
-
-import edu.brown.cs.group.sam.mp3converter.Mp3Encoder;
-import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
-import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
-import edu.brown.cs.group.sam.server.MusicServer;
-import edu.brown.cs.group.sam.sparkgui.SparkGui;
-
 /**
- * Class that extends the basic implementation of
- * a spark graphical user interface.
+ * Class that extends the basic implementation of a spark graphical user
+ * interface.
  *
- * This handles the requests made by the front end for
- * back-end information.
+ * This handles the requests made by the front end for back-end information.
  *
  * @author plscott
  *
@@ -50,19 +49,18 @@ public class SamGui extends SparkGui {
 
   public SamGui(int port, String address, int sPort) {
     this.port = port;
-    this.serverAddress = address;
-    this.serverPort = sPort;
-    this.ap = new AmplitudePanner();
-    this.allClients = new HashMap<String, ClientPoint>();
-    this.clientId = new AtomicInteger();
+    serverAddress = address;
+    serverPort = sPort;
+    ap = new AmplitudePanner();
+    allClients = new HashMap<String, ClientPoint>();
+    clientId = new AtomicInteger();
   }
 
   /**
-   * This method runs the spark server at the given port
-   * and then sets up get and post requests.
+   * This method runs the spark server at the given port and then sets up get
+   * and post requests.
    *
-   * @param port The port number at which to run the
-   * spark server
+   * @param port The port number at which to run the spark server
    */
   public void runSparkServer() {
     super.runSparkServer(port);
@@ -78,140 +76,140 @@ public class SamGui extends SparkGui {
     Spark.get("/volume", new VolumeHandler(ap));
     Spark.get("/connectClient", new ConnectClientHandler(clientId));
     Spark.get("/clientPosition", new ClientPosHandler(ap));
-    Spark.get("/updatePosition", new UpdatePosHandler(ap));
+    Spark.post("/updatePosition", new UpdatePosHandler(ap));
     Spark.post("/mp3encode", new Mp3EncodeHandler());
   }
 
   /**
-   * Class that models the response when the home page
-   * is loaded on the front-end.
+   * Class that models the response when the home page is loaded on the
+   * front-end.
    *
    * @author plscott
    *
    */
   private class HomeHandler implements TemplateViewRoute {
     /**
-     * Method that handles get requests from the home
-     * page on the front-end.
+     * Method that handles get requests from the home page on the front-end.
      *
      * @param req the request
      * @param res the response
      */
     @Override
     public ModelAndView handle(Request req, Response res) {
-      Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
-          .build();
+      Map<String, Object> variables =
+          new ImmutableMap.Builder<String, Object>().build();
 
       return new ModelAndView(variables, "home.ftl");
     }
   }
 
   /**
-   * Class that models the response when the server page
-   * is loaded on the front-end.
+   * Class that models the response when the server page is loaded on the
+   * front-end.
    *
    * @author plscott
    *
    */
   private class ServerHandler implements TemplateViewRoute {
     /**
-     * Method that handles get requests from the server
-     * page on the front-end.
+     * Method that handles get requests from the server page on the front-end.
      *
      * @param req the request
      * @param res the response
      */
     @Override
     public ModelAndView handle(Request req, Response res) {
-      Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
-          .build();
+      Map<String, Object> variables =
+          new ImmutableMap.Builder<String, Object>().build();
 
       return new ModelAndView(variables, "server.ftl");
     }
   }
 
   /**
-   * Class that models the response when the client page is
-   * loaded on the front-end.
+   * Class that models the response when the client page is loaded on the
+   * front-end.
    *
    * @author plscott
    *
    */
   private class ClientHandler implements TemplateViewRoute {
     /**
-     * Method that handles get requests from the client
-     * page on the front-end.
+     * Method that handles get requests from the client page on the front-end.
      *
      * @param req the request
      * @param res the response
      */
     @Override
     public ModelAndView handle(Request req, Response res) {
-      Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
-          .build();
+      Map<String, Object> variables =
+          new ImmutableMap.Builder<String, Object>().build();
 
       return new ModelAndView(variables, "client.ftl");
     }
   }
 
   /**
-   * Class that models the response when the songs page is
-   * loaded on the front-end.
+   * Class that models the response when the songs page is loaded on the
+   * front-end.
    *
    * @author plscott
    *
    */
   private class SongsHandler implements TemplateViewRoute {
     /**
-     * Method that handles get requests from the songs
-     * page on the front-end.
+     * Method that handles get requests from the songs page on the front-end.
      *
      * @param req the request
      * @param res the response
      */
     @Override
     public ModelAndView handle(Request req, Response res) {
-      Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
-          .build();
+      Map<String, Object> variables =
+          new ImmutableMap.Builder<String, Object>().build();
 
       return new ModelAndView(variables, "songs.ftl");
     }
   }
+
   /**
    * Class that returns output volume for a class
+   * 
    * @author eselliso
    *
    */
   private static class VolumeHandler implements Route {
     private AmplitudePanner ap;
+
     /**
      * Constructed with ap
+     * 
      * @param ap - amplitude panner needed
      */
     public VolumeHandler(AmplitudePanner ap) {
       this.ap = ap;
     }
+
     /**
-     * Method that handles get volume output of clients
-     * page on the front-end.
+     * Method that handles get volume output of clients page on the front-end.
      *
      * @param req the request
      * @param res the response
      */
     @Override
     public Object handle(Request req, Response res) {
-      
+
       Map<String, String> map = req.params();
       String id = map.get("id");
       double weight = ap.getVolume(id);
-      Map<String, Object> variables =
-          ImmutableMap.of("volume", weight);
+      Map<String, Object> variables = ImmutableMap.of("volume", weight);
       return GSON.toJson(variables);
     }
   }
 
   /**
-   * Class that returns all positions of clients 
+   * Class that returns all positions of clients
+   * 
    * @author eselliso
    *
    */
@@ -221,20 +219,20 @@ public class SamGui extends SparkGui {
     public ClientPosHandler(AmplitudePanner ap) {
       this.ap = ap;
     }
-    
+
     @Override
     public Object handle(Request request, Response response) {
-      
+
       Map<String, ClientPoint> allClients = ap.getClients();
       Map<String, Object> variables =
           ImmutableMap.of("clients", allClients);
       return GSON.toJson(variables);
     }
   }
-  
+
   private class ConnectClientHandler implements Route {
     AtomicInteger clientNum;
-    
+
     public ConnectClientHandler(AtomicInteger clientCounter) {
       clientNum = clientCounter;
     }
@@ -244,10 +242,11 @@ public class SamGui extends SparkGui {
       int clientNumber = clientNum.incrementAndGet();
       String message = "Successful";
 
-      Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
-      		.put("message", message).put("id", clientNumber)
-      		.put("server_url", serverAddress).put("server_port", serverPort)
-      		.put("success", 0).build();
+      Map<String, Object> variables =
+          new ImmutableMap.Builder<String, Object>()
+              .put("message", message).put("id", clientNumber)
+              .put("server_url", serverAddress)
+              .put("server_port", serverPort).put("success", 0).build();
 
       return GSON.toJson(variables);
     }
@@ -262,14 +261,20 @@ public class SamGui extends SparkGui {
 
     @Override
     public Object handle(Request request, Response response) {
-      Map<String, String> map = request.params();
-
-      String id = map.get("id");
-      Double x = Double.parseDouble(map.get("x"));
-      Double y = Double.parseDouble(map.get("y"));
-      double[] pos = {x, y};
+      QueryParamsMap map = request.queryMap();
+      
+      String x1 = map.value("x");
+      String y1 = map.value("y");
+      String id = map.value("id");
+      
+      
+      System.out.println(x1);
+      System.out.println(request);
+      Double x = Double.parseDouble(x1);
+      Double y = Double.parseDouble(y1);
+      double[] pos = { x, y };
       ClientPoint client = ap.getClients().get(id);
-      if (client!=null) {
+      if (client != null) {
         ap.removeClient(client);
       }
       client = new ClientPoint(pos, id, 1);
@@ -282,8 +287,7 @@ public class SamGui extends SparkGui {
   }
 
   /**
-   * Class that handles the gui request to start the
-   * music server.
+   * Class that handles the gui request to start the music server.
    *
    * @author plscott
    *
@@ -293,17 +297,17 @@ public class SamGui extends SparkGui {
     public Object handle(Request req, Response res) {
       if (server == null) {
         server = new MusicServer(serverAddress, serverPort);
-        server.run(); 
+        server.run();
       } else {
-      	// just for testing: set file and broadcast
-      	String path = "/Users/Peter/Desktop/bittersweet.mp3";
-      	File file = new File(path);
-      	server.setMusicFile(file);
-      	server.broadcast();
+        // just for testing: set file and broadcast
+        String path = "/Users/Peter/Desktop/bittersweet.mp3";
+        File file = new File(path);
+        server.setMusicFile(file);
+        server.broadcast();
       }
 
-      Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
-          .build();
+      Map<String, Object> variables =
+          new ImmutableMap.Builder<String, Object>().build();
 
       return GSON.toJson(variables);
     }
@@ -339,7 +343,7 @@ public class SamGui extends SparkGui {
 
       return song;
     }
-    
+
   }
 
   public void shutdown() {

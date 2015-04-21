@@ -60,7 +60,8 @@ function updateVolume() {
 	});
 }
 
-$("client-volume").on("input", function(e) {
+$("client-volume").on("change", function(e) {
+	console.log("Changed volume.");
 	console.log($(this).value);
 	max_volume = $(this).value / 10;
 });
