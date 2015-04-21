@@ -191,15 +191,15 @@ function buffer(array) {
 	}
 
 	audio_ctx.decodeAudioData(array_buffer, function(buffer) {
-		buffer_source = buffer;
+		// buffer_source = buffer;
 
-		// for (var channel = 0; channel < channels; channel++) {
-		// 	var decoded_data = buffer.getChannelData(channel);
-		// 	var now_buffering = buffer_source.getChannelData(channel);
+		for (var channel = 0; channel < channels; channel++) {
+			var decoded_data = buffer.getChannelData(channel);
+			var now_buffering = buffer_source.getChannelData(channel);
 
-		// 	for (var i = 0; i < decoded_data.length; i++) {
-		// 		now_buffering[i] = decoded_data[i];
-		// 	}
-		// }
+			for (var i = 0; i < decoded_data.length; i++) {
+				now_buffering[i] = decoded_data[i];
+			}
+		}
 	});
 }
