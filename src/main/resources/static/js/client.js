@@ -33,6 +33,8 @@ $("#clients-canvas").click(function(event) {
 		$.post("http://" + server_url + "/updatePosition", {id : client_id, x : xPos, y : yPos}, function(responseJSON) {
 			
 		});
+	} else {
+		alert("Not connected to server");
 	}
 });
 

@@ -69,7 +69,7 @@ function updateClientPositions() {
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject;
 		
-		console.log(clients)
+		console.log(clients);
 		draw(clients);
 		saved_clients = clients;
 	});
