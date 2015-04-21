@@ -201,9 +201,21 @@ public class SamGui extends SparkGui {
     @Override
     public Object handle(Request req, Response res) {
 
-      Map<String, String> map = req.params();
-      String id = map.get("id");
-      double weight = ap.getVolume(id);
+      QueryParamsMap map = req.queryMap();
+      
+      String id = map.value("id");
+      System.out.println(id);
+      Map<String, ClientPoint> clients = ap.getClients();
+      double weight = 1;
+      if (ap.getCoordinate()==null) {
+        weight = 1;
+      }
+      else if (ap.getClients().get(id)==null) {
+        weight = 1;
+      }
+      else {
+        weight = ap.getVolume(id);
+      }
       Map<String, Object> variables = ImmutableMap.of("volume", weight);
       return GSON.toJson(variables);
     }
@@ -324,7 +336,6 @@ public class SamGui extends SparkGui {
       String y1 = map.value("y");
       Double x = Double.parseDouble(x1);
       Double y = Double.parseDouble(y1);
-
       Coordinate c1 = new Coordinate(x, y);
       ap.calcluteVolume(c1);
       String message = "Success";

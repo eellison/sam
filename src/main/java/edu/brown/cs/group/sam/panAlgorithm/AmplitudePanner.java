@@ -249,4 +249,8 @@ public class AmplitudePanner {
     return currentWeighting.get(id);
   }
 
+  public Coordinate getCoordinate() {
+    return currentPoint;
+  }
+
 }
