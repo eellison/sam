@@ -5,8 +5,8 @@
  */
 
 /*!
- * Generated using the Bootstrap Customizer (http://getbootstrap.com/customize/?id=080a28d4439a059e3e64)
- * Config saved to config.json and https://gist.github.com/080a28d4439a059e3e64
+ * Generated using the Bootstrap Customizer (http://getbootstrap.com/customize/?id=3a7b6be1f47633a00128)
+ * Config saved to config.json and https://gist.github.com/3a7b6be1f47633a00128
  */
 /*! normalize.css v3.0.2 | MIT License | git.io/normalize */
 html {
@@ -3042,7 +3042,7 @@ fieldset[disabled] .btn {
 }
 .btn-default {
   color: #333333;
-  background-color: #ffffff;
+  background-color: #e2e2e2;
   border-color: #cccccc;
 }
 .btn-default:hover,
@@ -3052,7 +3052,7 @@ fieldset[disabled] .btn {
 .btn-default.active,
 .open > .dropdown-toggle.btn-default {
   color: #333333;
-  background-color: #e6e6e6;
+  background-color: #c9c9c9;
   border-color: #adadad;
 }
 .btn-default:active,
@@ -3078,11 +3078,11 @@ fieldset[disabled] .btn-default:active,
 .btn-default.disabled.active,
 .btn-default[disabled].active,
 fieldset[disabled] .btn-default.active {
-  background-color: #ffffff;
+  background-color: #e2e2e2;
   border-color: #cccccc;
 }
 .btn-default .badge {
-  color: #ffffff;
+  color: #e2e2e2;
   background-color: #333333;
 }
 .btn-primary {

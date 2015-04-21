@@ -68,7 +68,7 @@ $("client-volume").on("change", function(e) {
 
 /* Update Client Positions */
 function updateClientPositions() {
-	$.get("/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
+	$.get("http://" + url + "/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
 		console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject;
@@ -90,7 +90,11 @@ function draw_clients(clients) {
 
 	for (client in clients) {
 		ctx.beginPath();
-		ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
+
+		if (client.x == -1 || client.y == -1) {
+			ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
+		}
+
 		ctx.stroke();
 	}
 }
@@ -101,7 +105,7 @@ $("#client-connect").click(function(event) {
 });
 
 function setupClient(url) {
-	$.get("http://" + url + "/connectClient", function(responseJSON) {
+	$.post("http://" + url + "/connectClient", {name : "Name"}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 
 		if (!responseObject.error) {

@@ -5,8 +5,8 @@
  */
 
 /*!
- * Generated using the Bootstrap Customizer (http://getbootstrap.com/customize/?id=080a28d4439a059e3e64)
- * Config saved to config.json and https://gist.github.com/080a28d4439a059e3e64
+ * Generated using the Bootstrap Customizer (http://getbootstrap.com/customize/?id=3a7b6be1f47633a00128)
+ * Config saved to config.json and https://gist.github.com/3a7b6be1f47633a00128
  */
 .btn-default,
 .btn-primary,
@@ -46,31 +46,31 @@
   background-image: none;
 }
 .btn-default {
-  background-image: -webkit-linear-gradient(top, #ffffff 0%, #e0e0e0 100%);
-  background-image: -o-linear-gradient(top, #ffffff 0%, #e0e0e0 100%);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#e0e0e0));
-  background-image: linear-gradient(to bottom, #ffffff 0%, #e0e0e0 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff', endColorstr='#ffe0e0e0', GradientType=0);
+  background-image: -webkit-linear-gradient(top, #e2e2e2 0%, #c3c3c3 100%);
+  background-image: -o-linear-gradient(top, #e2e2e2 0%, #c3c3c3 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#e2e2e2), to(#c3c3c3));
+  background-image: linear-gradient(to bottom, #e2e2e2 0%, #c3c3c3 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffe2e2e2', endColorstr='#ffc3c3c3', GradientType=0);
   filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
   background-repeat: repeat-x;
-  border-color: #dbdbdb;
+  border-color: #bebebe;
   text-shadow: 0 1px 0 #fff;
   border-color: #ccc;
 }
 .btn-default:hover,
 .btn-default:focus {
-  background-color: #e0e0e0;
+  background-color: #c3c3c3;
   background-position: 0 -15px;
 }
 .btn-default:active,
 .btn-default.active {
-  background-color: #e0e0e0;
-  border-color: #dbdbdb;
+  background-color: #c3c3c3;
+  border-color: #bebebe;
 }
 .btn-default.disabled,
 .btn-default:disabled,
 .btn-default[disabled] {
-  background-color: #e0e0e0;
+  background-color: #c3c3c3;
   background-image: none;
 }
 .btn-primary {
