@@ -22,15 +22,12 @@ $(".form-group #directory-select").change(function() {
 		ID3.loadTags(url, function() { //song.elem.name
 			var tags = ID3.getAllTags(url);
 
-			if (tags) {
-				console.log(tags["TAL"].data + ", "
-					+ tags["TP1"].data + ", "
-					+ tags["TT2"].data + ", "
-					+ tags["TYE"].data);
+			if (tags && tags.TAL && tags.TP1 && tags.TT2 && tags.TYE) {
 				var info = tags["TAL"].data + ", "
 					+ tags["TP1"].data + ", "
 					+ tags["TT2"].data + ", "
 					+ tags["TYE"].data;
+				console.log(info);
 				$( ".songs-div .songs-ul" ).append( "<li id=\"" + info + "\">" + info + "</li>" );
 			}
 		},
