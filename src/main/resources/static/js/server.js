@@ -3,8 +3,9 @@ var clientsCanvas = $("#clients-canvas");
 $("#clients-canvas").click(function(event){
 	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-	alert("x:" + x + " y:" + y);
+	alert("x:" + xPos + " y:" + yPos);
 	draw_focus(xPos, yPos);
+	
 	$.post("http://" + server_url + "/changeFocus", {x : xPos, y : yPos}, function(responseJSON) {
 		
 	});
@@ -22,7 +23,8 @@ function draw_focus(x, y) {
 
 	ctx.beginPath();
 	ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
-	ctx.stroke();
+	ctx.fillStyle = "black";
+	ctx.fill();
 }
 
 /* Update Client Positions */
