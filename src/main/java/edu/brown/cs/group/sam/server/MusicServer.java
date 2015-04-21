@@ -31,7 +31,7 @@ public class MusicServer extends Server {
     BroadcastOperations br = server.getBroadcastOperations();
 
     try (InputStream stream = new ByteArrayInputStream(data)) {
-      int length = data.length; // size of packet to send
+      int length = 50000; // size of packet to send
       byte[] b = new byte[length];
 
       while (stream.read(b, 0, length) != -1) {

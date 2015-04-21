@@ -83,6 +83,7 @@ function draw_clients(clients) {
 
 	//Get 2D context for canvas drawing
 	var ctx = canvas.getContext("2d");
+	ctx.clearRect(CANVAS_SIZE, CANVAS_SIZE);
 
 	for (client in clients) {
 		ctx.beginPath();
@@ -135,10 +136,8 @@ function setupSocketConnection(url, port) {
 		var song_bytes = response.song;
 
 		if (!song_started) {
-			var total_length = response.totalLength;
-			
 			// set up sound 
-			setup_sound(total_length);
+			setup_sound();
 
 			// buffer the input
 			buffer(song_bytes);
@@ -148,129 +147,59 @@ function setupSocketConnection(url, port) {
 
 			song_started = true;
 		} else {
-			buffer(song_bytes);
+			//buffer(song_bytes);
 		}
 	})
 }
 
 // declare variables used for playing music:
-var audioCtx;
-var array_buffer;
-var buffered;
+var audio_ctx;
 var buffer_source;
+var channels;
 
 // function used to setup sound output for the client
-function setup_sound(length) {
-	audioCtx = new (window.AudioContext || window.webkitAudioContext);
+function setup_sound() {
+	audio_ctx = new (window.AudioContext || window.webkitAudioContext);
 	
-	var channels = 1; 				// 2; // can use 2 channels to model stereo output
-	var frame_count = audioCtx.sampleRate * channels;
-	//array_buffer = audioCtx.createBuffer(channels, frame_count, audioCtx.sampleRate);
+	channels = 1; 				// 2; // can use 2 channels to model stereo output
+	var frame_count = audio_ctx.sampleRate * channels;
 
-	array_buffer = new ArrayBuffer(length);
-	buffered = new Uint8Array(array_buffer);
-	buffer_source = audioCtx.createBuffer(channels, frame_count, audioCtx.sampleRate);
+	//buffer_source = audio_ctx.createBuffer(channels, frame_count, audio_ctx.sampleRate);
 }
 
 function start_sound() {
 	// audio node used to play the audiobuffer
-	var source = audioCtx.createBufferSource();
+	var source = audio_ctx.createBufferSource();
 
 	// set the buffer in the source
 	source.buffer = buffer_source;
 
 	// connect source so we can hear it
-	source.connect(audioCtx.destination);
+	source.connect(audio_ctx.destination);
 
 	// start the source playing
 	source.start();
 }
 
-var buf_count = 0;
-var src_count = 0;
 // this function fills the buffer with data streamed from backend
 function buffer(array) {
+	var array_buffer = new ArrayBuffer(array.length);
+	var buffered = new Uint8Array(array_buffer);
+
 	for (var i = 0; i < array.length; i++) {
-		buffered[buf_count] = array[i];
-		buf_count++;
+		buffered[i] = array[i];
 	}
 
-	audioCtx.decodeAudioData(array_buffer, function(buffer) {
-		for (var i = 0; i < buffer.length; i++) {
-			buffer_source[src_count] = buffer[i];
-			src_count++;
-		}
+	audio_ctx.decodeAudioData(array_buffer, function(buffer) {
+		buffer_source = buffer;
+
+		// for (var channel = 0; channel < channels; channel++) {
+		// 	var decoded_data = buffer.getChannelData(channel);
+		// 	var now_buffering = buffer_source.getChannelData(channel);
+
+		// 	for (var i = 0; i < decoded_data.length; i++) {
+		// 		now_buffering[i] = decoded_data[i];
+		// 	}
+		// }
 	});
-
-	// for (var channel = 0; channel < channels; channel++) {
-	// 	var buffering = array_buffer.getChannelData(channel);
-		
-	// 	for (var i = 0; i < array.length; i++) {
-	// 		buffering[i] = array[i];
-	// 	}
-	// }
-}
-
-// window.onload = init;
-// var context;    // Audio context
-// var buf;        // Audio buffer
-
-// function init() {
-// if (!window.AudioContext) {
-//     if (!window.webkitAudioContext) {
-//         alert("Your browser does not support any AudioContext and cannot play back this audio.");
-//         return;
-//     }
-//         window.AudioContext = window.webkitAudioContext;
-//     }
-
-//     context = new AudioContext();
-// }
-
-// function playByteArray(byteArray) {
-//     var arrayBuffer = new ArrayBuffer(byteArray.length);
-//     var bufferView = new Uint8Array(arrayBuffer);
-//     for (i = 0; i < byteArray.length; i++) {
-//       bufferView[i] = byteArray[i];
-//     }
-
-//     context.decodeAudioData(arrayBuffer, function(buffer) {
-//         buf = buffer;
-//         play();
-//     });
-// }
-
-// // Play the loaded file
-// function play() {
-//     // Create a source node from the buffer
-//     var source = context.createBufferSource();
-//     source.buffer = buf;
-//     // Connect to the final output node (the speakers)
-//     source.connect(context.destination);
-//     // Play immediately
-//     source.start(0);
-// }
-
-function playByteArray(byteArray) {
-    var arrayBuffer = new ArrayBuffer(byteArray.length);
-    var bufferView = new Uint8Array(arrayBuffer);
-    for (i = 0; i < byteArray.length; i++) {
-      bufferView[i] = byteArray[i];
-    }
-
-    context.decodeAudioData(arrayBuffer, function(buffer) {
-        buf = buffer;
-        play();
-    });
-}
-
-// Play the loaded file
-function play() {
-    // Create a source node from the buffer
-    var source = context.createBufferSource();
-    source.buffer = buf;
-    // Connect to the final output node (the speakers)
-    source.connect(context.destination);
-    // Play immediately
-    source.start(0);
 }

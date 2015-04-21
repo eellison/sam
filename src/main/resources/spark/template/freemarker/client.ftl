@@ -7,10 +7,6 @@
 			<input type="text" id="server-url" class="form-control" placeholder="127.0.0.1:4567"></input>
 		</div>
 		<div class="form-group">
-			<label for="server">Password</label>
-			<input type="password" id="server-password" class="form-control" placeholder="password1234"></input>
-		</div>
-		<div class="form-group">
 			<label for="clientname">Client Name</label>
 			<input type="text" id="client-name" class="form-control" placeholder="Dave's Room"></input>
 		</div>
