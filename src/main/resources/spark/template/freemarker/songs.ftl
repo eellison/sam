@@ -1,15 +1,22 @@
 <#assign content>
 
+<form method="POST" action="musicdirectory">
+	<input type="text" placeholder="/your/music/directory" name="dir"><br>
+	<input type="checkbox" name="encode" value="encode">Encode to MP3<br>
+	<input type="submit">
+</form>
+
 <div class="songs-div">
 	<ul id="songs-ul">
-		
 	</ul>
 </div>
 
-<div class="form-group">
+<button type="button">Back to Server</button>
+
+<!-- <div class="form-group">
     <label for="fileupload">Select Your Music Folder</label>
 	<input type="file" id="directory-select" webkitdirectory directory/>
-</div>
+</div> -->
 
 </#assign>
 
