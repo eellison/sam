@@ -7,10 +7,6 @@
 			<input type="text" id="room-name" class="form-control" placeholder="Dave's Room"></input>
 		</div>
 		<div class="form-group">
-			<label for="=password">Password</label>
-			<input type="text" id="room-password" class="form-control" placeholder="password1234"></input>
-		</div>
-		<div class="form-group">
     		<label for="volume">Volume</label>
 			<div class="well">
 			    <input type="range" id="client-volume" min="0" max="10" value="7"></input>

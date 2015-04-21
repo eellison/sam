@@ -60,17 +60,20 @@ function updateVolume() {
 	});
 }
 
-$("client-volume").on("input", function(e) {
+$("client-volume").on("change", function(e) {
+	console.log("Changed volume.");
 	console.log($(this).value);
 	max_volume = $(this).value / 10;
 });
 
 /* Update Client Positions */
 function updateClientPositions() {
-	$.get("http://" + server_url + "/clientPositions", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
+	$.get("/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
+		console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject;
 
+		console.log(clients)
 		draw_clients(clients);
 	});
 }
@@ -83,6 +86,7 @@ function draw_clients(clients) {
 
 	//Get 2D context for canvas drawing
 	var ctx = canvas.getContext("2d");
+	ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
 	for (client in clients) {
 		ctx.beginPath();
@@ -109,10 +113,10 @@ function setupClient(url) {
 
 			setupSocketConnection(socket_server_url, socket_server_port);
 
-			var updateSongTimeTimer = setInterval(updateSongTime, 10000000);
-			var updateSongTitleTimer = setInterval(updateSongTitle, 10000000);
-			var updateVolumeTimer = setInterval(updateVolume, 100000000);
-			var updateClientPositions = setInterval(updateClientPositions, 100000000);
+			var updateSongTimeTimer = setInterval(updateSongTime, 1000);
+			var updateSongTitleTimer = setInterval(updateSongTitle, 1000);
+			var updateVolumeTimer = setInterval(updateVolume, 1000);
+			var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
 		} else {
 			connected = false;
 		}
@@ -135,22 +139,18 @@ function setupSocketConnection(url, port) {
 		var song_bytes = response.song;
 
 		if (!song_started) {
-			alert("Setting up sound");
 			// set up sound 
 			setup_sound();
 
-			alert("buffering sound");
 			// buffer the input
 			buffer(song_bytes);
 
-			alert("started sound");
 			// start sound
 			start_sound();
 
-			alert("song has been started");
 			song_started = true;
 		} else {
-			buffer(song_bytes);
+			//buffer(song_bytes);
 		}
 	})
 }
@@ -167,7 +167,7 @@ function setup_sound() {
 	channels = 1; 				// 2; // can use 2 channels to model stereo output
 	var frame_count = audio_ctx.sampleRate * channels;
 
-	buffer_source = audio_ctx.createBuffer(channels, frame_count, audio_ctx.sampleRate);
+	//buffer_source = audio_ctx.createBuffer(channels, frame_count, audio_ctx.sampleRate);
 }
 
 function start_sound() {
@@ -194,13 +194,15 @@ function buffer(array) {
 	}
 
 	audio_ctx.decodeAudioData(array_buffer, function(buffer) {
-		for (var channel = 0; channel < channels; channel++) {
-			var decoded_data = buffer.getChannelData(channel);
-			var now_buffering = buffer_source.getChannelData(channel);
+		buffer_source = buffer;
 
-			for (var i = 0; i < decoded_data.length; i++) {
-				now_buffering[i] = decoded_data[i];
-			}
-		}
+		// for (var channel = 0; channel < channels; channel++) {
+		// 	var decoded_data = buffer.getChannelData(channel);
+		// 	var now_buffering = buffer_source.getChannelData(channel);
+
+		// 	for (var i = 0; i < decoded_data.length; i++) {
+		// 		now_buffering[i] = decoded_data[i];
+		// 	}
+		// }
 	});
 }
