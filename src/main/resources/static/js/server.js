@@ -39,6 +39,9 @@ function draw(clients) {
 	ctx.fill();
 
 	for (client in clients) {
+		ctx.font = "18px serif";
+  		ctx.fillText(client.id, client.x - 10, client.y - 10);
+
 		ctx.beginPath();
 		ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
 		ctx.stroke();
