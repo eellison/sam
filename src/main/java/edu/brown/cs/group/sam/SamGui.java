@@ -10,10 +10,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
+import com.vividsolutions.jts.geom.Coordinate;
 
 import edu.brown.cs.group.sam.mp3converter.Mp3Encoder;
 import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
 import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
+import edu.brown.cs.group.sam.panAlgorithm.LocalGeo;
 import edu.brown.cs.group.sam.server.MusicServer;
 import edu.brown.cs.group.sam.sparkgui.SparkGui;
 import spark.ModelAndView;
@@ -77,6 +79,7 @@ public class SamGui extends SparkGui {
     Spark.get("/clientPosition", new ClientPosHandler(ap));
     Spark.post("/updatePosition", new UpdatePosHandler(ap));
     Spark.post("/mp3encode", new Mp3EncodeHandler());
+    Spark.post("/changeFocus", new FocusHandler(ap));
   }
 
   /**
@@ -250,14 +253,20 @@ public class SamGui extends SparkGui {
       return GSON.toJson(variables);
     }
   }
-
+  /**
+   * Class to handle updating of position
+   * @author eselliso
+   *
+   */
   private class UpdatePosHandler implements Route {
     AmplitudePanner ap;
-
+    /**
+     * Instantiated withh reference to the Amplitude Panner
+     * @param ap
+     */
     public UpdatePosHandler(AmplitudePanner ap) {
       this.ap = ap;
     }
-
     @Override
     public Object handle(Request request, Response response) {
       QueryParamsMap map = request.queryMap();
@@ -284,6 +293,38 @@ public class SamGui extends SparkGui {
       return GSON.toJson(variables);
     }
   }
+  /**
+   * Handles changing focus
+   * @author eselliso
+   *
+   */
+  private class FocusHandler implements Route {
+    AmplitudePanner ap;
+    /**
+     * Instantiated withh reference to the Amplitude Panner
+     * @param ap
+     */
+    public FocusHandler(AmplitudePanner ap) {
+      this.ap = ap;
+    }
+    @Override
+    public Object handle(Request request, Response response) {
+      QueryParamsMap map = request.queryMap();
+      
+      String x1 = map.value("x");
+      String y1 = map.value("y");            
+      Double x = Double.parseDouble(x1);
+      Double y = Double.parseDouble(y1);
+      
+      Coordinate c1 = new Coordinate(x, y);
+      ap.calcluteVolume(c1);
+      String message = "Success";
+      Map<String, Object> variables =
+          ImmutableMap.of("message", message, "success", 0);
+      return GSON.toJson(variables);
+    }
+  }
+
 
   /**
    * Class that handles the gui request to start the music server.
