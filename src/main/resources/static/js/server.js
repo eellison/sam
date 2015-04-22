@@ -50,8 +50,10 @@ function draw(clients) {
 	ctx.fillStyle = "black";
 	ctx.fill();
 
-	for (client in clients) {
-		if (client.x == -1 || client.y == -1) {
+	for (var i in clients) {
+		var client = clients[i];
+
+		if (client.x != -1 || client.y != -1) {
 			ctx.font = "18px serif";
 	  		ctx.fillText(client.id, client.x - 10, client.y - 10);
 
@@ -67,7 +69,7 @@ function updateClientPositions() {
 	$.get("/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
 		console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
-		var clients = responseObject;
+		var clients = responseObject.clients;
 		
 		console.log(clients);
 		draw(clients);

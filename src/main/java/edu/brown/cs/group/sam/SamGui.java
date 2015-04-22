@@ -76,7 +76,7 @@ public class SamGui extends SparkGui {
     // set up post handlers for interactions with gui
     Spark.post("/startServer", new StartServerHandler());
     Spark.get("/volume", new VolumeHandler(ap));
-    Spark.get("/connectClient", new ConnectClientHandler(clientId));
+    Spark.post("/connectClient", new ConnectClientHandler(clientId));
     Spark.get("/clients", new ClientPosHandler(ap));
     Spark.post("/updatePosition", new UpdatePosHandler(ap));
     Spark.post("/mp3encode", new Mp3EncodeHandler());

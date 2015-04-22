@@ -57,7 +57,7 @@ function updateSongTitle() {
 function updateVolume() {
 	$.get("http://" + server_url + "/volume", {id : client_id}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
-		volume = min(responseObject.volume, max_volume);
+		volume = Math.min(responseObject.volume, max_volume);
 		console.log(volume);
 	});
 }
@@ -70,12 +70,12 @@ $("client-volume").on("change", function(e) {
 
 /* Update Client Positions */
 function updateClientPositions() {
-	$.get("http://" + url + "/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
+	$.get("http://" + server_url + "/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
 		console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
-		var clients = responseObject;
+		var clients = responseObject.clients;
 
-		console.log(clients)
+		console.log(clients);
 		draw_clients(clients);
 	});
 }
@@ -90,14 +90,19 @@ function draw_clients(clients) {
 	var ctx = canvas.getContext("2d");
 	ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
-	for (client in clients) {
+	for (var i in clients) {
+		var client = clients[i];
+		console.log("drawing");
 		ctx.beginPath();
-
-		if (client.x == -1 || client.y == -1) {
+		console.log(client.x);
+		console.log(client.y);
+		if (client.x != -1 || client.y != -1) {
 			ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
 		}
 
 		ctx.stroke();
+		ctx.font = "18px serif";
+	  	ctx.fillText(client.id, client.x - 10, client.y - 10);
 	}
 }
 
