@@ -57,15 +57,14 @@ function updateSongTitle() {
 function updateVolume() {
 	$.get("http://" + server_url + "/volume", {id : client_id}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
-		volume = Math.min(responseObject.volume, max_volume);
-		console.log(volume);
+		volume = responseObject.volume;
 	});
 }
 
-$("client-volume").on("change", function(e) {
+$("#client-volume").on("input", function(e) {
 	console.log("Changed volume.");
-	console.log($(this).value);
-	max_volume = $(this).value / 10;
+	console.log($(this).val());
+	max_volume = $(this).val() / 10;
 });
 
 /* Update Client Positions */
