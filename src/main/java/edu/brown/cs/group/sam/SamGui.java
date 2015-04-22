@@ -4,11 +4,18 @@ import it.sauronsoftware.jave.EncoderException;
 import it.sauronsoftware.jave.InputFormatException;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.farng.mp3.AbstractMP3Tag;
+import org.farng.mp3.MP3File;
+import org.farng.mp3.TagException;
+import org.farng.mp3.id3.ID3v2_4;
 
 import spark.ModelAndView;
 import spark.QueryParamsMap;
@@ -387,7 +394,6 @@ public class SamGui extends SparkGui {
     public Object handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
       String song = GSON.fromJson(qm.value("filePath"), String.class);
-      System.out.println(song);
 
       try {
         return GSON.toJson(Mp3Encoder.encode(song));
@@ -451,18 +457,67 @@ public class SamGui extends SparkGui {
 
       File[] files = new File(musicDirectory).listFiles();
 
-      List<Song> songs;
+      List<Song> songs = new ArrayList<>();
 
       for (File f : files) {
-        String fileType = f.getName().split("\\.")[1];
+        String[] fileNameArr = f.getName().split("\\.");
+        String fileType = "";
+        
+        if (fileNameArr.length > 1) {
+          fileType = fileNameArr[1];
+        }
+        
         if(fileType.equalsIgnoreCase("mp3")) {
-          
+          try {
+            songs.add(makeSong(f));
+          } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          } catch (TagException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
         } else {
           if (encode.equals("encode")) {
-            
+            if (DECODED_TYPES.contains(fileType)) {
+              try {
+                File mp3File = Mp3Encoder.encode(f);
+                songs.add(makeSong(mp3File));
+              } catch (IllegalArgumentException e) {
+                System.err.println("1");
+              } catch (InputFormatException e) {
+                System.err.println(e);
+                System.err.println("2");
+              } catch (EncoderException e) {
+                System.err.println("3");
+              } catch (IOException e) {
+                e.printStackTrace();
+              } catch (TagException e) {
+                e.printStackTrace();
+              }
+            }
           }
         }
       }
+      
+      return GSON.toJson(songs.toArray(new Song[0]));
+    }
+    
+    private Song makeSong(File mp3File) throws IOException, TagException {
+      MP3File mp3 = new MP3File(mp3File);
+      AbstractMP3Tag tag;
+      if (mp3.hasID3v1Tag()) {
+        tag = mp3.getID3v1Tag();
+      } else if (mp3.hasID3v2Tag()) {
+        tag = mp3.getID3v2Tag();
+      } else if (mp3.hasFilenameTag()) {
+        tag = mp3.getFilenameTag();
+      } else {
+        return new Song("", "", "", mp3File.getAbsolutePath());
+      }
+      
+      return new Song(tag.getSongTitle(), tag.getAlbumTitle(),
+          tag.getLeadArtist(), mp3File.getAbsolutePath());
     }
   }
 

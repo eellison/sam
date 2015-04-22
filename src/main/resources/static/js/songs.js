@@ -1,4 +1,27 @@
-$(".form-group #directory-select").change(function() {
+$( "#submit" ).click(function () {
+  var dir = $( "#dir" )[0].value;
+  var encode = $( "#encode" )[0].value;
+  var postParameters = {
+  	dir: dir,
+  	encode: encode
+  };
+
+  $.post("/musicdirectory", postParameters, function(responseJSON) {
+	var songs = JSON.parse(responseJSON);
+	console.log(songs);
+	songs.forEach(function(elem) {
+		var song = document.createElement("li");
+		var info = elem.title + " on " + elem.album + " by " + elem.artist;
+		song.appendChild(document.createTextNode(info));
+		song.addEventListener('click', function(e) {
+			var song_info = $(this).text();
+		});
+		$( "#songs-ul" ).append(song);
+	});
+  });
+});
+
+/*$(".form-group #directory-select").change(function() {
 	var soundFiles = findSoundFiles($( ".form-group #directory-select" )[0].files);
 
 	soundFiles.forEach(function(elem) {
@@ -60,4 +83,4 @@ function isMp3(file) {
 }
 
 //- send post request that has the path to the song
-//http://www.sauronsoftware.it/projects/jave/manual.php?PHPSESSID=r6ctdckspp5nusoo4c3v9e42b6#10
+//http://www.sauronsoftware.it/projects/jave/manual.php?PHPSESSID=r6ctdckspp5nusoo4c3v9e42b6#10*/

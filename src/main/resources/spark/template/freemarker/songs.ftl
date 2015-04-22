@@ -1,10 +1,8 @@
 <#assign content>
 
-<form method="POST" action="musicdirectory">
-	<input type="text" placeholder="/your/music/directory" name="dir"><br>
-	<input type="checkbox" name="encode" value="encode">Encode to MP3<br>
-	<input type="submit">
-</form>
+<input type="text" placeholder="/your/music/directory" id="dir"><br>
+<input type="checkbox" id="encode" value="encode">Encode to MP3<br>
+<input type="submit" id="submit">
 
 <div class="songs-div">
 	<ul id="songs-ul">
