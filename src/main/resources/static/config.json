@@ -64,7 +64,7 @@
     "@table-border-color": "#ddd",
     "@btn-font-weight": "normal",
     "@btn-default-color": "#333",
-    "@btn-default-bg": "#fff",
+    "@btn-default-bg": "#e2e2e2",
     "@btn-default-border": "#ccc",
     "@btn-primary-color": "#fff",
     "@btn-primary-bg": "@brand-primary",
@@ -426,5 +426,5 @@
     "scrollspy.js",
     "transition.js"
   ],
-  "customizerUrl": "http://getbootstrap.com/customize/?id=080a28d4439a059e3e64"
+  "customizerUrl": "http://getbootstrap.com/customize/?id=3a7b6be1f47633a00128"
 }

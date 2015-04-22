@@ -4,8 +4,8 @@ var CANVAS_SIZE = 400;
 var clientsCanvas = $("#clients-canvas");
 
 var running = false;
-var focus_x = 200;
-var focus_y = 200;
+var focus_x = -1;
+var focus_y = -1;
 var saved_clients = null;
 
 $("#clients-canvas").click(function(event){
@@ -18,6 +18,18 @@ $("#clients-canvas").click(function(event){
 
 		draw(saved_clients);
 		$.post("/changeFocus", {x : xPos, y : yPos}, function(responseJSON) {
+			
+		});
+	}
+});
+
+$("#clear-focus").click(function(event) {
+	if (running) {
+		focus_x = -1;
+		focus_y = -1;
+
+		draw(saved_clients);
+		$.post("/changeFocus", {x : focus_x, y : focus_y}, function(responseJSON) {
 			
 		});
 	}
@@ -38,13 +50,17 @@ function draw(clients) {
 	ctx.fillStyle = "black";
 	ctx.fill();
 
-	for (client in clients) {
-		ctx.font = "18px serif";
-  		ctx.fillText(client.id, client.x - 10, client.y - 10);
+	for (var i in clients) {
+		var client = clients[i];
 
-		ctx.beginPath();
-		ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
-		ctx.stroke();
+		if (client.x != -1 || client.y != -1) {
+			ctx.font = "18px serif";
+	  		ctx.fillText(client.id, client.x - 10, client.y - 10);
+
+			ctx.beginPath();
+			ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
+			ctx.stroke();
+		}
 	}
 }
 
@@ -53,9 +69,9 @@ function updateClientPositions() {
 	$.get("/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
 		console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
-		var clients = responseObject;
+		var clients = responseObject.clients;
 		
-		console.log(clients)
+		console.log(clients);
 		draw(clients);
 		saved_clients = clients;
 	});

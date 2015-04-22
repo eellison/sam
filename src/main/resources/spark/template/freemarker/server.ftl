@@ -19,7 +19,11 @@
 		<canvas id="clients-canvas">
 			
 		</canvas>
-		<a class="btn btn-default btn-block" href="/songs" role="button" target="_blank">Songs</a>
+		</br>
+		<div class="btn-group" role="btn-group-justified">
+			<button class="btn btn-default" id="clear-focus">Clear Focus</button>
+			<a class="btn btn-default" href="/songs" role="button" target="_blank">Songs</a>
+		</div>
 	</div>
 </div>
 </#assign>

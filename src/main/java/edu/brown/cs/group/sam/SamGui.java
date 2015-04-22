@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.farng.mp3.AbstractMP3Tag;
 import org.farng.mp3.MP3File;
 import org.farng.mp3.TagException;
-import org.farng.mp3.id3.ID3v2_4;
 
 import spark.ModelAndView;
 import spark.QueryParamsMap;
@@ -84,7 +83,7 @@ public class SamGui extends SparkGui {
     // set up post handlers for interactions with gui
     Spark.post("/startServer", new StartServerHandler());
     Spark.get("/volume", new VolumeHandler(ap));
-    Spark.get("/connectClient", new ConnectClientHandler(clientId));
+    Spark.post("/connectClient", new ConnectClientHandler(clientId));
     Spark.get("/clients", new ClientPosHandler(ap));
     Spark.post("/updatePosition", new UpdatePosHandler(ap));
     Spark.post("/mp3encode", new Mp3EncodeHandler());
@@ -248,8 +247,18 @@ public class SamGui extends SparkGui {
     public Object handle(Request request, Response response) {
 
       Map<String, ClientPoint> allClients = ap.getClients();
+      List<HashMap<String, Object>> clientInfo = new ArrayList<HashMap<String, Object>>();
+      for (ClientPoint c: allClients.values()) {
+        
+        HashMap<String, Object> client = new HashMap<String, Object>();
+        client.put("x", c.getPoint().getCoordinate().x);
+        client.put("y", c.getPoint().getCoordinate().y);
+        client.put("id", c.getId());
+        clientInfo.add(client);
+      } 
       Map<String, Object> variables =
-          ImmutableMap.of("clients", allClients);
+          ImmutableMap.of("clients", clientInfo);
+      
       return GSON.toJson(variables);
     }
   }
@@ -301,6 +310,8 @@ public class SamGui extends SparkGui {
       String x1 = map.value("x");
       String y1 = map.value("y");
       String id = map.value("id");
+      String name = request.queryMap().value("name");
+
 
       System.out.println(x1);
       System.out.println(request);
