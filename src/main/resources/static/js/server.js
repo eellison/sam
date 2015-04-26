@@ -8,20 +8,59 @@ var focus_x = -1;
 var focus_y = -1;
 var saved_clients = null;
 
-$("#clients-canvas").click(function(event){
-	if (running) {
-		var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
-		var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-		alert("x:" + xPos + " y:" + yPos);
-		focus_x = xPos;
-		focus_y = yPos;
+// $("#clients-canvas").click(function(event){
+// 	if (running) {
+// 		var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
+// 		var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
+// 		alert("x:" + xPos + " y:" + yPos);
+// 		focus_x = xPos;
+// 		focus_y = yPos;
 
-		draw(saved_clients);
-		$.post("/changeFocus", {x : xPos, y : yPos}, function(responseJSON) {
+// 		draw(saved_clients);
+// 		$.post("/changeFocus", {x : xPos, y : yPos}, function(responseJSON) {
 			
-		});
-	}
+// 		});
+// 	}
+// });
+
+var xPos = 0;
+var yPos = 0;
+$("#clients-canvas").on('mousedown', function(event){
+	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
+	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
+	// alert("x:" + xPos + " y:" + yPos);
+	focus_x = xPos;
+	focus_y = yPos;
+	draw(saved_clients);
+	$.post("/changeFocus", {x : xPos, y : yPos, quick:false}, function(responseJSON) {
+	});
+	$("#clients-canvas").on('mouseup mousemove', function handler(event) {
+		if (event.type == 'mousemove') {
+			var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
+			var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
+			// alert("x:" + xPos + " y:" + yPos);
+			focus_x = xPos;
+			focus_y = yPos;
+
+			draw(saved_clients);
+			$.post("/changeFocus", {x : xPos, y : yPos, quick:true}, function(responseJSON) {
+			});
+		} else {
+			var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
+			var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
+			// alert("x:" + xPos + " y:" + yPos);
+			focus_x = xPos;
+			focus_y = yPos;
+
+			draw(saved_clients);
+			$("#clients-canvas").off('mouseup mousemove', handler);
+			$.post("/changeFocus", {x : xPos, y : yPos, quick:false}, function(responseJSON) {
+			});
+		}
+	});
 });
+
+
 
 $("#clear-focus").click(function(event) {
 	if (running) {
