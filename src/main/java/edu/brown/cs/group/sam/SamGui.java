@@ -19,6 +19,7 @@ import spark.TemplateViewRoute;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 
+import edu.brown.cs.group.sam.filesystem.FilesystemViewer;
 import edu.brown.cs.group.sam.mp3converter.Mp3Encoder;
 import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
 import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
@@ -80,6 +81,7 @@ public class SamGui extends SparkGui {
     Spark.get("/clientPosition", new ClientPosHandler(ap));
     Spark.get("/updatePosition", new UpdatePosHandler(ap));
     Spark.post("/mp3encode", new Mp3EncodeHandler());
+    Spark.post("/queryFilesystem", new FilesystemHandler());
   }
 
   /**
@@ -340,6 +342,19 @@ public class SamGui extends SparkGui {
       return song;
     }
     
+  }
+
+  private class FilesystemHandler implements Route {
+
+    @Override
+    public Object handle(Request req, Response res) {
+      QueryParamsMap qm = req.queryMap();
+      String path = GSON.fromJson(qm.value("path"), String.class);
+      FilesystemViewer viewer = new FilesystemViewer(path);
+
+      return GSON.toJson(viewer);
+    }
+
   }
 
   public void shutdown() {
