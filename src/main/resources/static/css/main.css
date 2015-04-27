@@ -1,12 +1,8 @@
 body {
 	background-color: #FFFFFF;
     background-image: url("background-2.png");
-    background-size: cover;
+    background-size: fill;
     background-repeat: no-repeat;
-    margin: 0px;
-    padding: 0px;
-    width: 100%;
-    min-width: 1250px;
 }
 
 #client-gui {
@@ -92,4 +88,7 @@ h4.title {
     margin-left: auto;
     margin-right: auto;
     width: 100%;
+    min-width: 1250px;
+    margin: 0px;
+    padding: 0px;
 }
