@@ -1,4 +1,4 @@
-var dir = "";
+var dir = '';
 
 $.post("/queryFilesystem", {path : dir}, function(responseJSON) {
 	var responseObject = JSON.parse(responseJSON);

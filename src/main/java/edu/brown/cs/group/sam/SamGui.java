@@ -540,6 +540,9 @@ public class SamGui extends SparkGui {
     public Object handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
       String path = GSON.fromJson(qm.value("path"), String.class);
+      if (path == null) {
+        path = "";
+      }
       FilesystemViewer viewer = new FilesystemViewer(path);
 
       return GSON.toJson(viewer);

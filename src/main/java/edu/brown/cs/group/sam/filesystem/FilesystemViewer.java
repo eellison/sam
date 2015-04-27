@@ -42,7 +42,7 @@ public class FilesystemViewer {
     List<FilesystemObject> directoriesList = new ArrayList<>();
 
     File[] directory = path.listFiles();
-    if (path.equals("")) {
+    if (path.getName().equals("")) {
       directory = File.listRoots();
     }
 
