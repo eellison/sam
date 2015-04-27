@@ -16,14 +16,6 @@ import org.farng.mp3.AbstractMP3Tag;
 import org.farng.mp3.MP3File;
 import org.farng.mp3.TagException;
 
-import spark.ModelAndView;
-import spark.QueryParamsMap;
-import spark.Request;
-import spark.Response;
-import spark.Route;
-import spark.Spark;
-import spark.TemplateViewRoute;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -34,6 +26,14 @@ import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
 import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
 import edu.brown.cs.group.sam.server.MusicServer;
 import edu.brown.cs.group.sam.sparkgui.SparkGui;
+
+import spark.ModelAndView;
+import spark.QueryParamsMap;
+import spark.Request;
+import spark.Response;
+import spark.Route;
+import spark.Spark;
+import spark.TemplateViewRoute;
 
 /**
  * Class that extends the basic implementation of a spark graphical user
@@ -213,18 +213,16 @@ public class SamGui extends SparkGui {
     public Object handle(Request req, Response res) {
 
       QueryParamsMap map = req.queryMap();
-      
+
       String id = map.value("id");
       System.out.println(id);
       Map<String, ClientPoint> clients = ap.getClients();
       double weight = 1;
-      if (ap.getCoordinate()==null) {
+      if (ap.getCoordinate() == null) {
         weight = 1;
-      }
-      else if (ap.getClients().get(id)==null) {
+      } else if (ap.getClients().get(id) == null) {
         weight = 1;
-      }
-      else {
+      } else {
         weight = ap.getVolume(id);
       }
       Map<String, Object> variables = ImmutableMap.of("volume", weight);
@@ -249,18 +247,19 @@ public class SamGui extends SparkGui {
     public Object handle(Request request, Response response) {
 
       Map<String, ClientPoint> allClients = ap.getClients();
-      List<HashMap<String, Object>> clientInfo = new ArrayList<HashMap<String, Object>>();
-      for (ClientPoint c: allClients.values()) {
-        
+      List<HashMap<String, Object>> clientInfo =
+          new ArrayList<HashMap<String, Object>>();
+      for (ClientPoint c : allClients.values()) {
+
         HashMap<String, Object> client = new HashMap<String, Object>();
         client.put("x", c.getPoint().getCoordinate().x);
         client.put("y", c.getPoint().getCoordinate().y);
         client.put("id", c.getId());
         clientInfo.add(client);
-      } 
+      }
       Map<String, Object> variables =
           ImmutableMap.of("clients", clientInfo);
-      
+
       return GSON.toJson(variables);
     }
   }
@@ -313,7 +312,6 @@ public class SamGui extends SparkGui {
       String y1 = map.value("y");
       String id = map.value("id");
       String name = request.queryMap().value("name");
-
 
       System.out.println(x1);
       System.out.println(request);
@@ -390,7 +388,7 @@ public class SamGui extends SparkGui {
 
       Map<String, Object> variables =
           new ImmutableMap.Builder<String, Object>().build();
-      
+
       return GSON.toJson(variables);
     }
   }
@@ -425,22 +423,23 @@ public class SamGui extends SparkGui {
     }
 
   }
-  
+
   private static class MusicDirectoryHandler implements Route {
 
     private static final Map<String, Song> SONGS = new HashMap<>();
     private static final List<String> DECODED_TYPES = Arrays.asList("4xm",
-        "MTV", "RoQ", "aac", "ac3", "aiff", "alaw", "amr", "apc", "ape", "asf",
-        "au", "avi", "avs", "bethsoftvid", "c93", "daud", "dsicin", "dts", "dv",
-        "dxa", "ea", "ea_cdata", "ffm", "film_cpk", "flac", "flic", "flv",
-        "gif", "gxf", "h261", "h263", "h264", "idcin", "image2", "image2pipe",
-        "ingenient", "ipmovie", "libnut", "m4v", "matroska", "mjpeg", "mm",
-        "mmf", "mov,mp4,m4a,3gp,3g2,mj2", "mp3", "mpc", "mpc8", "mpeg",
-        "mpegts", "mpegtsraw", "mpegvideo", "mulaw", "mxf", "nsv", "nut", "nuv",
-        "ogg", "psxstr", "rawvideo", "redir", "rm", "rtsp", "s16be", "s16le",
-        "s8", "sdp", "shn", "siff", "smk", "sol", "swf", "thp", "tiertexseq",
-        "tta", "txd", "u16be", "u16le", "u8", "vc1", "vmd", "voc", "wav",
-        "wc3movie", "wsaud", "wsvqa", "wv", "yuv4mpegpipe");
+        "MTV", "RoQ", "aac", "ac3", "aiff", "alaw", "amr", "apc", "ape",
+        "asf", "au", "avi", "avs", "bethsoftvid", "c93", "daud", "dsicin",
+        "dts", "dv", "dxa", "ea", "ea_cdata", "ffm", "film_cpk", "flac",
+        "flic", "flv", "gif", "gxf", "h261", "h263", "h264", "idcin",
+        "image2", "image2pipe", "ingenient", "ipmovie", "libnut", "m4v",
+        "matroska", "mjpeg", "mm", "mmf", "mov,mp4,m4a,3gp,3g2,mj2",
+        "mp3", "mpc", "mpc8", "mpeg", "mpegts", "mpegtsraw", "mpegvideo",
+        "mulaw", "mxf", "nsv", "nut", "nuv", "ogg", "psxstr", "rawvideo",
+        "redir", "rm", "rtsp", "s16be", "s16le", "s8", "sdp", "shn",
+        "siff", "smk", "sol", "swf", "thp", "tiertexseq", "tta", "txd",
+        "u16be", "u16le", "u8", "vc1", "vmd", "voc", "wav", "wc3movie",
+        "wsaud", "wsvqa", "wv", "yuv4mpegpipe");
 
     private class Song {
       private String title;
@@ -448,7 +447,8 @@ public class SamGui extends SparkGui {
       private String artist;
       private String filePath;
 
-      public Song(String title, String album, String artist, String filePath) {
+      public Song(String title, String album, String artist,
+          String filePath) {
         this.title = title;
         this.album = album;
         this.artist = artist;
@@ -475,12 +475,12 @@ public class SamGui extends SparkGui {
       for (File f : files) {
         String[] fileNameArr = f.getName().split("\\.");
         String fileType = "";
-        
+
         if (fileNameArr.length > 1) {
           fileType = fileNameArr[1];
         }
-        
-        if(fileType.equalsIgnoreCase("mp3")) {
+
+        if (fileType.equalsIgnoreCase("mp3")) {
           try {
             songs.add(makeSong(f));
           } catch (IOException e) {
@@ -512,10 +512,10 @@ public class SamGui extends SparkGui {
           }
         }
       }
-      
+
       return GSON.toJson(songs.toArray(new Song[0]));
     }
-    
+
     private Song makeSong(File mp3File) throws IOException, TagException {
       MP3File mp3 = new MP3File(mp3File);
       AbstractMP3Tag tag;
@@ -528,7 +528,7 @@ public class SamGui extends SparkGui {
       } else {
         return new Song("", "", "", mp3File.getAbsolutePath());
       }
-      
+
       return new Song(tag.getSongTitle(), tag.getAlbumTitle(),
           tag.getLeadArtist(), mp3File.getAbsolutePath());
     }
@@ -539,12 +539,13 @@ public class SamGui extends SparkGui {
     @Override
     public Object handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
-      String path = GSON.fromJson(qm.value("path"), String.class);
+      String path = qm.value("path");
+
       if (path == null) {
         path = "";
       }
-      FilesystemViewer viewer = new FilesystemViewer(path);
 
+      FilesystemViewer viewer = new FilesystemViewer(path);
       return GSON.toJson(viewer);
     }
 

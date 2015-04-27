@@ -1,32 +1,36 @@
-var dir = '';
+var START_DIR = '';
 
-$.post("/queryFilesystem", {path : dir}, function(responseJSON) {
-	var responseObject = JSON.parse(responseJSON);
-	var files = responseObject.files;
-	var directories = responseObject.directories;
+function queryFilesystem(dir) {
+	$.post("/queryFilesystem", {path : dir}, function(responseJSON) {
+		var responseObject = JSON.parse(responseJSON);
+		var files = responseObject.files;
+		var directories = responseObject.directories;
 
-	files.forEach(function(elem) {
-		var song = document.createElement("li");
-		var info = elem.name + " " + elem.path;
-		song.appendChild(document.createTextNode(info));
-		song.addEventListener('click', function(e) {
-			var song_info = $(this).text();
+		files.forEach(function(elem) {
+			var file = document.createElement("li");
+			var info = elem.name + " " + elem.path;
+			file.appendChild(document.createTextNode(info));
+			file.addEventListener('click', function(e) {
+				queryFilesystem(elem.path);
+			});
+
+			$("#songs-ul").append(file);
 		});
 
-		$( "#songs-ul" ).append(song);
-	});
-
-	directories.forEach(function(elem) {
-		var song = document.createElement("li");
-		var info = elem.name + " " + elem.path;
-		song.appendChild(document.createTextNode(info));
-		song.addEventListener('click', function(e) {
-			var song_info = $(this).text();
+		directories.forEach(function(elem) {
+			var directory = document.createElement("li");
+			var info = elem.name + " " + elem.path;
+			directory.appendChild(document.createTextNode(info));
+			directory.addEventListener('click', function(e) {
+				queryFilesystem(elem.path);
+			});
+			
+			$("#songs-ul").append(directory);
 		});
-		
-		$( "#songs-ul" ).append(song);
 	});
-});
+}
+
+queryFilesystem(START_DIR);
 
 /*
 $( "#submit" ).click(function () {
