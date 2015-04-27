@@ -1,3 +1,34 @@
+var dir = "";
+
+$.post("/queryFilesystem", {path : dir}, function(responseJSON) {
+	var responseObject = JSON.parse(responseJSON);
+	var files = responseObject.files;
+	var directories = responseObject.directories;
+
+	files.forEach(function(elem) {
+		var song = document.createElement("li");
+		var info = elem.name + " " + elem.path;
+		song.appendChild(document.createTextNode(info));
+		song.addEventListener('click', function(e) {
+			var song_info = $(this).text();
+		});
+
+		$( "#songs-ul" ).append(song);
+	});
+
+	directories.forEach(function(elem) {
+		var song = document.createElement("li");
+		var info = elem.name + " " + elem.path;
+		song.appendChild(document.createTextNode(info));
+		song.addEventListener('click', function(e) {
+			var song_info = $(this).text();
+		});
+		
+		$( "#songs-ul" ).append(song);
+	});
+});
+
+/*
 $( "#submit" ).click(function () {
   var dir = $( "#dir" )[0].value;
   var encode = $( "#encode" )[0].value;
@@ -20,6 +51,7 @@ $( "#submit" ).click(function () {
 	});
   });
 });
+*/
 
 /*$(".form-group #directory-select").change(function() {
 	var soundFiles = findSoundFiles($( ".form-group #directory-select" )[0].files);
