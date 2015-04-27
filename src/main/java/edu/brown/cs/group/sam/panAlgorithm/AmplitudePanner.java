@@ -118,7 +118,7 @@ public class AmplitudePanner {
       currentPoint = c1;
     }
 
-    if (currentPoint == null || clients.size() == 1) {
+    if (currentPoint == null || clients.size() <= 1) {
       Set<String> keys = clients.keySet();
       Map<String, Double> temp = new HashMap<String, Double>();
       for (String s : keys) {
@@ -136,8 +136,8 @@ public class AmplitudePanner {
 
     double dist = 0;
     double fade = 1;
-
-    if (!convexHull.getConvexHull().contains(p1)) {
+    if (convexHull!=null && 
+        !convexHull.getConvexHull().contains(p1)) {
       Coordinate cnew = placeWithinHull(p1, dist);
       double newDist = totalDistAway(cnew);
 
@@ -247,6 +247,10 @@ public class AmplitudePanner {
 
   public double getVolume(String id) {
     return currentWeighting.get(id);
+  }
+
+  public Coordinate getCoordinate() {
+    return currentPoint;
   }
 
 }

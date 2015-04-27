@@ -7,7 +7,7 @@ import joptsimple.OptionSpec;
 public class Main {
   private String[] args;
   private static final int DEFAULT_PORT = 3333;
-  private static final int DEFAULT_S_PORT = 7777;
+  private static final int DEFAULT_S_PORT = 7780;
   private static final String DEFAULT_ADDR = "localhost";
 
   public static void main(String[] args) {
