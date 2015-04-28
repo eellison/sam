@@ -73,6 +73,7 @@ public class SamGui extends SparkGui {
    * @param port The port number at which to run the spark server
    */
   public void runSparkServer() {
+    
     super.runSparkServer(port);
 
     // set up spark get requests to set up the pages

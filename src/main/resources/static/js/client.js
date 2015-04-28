@@ -24,6 +24,9 @@ var updateSongTitleTimer;
 var updateVolumeTimer;
 var updateClientPositions;
 
+var time = new Date();
+time = Date(NTP.fixTime(time.getTime()));
+
 $("#clients-canvas").click(function(event) {
 	if (connected) {
 		var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
