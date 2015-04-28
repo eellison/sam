@@ -1,16 +1,18 @@
-var START_DIR = '';
+var START_DIR = "";
 
 function queryFilesystem(dir) {
 	$.post("/queryFilesystem", {path : dir}, function(responseJSON) {
+		$("#songs-ul").empty();
+
 		var responseObject = JSON.parse(responseJSON);
 		var files = responseObject.files;
 		var directories = responseObject.directories;
 
 		files.forEach(function(elem) {
-			var file = document.createElement("li");
+			var file = $("<button></button>");
+			file.text(elem.path);
 			var info = elem.name + " " + elem.path;
-			file.appendChild(document.createTextNode(info));
-			file.addEventListener('click', function(e) {
+			file.on('click', function(e) {
 				queryFilesystem(elem.path);
 			});
 
@@ -18,10 +20,10 @@ function queryFilesystem(dir) {
 		});
 
 		directories.forEach(function(elem) {
-			var directory = document.createElement("li");
+			var directory = $("<button></button>");
+			directory.text(elem.path);
 			var info = elem.name + " " + elem.path;
-			directory.appendChild(document.createTextNode(info));
-			directory.addEventListener('click', function(e) {
+			directory.on('click', function(e) {
 				queryFilesystem(elem.path);
 			});
 			
