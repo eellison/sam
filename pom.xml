@@ -18,9 +18,22 @@
           <id>Spark repository</id>
           <url>http://www.sparkjava.com/nexus/content/repositories/spark/</url>
     </repository>
+
+    <repository>
+      <id>in-project</id>
+      <name>In Project Repo</name>
+      <url>file://${project.basedir}/libs</url>
+    </repository>
+
   </repositories>
 
   <dependencies>
+    <dependency>
+      <artifactId>jave</artifactId>
+      <groupId>it.sauronsoftware</groupId>
+      <version>1.0.2</version>
+    </dependency>
+
     <dependency>
       <groupId>net.sf.jopt-simple</groupId>
       <artifactId>jopt-simple</artifactId>

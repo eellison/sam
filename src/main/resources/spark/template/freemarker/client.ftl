@@ -36,10 +36,6 @@
 </#assign>
 
 <#assign pagescripts>
-	<script language="javascript" src="/js/prototype.js"></script>
-	<script language="javascript" src="/js/NTP.js"></script>
-	<script src="js/socket.io.js"></script>
-	<script src="js/client.js"></script>
-	NTP.sync();
-</#assign>
+<script src="js/socket.io.js"></script>
+<script src="js/client.js"></script></#assign>
 <#include "main.ftl">
