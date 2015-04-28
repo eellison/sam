@@ -10,7 +10,7 @@ function queryFilesystem(dir) {
 
 		files.forEach(function(elem) {
 			var file = $("<button></button>");
-			file.text(elem.path);
+			file.text(elem.name);
 			var info = elem.name + " " + elem.path;
 			file.on('click', function(e) {
 				queryFilesystem(elem.path);
@@ -21,7 +21,7 @@ function queryFilesystem(dir) {
 
 		directories.forEach(function(elem) {
 			var directory = $("<button></button>");
-			directory.text(elem.path);
+			directory.text(elem.name);
 			var info = elem.name + " " + elem.path;
 			directory.on('click', function(e) {
 				queryFilesystem(elem.path);
