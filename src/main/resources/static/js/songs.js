@@ -19,7 +19,7 @@ function queryFilesystem(dir) {
 		});
 
 		files.forEach(function(elem) {
-			var file = $("<button class='folder-button'></button>");
+			var file = $("<button class='file-button'></button>");
 			
 			file.on('click', function(e) {
 				queryFilesystem(elem.path);
