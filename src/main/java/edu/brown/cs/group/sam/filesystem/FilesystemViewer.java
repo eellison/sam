@@ -43,10 +43,14 @@ public class FilesystemViewer {
 
     File[] directory = path.listFiles();
     if (path.getName().equals("")) {
-      directory = File.listRoots();
+      directory = new File(System.getProperty("user.home")).listFiles();
     }
 
     for (File fileOrDirectory : directory) {
+      if (fileOrDirectory.isHidden()) {
+        continue;
+      }
+
       if (fileOrDirectory.isFile()) {
         filesList.add(new FilesystemObject(fileOrDirectory.getName(), fileOrDirectory.getAbsolutePath()));
       } else if (fileOrDirectory.isDirectory()) {
