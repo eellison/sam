@@ -73,7 +73,7 @@ canvas {
     display: block;
     border: 1px solid #000000;
     border-radius: 0px;
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
 h2.title {
@@ -91,4 +91,13 @@ h4.title {
     min-width: 1250px;
     margin: 0px;
     padding: 0px;
+}
+
+.folder-button {
+    height: 100px;
+    width: 100px;
+    background: url("../images/folder.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    border: 0px;
 }

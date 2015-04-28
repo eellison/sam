@@ -8,26 +8,24 @@ function queryFilesystem(dir) {
 		var files = responseObject.files;
 		var directories = responseObject.directories;
 
-		files.forEach(function(elem) {
-			var file = $("<button></button>");
-			file.text(elem.name);
-			var info = elem.name + " " + elem.path;
-			file.on('click', function(e) {
-				queryFilesystem(elem.path);
-			});
-
-			$("#songs-ul").append(file);
-		});
-
 		directories.forEach(function(elem) {
-			var directory = $("<button></button>");
-			directory.text(elem.name);
-			var info = elem.name + " " + elem.path;
+			var directory = $("<button class='folder-button'></button>");
+			
 			directory.on('click', function(e) {
 				queryFilesystem(elem.path);
 			});
 			
 			$("#songs-ul").append(directory);
+		});
+
+		files.forEach(function(elem) {
+			var file = $("<button class='folder-button'></button>");
+			
+			file.on('click', function(e) {
+				queryFilesystem(elem.path);
+			});
+
+			$("#songs-ul").append(file);
 		});
 	});
 }
