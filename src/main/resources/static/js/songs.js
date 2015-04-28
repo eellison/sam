@@ -1,3 +1,38 @@
+var START_DIR = "";
+
+function queryFilesystem(dir) {
+	$.post("/queryFilesystem", {path : dir}, function(responseJSON) {
+		$("#songs-ul").empty();
+
+		var responseObject = JSON.parse(responseJSON);
+		var files = responseObject.files;
+		var directories = responseObject.directories;
+
+		directories.forEach(function(elem) {
+			var directory = $("<button class='folder-button'></button>");
+			
+			directory.on('click', function(e) {
+				queryFilesystem(elem.path);
+			});
+			
+			$("#songs-ul").append(directory);
+		});
+
+		files.forEach(function(elem) {
+			var file = $("<button class='folder-button'></button>");
+			
+			file.on('click', function(e) {
+				queryFilesystem(elem.path);
+			});
+
+			$("#songs-ul").append(file);
+		});
+	});
+}
+
+queryFilesystem(START_DIR);
+
+/*
 $( "#submit" ).click(function () {
   var dir = $( "#dir" )[0].value;
   var encode = $( "#encode" )[0].value;
@@ -20,6 +55,7 @@ $( "#submit" ).click(function () {
 	});
   });
 });
+*/
 
 /*$(".form-group #directory-select").change(function() {
 	var soundFiles = findSoundFiles($( ".form-group #directory-select" )[0].files);
