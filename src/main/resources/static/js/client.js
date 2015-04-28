@@ -24,6 +24,9 @@ var updateSongTitleTimer;
 var updateVolumeTimer;
 var updateClientPositions;
 
+var time = new Date();
+time = Date(NTP.fixTime(time.getTime()));
+
 $("#clients-canvas").click(function(event) {
 	if (connected) {
 		var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
@@ -58,6 +61,14 @@ function updateVolume() {
 	$.get("http://" + server_url + "/volume", {id : client_id}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 		volume = responseObject.volume;
+		quick = responseObject.quick;
+		if (quick) {
+			updateVolumeTimer = setInterval(updateVolume, 10);
+		}
+		else {
+			updateVolumeTimer = setInterval(updateVolume, 1000);
+		}
+
 	});
 }
 
@@ -109,7 +120,7 @@ $("#client-connect").click(function(event) {
 	var url = $("#server-url").val();
 	setupClient(url);
 });
-
+var updateVolumeTimer;
 function setupClient(url) {
 	$.post("http://" + url + "/connectClient", {name : "Name"}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
@@ -125,7 +136,7 @@ function setupClient(url) {
 
 			var updateSongTimeTimer = setInterval(updateSongTime, 1000);
 			var updateSongTitleTimer = setInterval(updateSongTitle, 1000);
-			var updateVolumeTimer = setInterval(updateVolume, 1000);
+			updateVolumeTimer = setInterval(updateVolume, 1000);
 			var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
 		} else {
 			connected = false;

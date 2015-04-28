@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.farng.mp3.AbstractMP3Tag;
@@ -73,6 +74,7 @@ public class SamGui extends SparkGui {
    * @param port The port number at which to run the spark server
    */
   public void runSparkServer() {
+    
     super.runSparkServer(port);
 
     // set up spark get requests to set up the pages
@@ -83,10 +85,11 @@ public class SamGui extends SparkGui {
 
     // set up post handlers for interactions with gui
     Spark.post("/startServer", new StartServerHandler());
-    Spark.get("/volume", new VolumeHandler(ap));
+    AtomicBoolean quickUpdate = new AtomicBoolean();
+    Spark.get("/volume", new VolumeHandler(ap, quickUpdate));
     Spark.post("/connectClient", new ConnectClientHandler(clientId));
     Spark.get("/clients", new ClientPosHandler(ap));
-    Spark.post("/updatePosition", new UpdatePosHandler(ap));
+    Spark.post("/updatePosition", new UpdatePosHandler(ap, quickUpdate));
     Spark.post("/mp3encode", new Mp3EncodeHandler());
     Spark.post("/musicdirectory", new MusicDirectoryHandler());
     Spark.post("/changeFocus", new FocusHandler(ap));
@@ -193,14 +196,16 @@ public class SamGui extends SparkGui {
    */
   private static class VolumeHandler implements Route {
     private AmplitudePanner ap;
+    private AtomicBoolean quickUpdate;
 
     /**
      * Constructed with ap
      *
      * @param ap - amplitude panner needed
      */
-    public VolumeHandler(AmplitudePanner ap) {
+    public VolumeHandler(AmplitudePanner ap, AtomicBoolean quickUpdate) {
       this.ap = ap;
+      this.quickUpdate = quickUpdate;
     }
 
     /**
@@ -225,10 +230,12 @@ public class SamGui extends SparkGui {
       } else {
         weight = ap.getVolume(id);
       }
-      Map<String, Object> variables = ImmutableMap.of("volume", weight);
+      Map<String, Object> variables = ImmutableMap.of("volume", weight, 
+          "quick", quickUpdate.get());
       return GSON.toJson(variables);
     }
-  }
+  }  
+  
 
   /**
    * Class that returns all positions of clients
@@ -294,13 +301,15 @@ public class SamGui extends SparkGui {
    */
   private class UpdatePosHandler implements Route {
     AmplitudePanner ap;
+    AtomicBoolean quickUpdate;
 
     /**
      * Instantiated withh reference to the Amplitude Panner
      *
      * @param ap
      */
-    public UpdatePosHandler(AmplitudePanner ap) {
+    public UpdatePosHandler(AmplitudePanner ap, AtomicBoolean quickUpdate) {
+      this.quickUpdate = quickUpdate;
       this.ap = ap;
     }
 
@@ -311,6 +320,8 @@ public class SamGui extends SparkGui {
       String x1 = map.value("x");
       String y1 = map.value("y");
       String id = map.value("id");
+      Boolean quick = Boolean.parseBoolean(request.queryMap().value("quick"));
+      quickUpdate.set(quick);
       String name = request.queryMap().value("name");
 
       System.out.println(x1);
