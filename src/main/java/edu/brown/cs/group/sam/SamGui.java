@@ -13,9 +13,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-//import org.farng.mp3.AbstractMP3Tag;
-//import org.farng.mp3.MP3File;
-//import org.farng.mp3.TagException;
+import org.farng.mp3.AbstractMP3Tag;
+import org.farng.mp3.MP3File;
+import org.farng.mp3.TagException;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
@@ -90,9 +90,9 @@ public class SamGui extends SparkGui {
     Spark.get("/clients", new ClientPosHandler(ap));
     Spark.post("/updatePosition", new UpdatePosHandler(ap, quickUpdate));
     Spark.post("/mp3encode", new Mp3EncodeHandler());
-//    Spark.post("/musicdirectory", new MusicDirectoryHandler());
+    Spark.post("/musicdirectory", new MusicDirectoryHandler());
     Spark.post("/changeFocus", new FocusHandler(ap));
-//    Spark.post("/queryFilesystem", new FilesystemHandler());
+    Spark.post("/queryFilesystem", new FilesystemHandler());
   }
 
   /**
@@ -433,135 +433,135 @@ public class SamGui extends SparkGui {
     }
 
   }
-//
-//  private static class MusicDirectoryHandler implements Route {
-//
-//    private static final Map<String, Song> SONGS = new HashMap<>();
-//    private static final List<String> DECODED_TYPES = Arrays.asList("4xm",
-//        "MTV", "RoQ", "aac", "ac3", "aiff", "alaw", "amr", "apc", "ape",
-//        "asf", "au", "avi", "avs", "bethsoftvid", "c93", "daud", "dsicin",
-//        "dts", "dv", "dxa", "ea", "ea_cdata", "ffm", "film_cpk", "flac",
-//        "flic", "flv", "gif", "gxf", "h261", "h263", "h264", "idcin",
-//        "image2", "image2pipe", "ingenient", "ipmovie", "libnut", "m4v",
-//        "matroska", "mjpeg", "mm", "mmf", "mov,mp4,m4a,3gp,3g2,mj2",
-//        "mp3", "mpc", "mpc8", "mpeg", "mpegts", "mpegtsraw", "mpegvideo",
-//        "mulaw", "mxf", "nsv", "nut", "nuv", "ogg", "psxstr", "rawvideo",
-//        "redir", "rm", "rtsp", "s16be", "s16le", "s8", "sdp", "shn",
-//        "siff", "smk", "sol", "swf", "thp", "tiertexseq", "tta", "txd",
-//        "u16be", "u16le", "u8", "vc1", "vmd", "voc", "wav", "wc3movie",
-//        "wsaud", "wsvqa", "wv", "yuv4mpegpipe");
-//
-//    private class Song {
-//      private String title;
-//      private String album;
-//      private String artist;
-//      private String filePath;
-//
-//      public Song(String title, String album, String artist,
-//          String filePath) {
-//        this.title = title;
-//        this.album = album;
-//        this.artist = artist;
-//        this.filePath = filePath;
-//
-//        SONGS.put(filePath, this);
-//      }
-//
-//      public Song getSong(String id) {
-//        return SONGS.get(id);
-//      }
-//    }
-//
-//    @Override
-//    public Object handle(Request req, Response res) {
-//      QueryParamsMap qm = req.queryMap();
-//      String musicDirectory = qm.value("dir");
-//      String encode = qm.value("encode");
-//
-//      File[] files = new File(musicDirectory).listFiles();
-//
-//      List<Song> songs = new ArrayList<>();
-//
-//      for (File f : files) {
-//        String[] fileNameArr = f.getName().split("\\.");
-//        String fileType = "";
-//
-//        if (fileNameArr.length > 1) {
-//          fileType = fileNameArr[1];
-//        }
 
-//        if (fileType.equalsIgnoreCase("mp3")) {
-//          try {
-////            songs.add(makeSong(f));
-//          } catch (IOException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-////          } catch (TagException e) {
-////            // TODO Auto-generated catch block
-////            e.printStackTrace();
-////          }
-//        } else {
-//          if (encode.equals("encode")) {
-//            if (DECODED_TYPES.contains(fileType)) {
-//              try {
-//                File mp3File = Mp3Encoder.encode(f);
-////                songs.add(makeSong(mp3File));
-//              } catch (IllegalArgumentException e) {
-//                System.err.println("1");
-//              } catch (InputFormatException e) {
-//                System.err.println(e);
-//                System.err.println("2");
-//              } catch (EncoderException e) {
-//                System.err.println("3");
-//              } catch (IOException e) {
-//                e.printStackTrace();
-////              } catch (TagException e) {
-////                e.printStackTrace();
-//              }
-//            }
-//          }
-////        }
-//      }
+  private static class MusicDirectoryHandler implements Route {
 
-//      return GSON.toJson(songs.toArray(new Song[0]));
-//    }
+    private static final Map<String, Song> SONGS = new HashMap<>();
+    private static final List<String> DECODED_TYPES = Arrays.asList("4xm",
+        "MTV", "RoQ", "aac", "ac3", "aiff", "alaw", "amr", "apc", "ape",
+        "asf", "au", "avi", "avs", "bethsoftvid", "c93", "daud", "dsicin",
+        "dts", "dv", "dxa", "ea", "ea_cdata", "ffm", "film_cpk", "flac",
+        "flic", "flv", "gif", "gxf", "h261", "h263", "h264", "idcin",
+        "image2", "image2pipe", "ingenient", "ipmovie", "libnut", "m4v",
+        "matroska", "mjpeg", "mm", "mmf", "mov,mp4,m4a,3gp,3g2,mj2",
+        "mp3", "mpc", "mpc8", "mpeg", "mpegts", "mpegtsraw", "mpegvideo",
+        "mulaw", "mxf", "nsv", "nut", "nuv", "ogg", "psxstr", "rawvideo",
+        "redir", "rm", "rtsp", "s16be", "s16le", "s8", "sdp", "shn",
+        "siff", "smk", "sol", "swf", "thp", "tiertexseq", "tta", "txd",
+        "u16be", "u16le", "u8", "vc1", "vmd", "voc", "wav", "wc3movie",
+        "wsaud", "wsvqa", "wv", "yuv4mpegpipe");
 
-//    private Song makeSong(File mp3File) throws IOException, TagException {
-//      MP3File mp3 = new MP3File(mp3File);
-//      AbstractMP3Tag tag;
-//      if (mp3.hasID3v1Tag()) {
-//        tag = mp3.getID3v1Tag();
-//      } else if (mp3.hasID3v2Tag()) {
-//        tag = mp3.getID3v2Tag();
-//      } else if (mp3.hasFilenameTag()) {
-//        tag = mp3.getFilenameTag();
-//      } else {
-//        return new Song("", "", "", mp3File.getAbsolutePath());
-//      }
-//
-//      return new Song(tag.getSongTitle(), tag.getAlbumTitle(),
-//          tag.getLeadArtist(), mp3File.getAbsolutePath());
-//    }
-//  }
+    private class Song {
+      private String title;
+      private String album;
+      private String artist;
+      private String filePath;
 
-//  private class FilesystemHandler implements Route {
-//
-//    @Override
-//    public Object handle(Request req, Response res) {
-//      QueryParamsMap qm = req.queryMap();
-//      String path = qm.value("path");
-//
-//      if (path == null) {
-//        path = "";
-//      }
-//
-//      FilesystemViewer viewer = new FilesystemViewer(path);
-//      return GSON.toJson(viewer);
-//    }
-//
-//  }
+      public Song(String title, String album, String artist,
+          String filePath) {
+        this.title = title;
+        this.album = album;
+        this.artist = artist;
+        this.filePath = filePath;
 
-//  public void shutdown() {
-//    server.close();
-//  }
+        SONGS.put(filePath, this);
+      }
+
+      public Song getSong(String id) {
+        return SONGS.get(id);
+      }
+    }
+
+    @Override
+    public Object handle(Request req, Response res) {
+      QueryParamsMap qm = req.queryMap();
+      String musicDirectory = qm.value("dir");
+      String encode = qm.value("encode");
+
+      File[] files = new File(musicDirectory).listFiles();
+
+      List<Song> songs = new ArrayList<>();
+
+      for (File f : files) {
+        String[] fileNameArr = f.getName().split("\\.");
+        String fileType = "";
+
+        if (fileNameArr.length > 1) {
+          fileType = fileNameArr[1];
+        }
+
+        if (fileType.equalsIgnoreCase("mp3")) {
+          try {
+            songs.add(makeSong(f));
+          } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          } catch (TagException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
+        } else {
+          if (encode.equals("encode")) {
+            if (DECODED_TYPES.contains(fileType)) {
+              try {
+                File mp3File = Mp3Encoder.encode(f);
+                songs.add(makeSong(mp3File));
+              } catch (IllegalArgumentException e) {
+                System.err.println("1");
+              } catch (InputFormatException e) {
+                System.err.println(e);
+                System.err.println("2");
+              } catch (EncoderException e) {
+                System.err.println("3");
+              } catch (IOException e) {
+                e.printStackTrace();
+              } catch (TagException e) {
+                e.printStackTrace();
+              }
+            }
+          }
+        }
+      }
+
+      return GSON.toJson(songs.toArray(new Song[0]));
+    }
+
+    private Song makeSong(File mp3File) throws IOException, TagException {
+      MP3File mp3 = new MP3File(mp3File);
+      AbstractMP3Tag tag;
+      if (mp3.hasID3v1Tag()) {
+        tag = mp3.getID3v1Tag();
+      } else if (mp3.hasID3v2Tag()) {
+        tag = mp3.getID3v2Tag();
+      } else if (mp3.hasFilenameTag()) {
+        tag = mp3.getFilenameTag();
+      } else {
+        return new Song("", "", "", mp3File.getAbsolutePath());
+      }
+
+      return new Song(tag.getSongTitle(), tag.getAlbumTitle(),
+          tag.getLeadArtist(), mp3File.getAbsolutePath());
+    }
+  }
+
+  private class FilesystemHandler implements Route {
+
+    @Override
+    public Object handle(Request req, Response res) {
+      QueryParamsMap qm = req.queryMap();
+      String path = qm.value("path");
+
+      if (path == null) {
+        path = "";
+      }
+
+      FilesystemViewer viewer = new FilesystemViewer(path);
+      return GSON.toJson(viewer);
+    }
+
+  }
+
+  public void shutdown() {
+    server.close();
+  }
 }

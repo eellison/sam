@@ -70,7 +70,7 @@ public class Main {
         } catch (InterruptedException e) {
           System.err.println("ERROR: InterruptedException in main");
         } finally {
-//          gui.shutdown();
+          gui.shutdown();
         }
       }
     });
