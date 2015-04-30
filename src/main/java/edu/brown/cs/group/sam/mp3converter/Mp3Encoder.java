@@ -45,20 +45,8 @@ public class Mp3Encoder {
    * @throws EncoderException
    */
   public static File encode(File file) throws IllegalArgumentException, InputFormatException, EncoderException {
-    File source = file;
-    String sourceName = source.getAbsolutePath().split("\\.")[0];
-    File target = new File(sourceName + ".mp3");
-    AudioAttributes audio = new AudioAttributes();
-    audio.setCodec("libmp3lame");
-    audio.setBitRate(new Integer(128000));
-    audio.setChannels(new Integer(1));
-    audio.setSamplingRate(new Integer(44100));
-    EncodingAttributes attrs = new EncodingAttributes();
-    attrs.setFormat("mp3");
-    attrs.setAudioAttributes(audio);
-    Encoder encoder = new Encoder();
-    encoder.encode(source, target, attrs);
-
-    return target;
+    String filePath = file.getAbsolutePath();
+    String encodedFilePath = Mp3Encoder.encode(filePath);
+    return new File(encodedFilePath);
   }
 }
