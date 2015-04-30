@@ -1,1 +1,1 @@
-web:    ./deploy
+web: ./deploy
