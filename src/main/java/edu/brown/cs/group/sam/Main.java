@@ -1,9 +1,5 @@
 package edu.brown.cs.group.sam;
 
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
-import joptsimple.OptionSpec;
-
 public class Main {
   private String[] args;
   private static final int DEFAULT_PORT = 3333;
@@ -23,38 +19,38 @@ public class Main {
    
     
     
-    // parse the arguments
-    OptionParser parser = new OptionParser();
+//    // parse the arguments
+//    OptionParser parser = new OptionParser();
+//
+//    OptionSpec<Integer> portSpec =
+//        parser.accepts("port").withRequiredArg().ofType(Integer.class);
+//    OptionSpec<String> serverSpec =
+//        parser.accepts("server").withRequiredArg().ofType(String.class);
+//    OptionSpec<Integer> serverPortSpec =
+//        parser.accepts("sport").withRequiredArg().ofType(Integer.class);
 
-    OptionSpec<Integer> portSpec =
-        parser.accepts("port").withRequiredArg().ofType(Integer.class);
-    OptionSpec<String> serverSpec =
-        parser.accepts("server").withRequiredArg().ofType(String.class);
-    OptionSpec<Integer> serverPortSpec =
-        parser.accepts("sport").withRequiredArg().ofType(Integer.class);
-
-    OptionSet options = null;
-    try {
-      options = parser.parse(args);
-    } catch (joptsimple.OptionException e) {
-      System.err.println("ERROR: Issue Parsing Arguments");
-      System.exit(1);
-    }
-
+//    OptionSet options = null;
+//    try {
+//      options = parser.parse(args);
+//    } catch (joptsimple.OptionException e) {
+//      System.err.println("ERROR: Issue Parsing Arguments");
+//      System.exit(1);
+//    }
+//
     int port = DEFAULT_PORT;
-    if (options.has("port")) {
-      port = options.valueOf(portSpec);
-    }
+//    if (options.has("port")) {
+//      port = options.valueOf(portSpec);
+//    }
 
     String address = DEFAULT_ADDR;
-    if (options.has("server")) {
-      address = options.valueOf(serverSpec);
-    }
+//    if (options.has("server")) {
+//      address = options.valueOf(serverSpec);
+//    }
 
     int sPort = DEFAULT_S_PORT;
-    if (options.has("sport")) {
-      sPort = options.valueOf(serverPortSpec);
-    }
+//    if (options.has("sport")) {
+//      sPort = options.valueOf(serverPortSpec);
+//    }
 
     // start the gui
     SamGui gui = new SamGui(port, address, sPort);
