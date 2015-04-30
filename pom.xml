@@ -40,6 +40,13 @@
       <version>0.5.4</version>
     </dependency>
 
+
+    <dependency>
+      <groupId>net.sf.javamusictag</groupId>
+      <artifactId>jid3lib</artifactId>
+      <version>0.5.4</version>
+    </dependency>
+
     <dependency>
       <groupId>net.sf.jopt-simple</groupId>
       <artifactId>jopt-simple</artifactId>
