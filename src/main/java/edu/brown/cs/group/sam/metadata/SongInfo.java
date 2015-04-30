@@ -1,6 +1,7 @@
 package edu.brown.cs.group.sam.metadata;
 
 
+
 /**
  * Contains metadata information for a particular song.
  *
@@ -9,19 +10,51 @@ package edu.brown.cs.group.sam.metadata;
  */
 public class SongInfo {
 
+  private String filePath;
   private String title;
   private String album;
   private String artist;
-  private String filePath;
 
   public SongInfo() {}
 
-  public SongInfo(String title, String album, String artist,
-      String filePath) {
+  public SongInfo(String filePath) {
+    this.filePath = filePath;
+  }
+
+  public SongInfo(String filePath, String title,
+      String album, String artist) {
+    this.filePath = filePath;
     this.title = title;
     this.album = album;
     this.artist = artist;
-    this.filePath = filePath;
+  }
+
+  /**
+   * @return the filePath
+   */
+  public String getFilePath() {
+    return filePath;
+  }
+
+  /**
+   * @return the title
+   */
+  public String getTitle() {
+    return title;
+  }
+
+  /**
+   * @return the album
+   */
+  public String getAlbum() {
+    return album;
+  }
+
+  /**
+   * @return the artist
+   */
+  public String getArtist() {
+    return artist;
   }
 
 }

@@ -1,12 +1,18 @@
 package edu.brown.cs.group.sam;
-import static spark.Spark.*;
-import spark.*;
+
+import java.sql.SQLException;
+
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
 
 public class Main {
   private String[] args;
   private static final int DEFAULT_PORT = 3333;
   private static final int DEFAULT_S_PORT = 7780;
   private static final String DEFAULT_ADDR = "localhost";
+  private static final String DEFAULT_DB = 
+      "src/main/resources/static/metadata/metadata.sqlite3";
 
   public static void main(String[] args) {
     new Main(args).run();
@@ -18,18 +24,25 @@ public class Main {
 
   /* parse arguments then start spark gui */
   private void run() {
-   
-    
-    
-//    // parse the arguments
-//    OptionParser parser = new OptionParser();
-//
-//    OptionSpec<Integer> portSpec =
-//        parser.accepts("port").withRequiredArg().ofType(Integer.class);
-//    OptionSpec<String> serverSpec =
-//        parser.accepts("server").withRequiredArg().ofType(String.class);
-//    OptionSpec<Integer> serverPortSpec =
-//        parser.accepts("sport").withRequiredArg().ofType(Integer.class);
+    // parse the arguments
+    OptionParser parser = new OptionParser();
+
+    OptionSpec<Integer> portSpec =
+        parser.accepts("port").withRequiredArg().ofType(Integer.class);
+    OptionSpec<String> serverSpec =
+        parser.accepts("server").withRequiredArg().ofType(String.class);
+    OptionSpec<Integer> serverPortSpec =
+        parser.accepts("sport").withRequiredArg().ofType(Integer.class);
+    OptionSpec<String> dbSpec =
+        parser.accepts("db").withRequiredArg().ofType(String.class);
+
+    OptionSet options = null;
+    try {
+      options = parser.parse(args);
+    } catch (joptsimple.OptionException e) {
+      System.err.println("ERROR: Issue Parsing Arguments");
+      System.exit(1);
+    }
 
 //    OptionSet options = null;
 //    try {
@@ -64,23 +77,36 @@ public class Main {
     
     
 
-//     start the gui
-    SamGui gui = new SamGui(port, address, sPort);
-    gui.runSparkServer();
 
-//     add a hook to shut down the server:
-    Thread mainThread = Thread.currentThread();
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-        try {
-          mainThread.join();
-        } catch (InterruptedException e) {
-          System.err.println("ERROR: InterruptedException in main");
-        } finally {
-          gui.shutdown();
+    String db = DEFAULT_DB;
+    if (options.has("db")) {
+      db = options.valueOf(dbSpec);
+    }
+
+    // start the gui
+    
+    try {
+      SamGui gui = new SamGui(port, address, sPort, db);
+      gui.runSparkServer();
+
+      // add a hook to shut down the server:
+      Thread mainThread = Thread.currentThread();
+      Runtime.getRuntime().addShutdownHook(new Thread() {
+        @Override
+        public void run() {
+          try {
+            mainThread.join();
+          } catch (InterruptedException e) {
+            System.err.println("ERROR: InterruptedException in main");
+          } finally {
+            gui.shutdown();
+          }
         }
-      }
-    });
+      });
+    } catch (SQLException e1) {
+      // TODO Auto-generated catch block
+      // not sure if this try catch block is the best idea... 
+      e1.printStackTrace();
+    }
   }
 }

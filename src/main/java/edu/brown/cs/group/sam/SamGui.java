@@ -1,10 +1,10 @@
 package edu.brown.cs.group.sam;
 
 import it.sauronsoftware.jave.EncoderException;
-import it.sauronsoftware.jave.InputFormatException;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,16 +13,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
-import com.vividsolutions.jts.geom.Coordinate;
+import org.apache.tika.exception.TikaException;
+import org.xml.sax.SAXException;
 
-import edu.brown.cs.group.sam.filesystem.FilesystemViewer;
-import edu.brown.cs.group.sam.mp3converter.Mp3Encoder;
-import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
-import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
-import edu.brown.cs.group.sam.server.MusicServer;
-import edu.brown.cs.group.sam.sparkgui.SparkGui;
 import spark.ModelAndView;
 import spark.QueryParamsMap;
 import spark.Request;
@@ -30,6 +23,20 @@ import spark.Response;
 import spark.Route;
 import spark.Spark;
 import spark.TemplateViewRoute;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
+import com.vividsolutions.jts.geom.Coordinate;
+
+import edu.brown.cs.group.sam.filesystem.FilesystemViewer;
+import edu.brown.cs.group.sam.metadata.MetadataQuery;
+import edu.brown.cs.group.sam.metadata.MetadataReader;
+import edu.brown.cs.group.sam.metadata.SongInfo;
+import edu.brown.cs.group.sam.mp3converter.Mp3Encoder;
+import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
+import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
+import edu.brown.cs.group.sam.server.MusicServer;
+import edu.brown.cs.group.sam.sparkgui.SparkGui;
 
 /**
  * Class that extends the basic implementation of a spark graphical user
@@ -48,18 +55,21 @@ public class SamGui extends SparkGui {
   private int port;
   private String serverAddress;
   private int serverPort;
-  private edu.brown.cs.group.sam.server.MusicServer server;
+  private MusicServer server;
   private AmplitudePanner ap;
   private Map<String, ClientPoint> allClients;
   private AtomicInteger clientId;
+  private MetadataQuery mq;
 
-  public SamGui(int port, String address, int sPort) {
+  public SamGui(int port, String address, int sPort, String db)
+      throws SQLException {
     this.port = port;
     serverAddress = address;
     serverPort = sPort;
     ap = new AmplitudePanner();
     allClients = new HashMap<String, ClientPoint>();
     clientId = new AtomicInteger();
+    mq = new MetadataQuery(db);
   }
 
   /**
@@ -86,9 +96,11 @@ public class SamGui extends SparkGui {
     Spark.get("/clients", new ClientPosHandler(ap));
     Spark.post("/updatePosition", new UpdatePosHandler(ap, quickUpdate));
     Spark.post("/mp3encode", new Mp3EncodeHandler());
-    Spark.post("/musicdirectory", new MusicDirectoryHandler());
+    Spark.post("/chooseMusicDirectory", new MusicDirectoryHandler(mq));
     Spark.post("/changeFocus", new FocusHandler(ap));
     Spark.post("/queryFilesystem", new FilesystemHandler());
+    Spark.post("/playSong", new PlaySongHandler());
+    Spark.post("/editMetadata", new MetadataHandler(mq));
   }
 
   /**
@@ -382,7 +394,7 @@ public class SamGui extends SparkGui {
     @Override
     public Object handle(Request req, Response res) {
       if (server == null) {
-        server = new edu.brown.cs.group.sam.server.MusicServer(serverAddress, serverPort);
+        server = new MusicServer(serverAddress, serverPort);
         server.run();
       } else {
         // just for testing: set file and broadcast
@@ -414,15 +426,9 @@ public class SamGui extends SparkGui {
 
       try {
         return GSON.toJson(Mp3Encoder.encode(song));
-      } catch (IllegalArgumentException e) {
+      } catch (IllegalArgumentException | EncoderException e) {
         // TODO Auto-generated catch block
-        System.err.println("1");
-      } catch (InputFormatException e) {
-        // TODO Auto-generated catch block
-        System.err.println("2");
-      } catch (EncoderException e) {
-        // TODO Auto-generated catch block
-        System.err.println("3");
+        e.printStackTrace();
       }
 
       return song;
@@ -430,55 +436,52 @@ public class SamGui extends SparkGui {
 
   }
 
+  /**
+   * Grabs and loads all metadata info for the songs in the given directory.
+   *
+   * @author young-raekim
+   *
+   */
   private static class MusicDirectoryHandler implements Route {
 
-    private static final Map<String, Song> SONGS = new HashMap<>();
-    private static final List<String> DECODED_TYPES = Arrays.asList("4xm",
+    private static final List<String> DECODEABLE = Arrays.asList("4xm",
         "MTV", "RoQ", "aac", "ac3", "aiff", "alaw", "amr", "apc", "ape",
         "asf", "au", "avi", "avs", "bethsoftvid", "c93", "daud", "dsicin",
         "dts", "dv", "dxa", "ea", "ea_cdata", "ffm", "film_cpk", "flac",
         "flic", "flv", "gif", "gxf", "h261", "h263", "h264", "idcin",
         "image2", "image2pipe", "ingenient", "ipmovie", "libnut", "m4v",
-        "matroska", "mjpeg", "mm", "mmf", "mov,mp4,m4a,3gp,3g2,mj2",
-        "mp3", "mpc", "mpc8", "mpeg", "mpegts", "mpegtsraw", "mpegvideo",
-        "mulaw", "mxf", "nsv", "nut", "nuv", "ogg", "psxstr", "rawvideo",
-        "redir", "rm", "rtsp", "s16be", "s16le", "s8", "sdp", "shn",
-        "siff", "smk", "sol", "swf", "thp", "tiertexseq", "tta", "txd",
+        "matroska", "mjpeg", "mm", "mmf", "mov", "mp4", "m4a", "3gp", "3g2",
+        "mj2", "mp3", "mpc", "mpc8", "mpeg", "mpegts", "mpegtsraw",
+        "mpegvideo", "mulaw", "mxf", "nsv", "nut", "nuv", "ogg", "psxstr",
+        "rawvideo", "redir", "rm", "rtsp", "s16be", "s16le", "s8", "sdp",
+        "shn", "siff", "smk", "sol", "swf", "thp", "tiertexseq", "tta", "txd",
         "u16be", "u16le", "u8", "vc1", "vmd", "voc", "wav", "wc3movie",
         "wsaud", "wsvqa", "wv", "yuv4mpegpipe");
 
-    private class Song {
-      private String title;
-      private String album;
-      private String artist;
-      private String filePath;
+    private MetadataQuery mq;
 
-      public Song(String title, String album, String artist,
-          String filePath) {
-        this.title = title;
-        this.album = album;
-        this.artist = artist;
-        this.filePath = filePath;
-
-        SONGS.put(filePath, this);
-      }
-
-      public Song getSong(String id) {
-        return SONGS.get(id);
-      }
+    public MusicDirectoryHandler(MetadataQuery mq) {
+      this.mq = mq;
     }
 
     @Override
     public Object handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
       String musicDirectory = qm.value("dir");
-      String encode = qm.value("encode");
 
       File[] files = new File(musicDirectory).listFiles();
 
-      List<Song> songs = new ArrayList<>();
+      List<SongInfo> songs = getSongInfoFromFlattenedDirectory(files, new ArrayList<>());
 
+      return GSON.toJson(songs.toArray(new SongInfo[0]));
+    }
+
+    private List<SongInfo> getSongInfoFromFlattenedDirectory(File[] files, List<SongInfo> songs) {
       for (File f : files) {
+        if (f.isDirectory()) {
+          songs.addAll(getSongInfoFromFlattenedDirectory(f.listFiles(), songs));
+        }
+
         String[] fileNameArr = f.getName().split("\\.");
         String fileType = "";
 
@@ -486,58 +489,42 @@ public class SamGui extends SparkGui {
           fileType = fileNameArr[1];
         }
 
-//        if (fileType.equalsIgnoreCase("mp3")) {
-//          try {
-//            songs.add(makeSong(f));
-//          } catch (IOException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//          } catch (TagException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//          }
-//        } else {
-//          if (encode.equals("encode")) {
-//            if (DECODED_TYPES.contains(fileType)) {
-//              try {
-//                File mp3File = Mp3Encoder.encode(f);
-//                songs.add(makeSong(mp3File));
-//              } catch (IllegalArgumentException e) {
-//                System.err.println("1");
-//              } catch (InputFormatException e) {
-//                System.err.println(e);
-//                System.err.println("2");
-//              } catch (EncoderException e) {
-//                System.err.println("3");
-//              } catch (IOException e) {
-//                e.printStackTrace();
-//              } catch (TagException e) {
-//                e.printStackTrace();
-//              }
-//            }
-//          }
-//        }
+        if (DECODEABLE.contains(fileType)) {
+          SongInfo si;
+          try {
+            si = mq.getSongInfo(f);
+          } catch (IOException | SAXException | TikaException | SQLException e1) {
+            si = getMissingSongInfo(f);
+          }
+
+          if (si.getFilePath() == null) {
+            si = getMissingSongInfo(f);
+          }
+
+          songs.add(si);
+        }
       }
 
-      return GSON.toJson(songs.toArray(new Song[0]));
+      return songs;
     }
 
-    private Song makeSong(File mp3File) throws IOException {
-//      MP3File mp3 = new MP3File(mp3File);
-//      AbstractMP3Tag tag;
-//      if (mp3.hasID3v1Tag()) {
-//        tag = mp3.getID3v1Tag();
-//      } else if (mp3.hasID3v2Tag()) {
-//        tag = mp3.getID3v2Tag();
-//      } else if (mp3.hasFilenameTag()) {
-//        tag = mp3.getFilenameTag();
-//      } else {
-        return new Song("", "", "", mp3File.getAbsolutePath());
-//      }
-//
-//      return new Song(tag.getSongTitle(), tag.getAlbumTitle(),
-//          tag.getLeadArtist(), mp3File.getAbsolutePath());
+    private SongInfo getMissingSongInfo(File f) {
+      SongInfo si;
+      try {
+        si = MetadataReader.getAudioMetadata(f);
+      } catch (IOException | SAXException | TikaException e) {
+        si = new SongInfo(f.getAbsolutePath());
+      }
+
+      try {
+        mq.insertOrReplaceSongInfo(si);
+      } catch (SQLException e) {
+        // TODO Auto-generated catch block
+      }
+
+      return si;
     }
+
   }
 
   private class FilesystemHandler implements Route {
@@ -553,6 +540,68 @@ public class SamGui extends SparkGui {
 
       FilesystemViewer viewer = new FilesystemViewer(path);
       return GSON.toJson(viewer);
+    }
+
+  }
+
+  private static class PlaySongHandler implements Route {
+
+    @Override
+    public Object handle(Request req, Response res) {
+      QueryParamsMap qm = req.queryMap();
+      String songPath = qm.value("songPath");
+      File song = new File(songPath);
+
+      String[] fileNameArr = song.getName().split("\\.");
+      String fileType = "";
+
+      if (fileNameArr.length > 1) {
+        fileType = fileNameArr[1];
+      }
+
+      if (!fileType.equals(".mp3")) {
+        song = new File(fileNameArr[0] + ".mp3");
+        if (!song.exists()) {
+          try {
+            song = Mp3Encoder.encode(song); //this should
+                                            //effectively be doing nothing
+            /* Do something here to add in metadata */
+          } catch (IllegalArgumentException | EncoderException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
+        }
+      }
+
+      return null; //this needs to change
+    }
+
+  }
+
+  private class MetadataHandler implements Route {
+
+    private MetadataQuery mq;
+
+    public MetadataHandler(MetadataQuery mq) {
+      this.mq = mq;
+    }
+
+    @Override
+    public Object handle(Request req, Response res) {
+      QueryParamsMap qm = req.queryMap();
+      String filePath = qm.value("filePath");
+      String title = qm.value("title");
+      String album = qm.value("album");
+      String artist = qm.value("artist");
+
+      try {
+        mq.insertOrReplaceIntoSongInfo(filePath, title, album, artist);
+      } catch (SQLException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+
+      return null;
     }
 
   }

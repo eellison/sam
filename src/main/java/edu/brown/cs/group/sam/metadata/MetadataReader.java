@@ -32,10 +32,12 @@ public class MetadataReader {
       stream.close();
     }
 
-    String title = metadata.get(TITLE_TAG);
-    String album = metadata.get(ALBUM_TAG);
-    String artist = metadata.get(ARTIST_TAG);
+    return new SongInfo(audioFilePath, metadata.get(TITLE_TAG),
+        metadata.get(ALBUM_TAG), metadata.get(ARTIST_TAG));
+  }
 
-    return new SongInfo(title, album, artist, audioFilePath);
+  public static SongInfo getAudioMetadata(File audioFile) throws
+      IOException, SAXException, TikaException {
+    return MetadataReader.getAudioMetadata(audioFile.getAbsolutePath());
   }
 }
