@@ -13,7 +13,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry excluding="spark/template/freemarker/|spark/template/|spark/|songs/|static/testdirectory/test/|static/testdirectory/test/" including="**/*.java" kind="src" path="src/main/resources"/>
-	<classpathentry kind="src" path="src/main/resources/static/testdirectory/test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>

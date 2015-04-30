@@ -30,7 +30,9 @@ public class FilesystemViewer {
   private FilesystemObject[] directories;
 
   public FilesystemViewer(File path) {
-    setFilesAndDirectories(path);
+    if (path.isDirectory()) {
+      setFilesAndDirectories(path);
+    }
   }
 
   public FilesystemViewer(String path) {
