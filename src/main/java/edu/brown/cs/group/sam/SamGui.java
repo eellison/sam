@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -22,8 +21,8 @@ import edu.brown.cs.group.sam.filesystem.FilesystemViewer;
 import edu.brown.cs.group.sam.mp3converter.Mp3Encoder;
 import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
 import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
+import edu.brown.cs.group.sam.server.MusicServer;
 import edu.brown.cs.group.sam.sparkgui.SparkGui;
-
 import spark.ModelAndView;
 import spark.QueryParamsMap;
 import spark.Request;
@@ -49,7 +48,7 @@ public class SamGui extends SparkGui {
   private int port;
   private String serverAddress;
   private int serverPort;
-  private edu.brown.cs.group.sam.Server.MusicServer server;
+  private edu.brown.cs.group.sam.server.MusicServer server;
   private AmplitudePanner ap;
   private Map<String, ClientPoint> allClients;
   private AtomicInteger clientId;
@@ -383,7 +382,7 @@ public class SamGui extends SparkGui {
     @Override
     public Object handle(Request req, Response res) {
       if (server == null) {
-        server = new edu.brown.cs.group.sam.Server.MusicServer(serverAddress, serverPort);
+        server = new edu.brown.cs.group.sam.server.MusicServer(serverAddress, serverPort);
         server.run();
       } else {
         // just for testing: set file and broadcast

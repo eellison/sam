@@ -1,4 +1,4 @@
-package edu.brown.cs.group.sam.Server;
+package edu.brown.cs.group.sam.server;
 
 import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketIOClient;
