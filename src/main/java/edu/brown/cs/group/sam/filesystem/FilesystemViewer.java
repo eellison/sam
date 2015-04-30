@@ -30,6 +30,10 @@ public class FilesystemViewer {
   private FilesystemObject[] directories;
 
   public FilesystemViewer(File path) {
+    if (path.getName().equals("")) {
+      path = new File(System.getProperty("user.home"));
+    }
+
     if (path.isDirectory()) {
       setFilesAndDirectories(path);
     }
@@ -44,6 +48,7 @@ public class FilesystemViewer {
     List<FilesystemObject> directoriesList = new ArrayList<>();
 
     File[] directory = path.listFiles();
+
     if (path.getName().equals("")) {
       directory = new File(System.getProperty("user.home")).listFiles();
     }
