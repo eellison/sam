@@ -99,6 +99,8 @@ public class SamGui extends SparkGui {
     Spark.post("/chooseMusicDirectory", new MusicDirectoryHandler(mq));
     Spark.post("/changeFocus", new FocusHandler(ap));
     Spark.post("/queryFilesystem", new FilesystemHandler());
+    Spark.post("/playSong", new PlaySongHandler());
+    Spark.post("/editMetadata", new MetadataHandler(mq));
   }
 
   /**
@@ -538,6 +540,68 @@ public class SamGui extends SparkGui {
 
       FilesystemViewer viewer = new FilesystemViewer(path);
       return GSON.toJson(viewer);
+    }
+
+  }
+
+  private static class PlaySongHandler implements Route {
+
+    @Override
+    public Object handle(Request req, Response res) {
+      QueryParamsMap qm = req.queryMap();
+      String songPath = qm.value("songPath");
+      File song = new File(songPath);
+
+      String[] fileNameArr = song.getName().split("\\.");
+      String fileType = "";
+
+      if (fileNameArr.length > 1) {
+        fileType = fileNameArr[1];
+      }
+
+      if (!fileType.equals(".mp3")) {
+        song = new File(fileNameArr[0] + ".mp3");
+        if (!song.exists()) {
+          try {
+            song = Mp3Encoder.encode(song); //this should
+                                            //effectively be doing nothing
+            /* Do something here to add in metadata */
+          } catch (IllegalArgumentException | EncoderException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
+        }
+      }
+
+      return null; //this needs to change
+    }
+
+  }
+
+  private class MetadataHandler implements Route {
+
+    private MetadataQuery mq;
+
+    public MetadataHandler(MetadataQuery mq) {
+      this.mq = mq;
+    }
+
+    @Override
+    public Object handle(Request req, Response res) {
+      QueryParamsMap qm = req.queryMap();
+      String filePath = qm.value("filePath");
+      String title = qm.value("title");
+      String album = qm.value("album");
+      String artist = qm.value("artist");
+
+      try {
+        mq.insertOrReplaceIntoSongInfo(filePath, title, album, artist);
+      } catch (SQLException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+
+      return null;
     }
 
   }
