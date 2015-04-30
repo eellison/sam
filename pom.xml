@@ -115,6 +115,18 @@
           <compilerArgument>-Xlint:all</compilerArgument>
         </configuration>
       </plugin>
+       <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.4</version>
+          <executions>
+              <execution>
+                  <id>copy-dependencies</id>
+                  <phase>package</phase>
+                  <goals><goal>copy-dependencies</goal></goals>
+              </execution>
+          </executions>
+       </plugin>
     </plugins>
   </build>
 
@@ -129,18 +141,6 @@
           <!-- jetty related locations can't be found, just skip. -->
           <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
         </configuration>
-      </plugin>
-      <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-dependency-plugin</artifactId>
-          <version>2.4</version>
-          <executions>
-              <execution>
-                  <id>copy-dependencies</id>
-                  <phase>package</phase>
-                  <goals><goal>copy-dependencies</goal></goals>
-              </execution>
-          </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
