@@ -1,4 +1,4 @@
-package edu.brown.cs.group.sam.Server;
+package edu.brown.cs.group.sam.server;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
