@@ -113,9 +113,29 @@ h4.title {
     margin-top: 10px 10px 10px 10px;
 }
 
+#songs-gui {
+    width: 50%;
+    margin-left: 25%;
+    text-align: center;
+}
+
+#toolbar {
+    width: 500px;
+    height: auto;
+}
+
+#files-div {
+    width: 500px;
+    height: auto;
+    margin-top: 50px;
+    overflow: scroll;
+    float: left;
+}
+
 #songs-div {
     width: 500px;
     height: auto;
     margin-top: 50px;
     overflow: scroll;
+    float: right;
 }
