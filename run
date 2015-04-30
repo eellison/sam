@@ -9,7 +9,6 @@ if [ -z "$TARGET" ]; then
     echo "No jar file in target/, try 'mvn package'".
     exit 1
 fi
-
 # In the pom.xml, we've already explained other what libraries we
 # depend on. Maven downloaded them, and put them "somewhere" (our
 # repository). Now we ask maven to build up the CLASSPATH that let us
