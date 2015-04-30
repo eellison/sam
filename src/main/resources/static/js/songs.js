@@ -2,7 +2,7 @@ var START_DIR = "";
 
 function queryFilesystem(dir) {
 	$.post("/queryFilesystem", {path : dir}, function(responseJSON) {
-		$("#songs-ul").empty();
+		$("#songs-div").empty();
 
 		var responseObject = JSON.parse(responseJSON);
 		var files = responseObject.files;
@@ -15,7 +15,7 @@ function queryFilesystem(dir) {
 				queryFilesystem(elem.path);
 			});
 			
-			$("#songs-ul").append(directory);
+			$("#songs-div").append(directory);
 		});
 
 		files.forEach(function(elem) {
@@ -25,7 +25,7 @@ function queryFilesystem(dir) {
 				queryFilesystem(elem.path);
 			});
 
-			$("#songs-ul").append(file);
+			$("#songs-div").append(file);
 		});
 	});
 }
