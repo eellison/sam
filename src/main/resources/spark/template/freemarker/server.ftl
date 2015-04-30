@@ -16,9 +16,13 @@
 	</div>
 	<div id="server-canvas">
 		<label for="=clientpositions">Client Positions</label></br>
-		<canvas id="clients-canvas">
-			
-		</canvas>
+		<div id="clients-canvas">
+
+		</div>
+
+		<!--<svg id="clients-canvas"></svg>-->
+
+
 		</br>
 		<div class="btn-group" role="btn-group-justified">
 			<button class="btn btn-default" id="clear-focus">Clear Focus</button>
@@ -29,6 +33,7 @@
 </#assign>
 
 <#assign pagescripts>
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 	<script src="js/server.js"></script>
 </#assign>
 <#include "main.ftl">

@@ -1,5 +1,4 @@
 package edu.brown.cs.group.sam;
-
 import java.sql.SQLException;
 
 import joptsimple.OptionParser;
@@ -8,7 +7,7 @@ import joptsimple.OptionSpec;
 
 public class Main {
   private String[] args;
-  private static final int DEFAULT_PORT = 3333;
+  private static final int DEFAULT_PORT = 3334;
   private static final int DEFAULT_S_PORT = 7780;
   private static final String DEFAULT_ADDR = "localhost";
   private static final String DEFAULT_DB = 
