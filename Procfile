@@ -1,1 +1,1 @@
-web: java -cp target/classes:target/dependency/* edu.brown.cs.group.sam.Main
+web:    java -cp target/dependency/*:target/classes edu.brown.cs.group.sam.Main
