@@ -113,6 +113,16 @@ h4.title {
     margin-top: 10px 10px 10px 10px;
 }
 
+.song-button {
+    height: 100px;
+    width: 100px;
+    background: url("../images/song.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+    border: 0px;
+    margin-top: 10px 10px 10px 10px;
+}
+
 #songs-gui {
     width: 50%;
     margin-left: 25%;

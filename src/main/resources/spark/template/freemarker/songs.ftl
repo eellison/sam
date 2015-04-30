@@ -2,8 +2,8 @@
 <div id="songs-gui">
 	<div id="toolbar">
 		<span>
-			<button type="button" class="btn btn-default" float="left">Back</button>
-			<button type="button" class="btn btn-default btn-primary" float="right">Right</button>
+			<button id="back" type="button" class="btn btn-default" float="left">Back</button>
+			<button id="use" type="button" class="btn btn-default btn-primary" float="right">Use</button>
 		</span>
 	</div>
 	<div id="files-div">

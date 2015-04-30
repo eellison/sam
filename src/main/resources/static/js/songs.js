@@ -1,7 +1,10 @@
-var START_DIR = "";
+var current_dir = "";
+var last_dir = "";
 
 function queryFilesystem(dir) {
 	$.post("/queryFilesystem", {path : dir}, function(responseJSON) {
+		last_dir = current_dir;
+		current_dir = dir;
 		$("#files-div").empty();
 
 		var responseObject = JSON.parse(responseJSON);
@@ -22,7 +25,7 @@ function queryFilesystem(dir) {
 			var file = $("<button class='file-button'></button>");
 			
 			file.on('click', function(e) {
-				queryFilesystem(elem.path);
+				
 			});
 
 			$("#files-div").append(file);
@@ -30,7 +33,33 @@ function queryFilesystem(dir) {
 	});
 }
 
-queryFilesystem(START_DIR);
+queryFilesystem(current_dir);
+
+$("#back").click(function(event) {
+
+});
+
+$("#use").click(function(event) {
+	$.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
+		var songs = JSON.parse(responseJSON);
+		songs.forEach(function(elem) {
+			var path = elem.filePath;
+			var title = elem.title;
+			var album = elem.album;
+			var artist = elem.artist;
+
+			var song = $("<button class='song-button'></button>");
+			
+			song.on('click', function(e) {
+				$.post("/playSong", {songPath : path}, function(responseJSON) {
+					alert("Playing " + title + " by " + artist + ".");
+				}
+			});
+
+			$("#songs-div").append(song);
+		});
+	});
+});
 
 /*
 $( "#submit" ).click(function () {
