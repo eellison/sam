@@ -52,35 +52,35 @@ public class Main {
     int sPort = DEFAULT_S_PORT;
 //    if (options.has("sport")) {
 //      sPort = options.valueOf(serverPortSpec);
-//    }
-    Spark.externalStaticFileLocation("src/main/resources/static");
-    Spark.setPort(port);
-    get("/hello", (req, res) -> "Hello World");
-//    Spark.get(new Route("/hello") {
+////    }
+//    setPort(Integer.parseInt(System.getenv("PORT")));
+//    get(new Route("/hello") {
 //       @Override
 //       public Object handle(Request request, Response response) {
 //          return "Hello World!";
 //       }
 //    });
+
+    
     
 
-    // start the gui
-//    SamGui gui = new SamGui(port, address, sPort);
-//    gui.runSparkServer();
+//     start the gui
+    SamGui gui = new SamGui(port, address, sPort);
+    gui.runSparkServer();
 
-    // add a hook to shut down the server:
-//    Thread mainThread = Thread.currentThread();
-//    Runtime.getRuntime().addShutdownHook(new Thread() {
-//      @Override
-//      public void run() {
-//        try {
-//          mainThread.join();
-//        } catch (InterruptedException e) {
-//          System.err.println("ERROR: InterruptedException in main");
-//        } finally {
-//          gui.shutdown();
-//        }
-//      }
-//    });
+//     add a hook to shut down the server:
+    Thread mainThread = Thread.currentThread();
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        try {
+          mainThread.join();
+        } catch (InterruptedException e) {
+          System.err.println("ERROR: InterruptedException in main");
+        } finally {
+          gui.shutdown();
+        }
+      }
+    });
   }
 }
