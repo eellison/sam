@@ -24,6 +24,7 @@ var updateSongTitleTimer;
 var updateVolumeTimer;
 var updateClientPositions;
 
+<<<<<<< HEAD
 
 var ntpClient = require('ntp-client');
  
@@ -39,6 +40,8 @@ ntpClient.getNetworkTime("pool.ntp.org", 123, function(err, date) {
 
 
 
+=======
+>>>>>>> 5e2ba3a4eeb6d6ae805b959cdc00ccf9a7722f47
 $("#clients-canvas").click(function(event) {
 	if (connected) {
 		var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
@@ -83,12 +86,30 @@ function updateVolume() {
 
 	});
 }
-
-$("#client-volume").on("input", function(e) {
-	console.log("Changed volume.");
-	console.log($(this).val());
-	max_volume = $(this).val() / 10;
+var ntpClient = require('ntp-client');
+ 
+ntpClient.getNetworkTime("pool.ntp.org", 123, function(err, date) {
+    if(err) {
+        console.error(err);
+        return;
+    }
+ 
+    console.log("Current time : ");
+    console.log(date); // Mon Jul 08 2013 21:31:31 GMT+0200 (Paris, Madrid (heure d’été)) 
 });
+/*
+$.getTime = function(zone, success) {
+    var url = 'http://json-time.appspot.com/time.json?tz='
+            + zone + '&callback=?';
+    $.getJSON(url, function(o){
+        success && success(new Date(o.datetime), o);
+    });
+};
+ 
+// Usage:
+$.getTime('GMT', function(time){
+    alert(time);
+});*/
 
 /* Update Client Positions */
 function updateClientPositions() {

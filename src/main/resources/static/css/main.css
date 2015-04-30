@@ -98,6 +98,17 @@ h4.title {
     width: 100px;
     background: url("../images/folder.png");
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
     border: 0px;
+    margin-top: 10px 10px 10px 10px;
+}
+
+.file-button {
+    height: 100px;
+    width: 100px;
+    background: url("../images/file.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+    border: 0px;
+    margin-top: 10px 10px 10px 10px;
 }
