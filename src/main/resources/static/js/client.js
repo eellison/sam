@@ -39,45 +39,52 @@ $("#clients-canvas").click(function(event) {
 		$.post("http://" + server_url + "/updatePosition", {id : client_id, x : xPos, y : yPos}, function(responseJSON) {
 			
 		});
+	} else {
+		alert("Not connected to server");
 	}
 });
 
 /* Song Info */
-function updateSongTime() {
-	$.get("http://" + server_url + "/songTime", {id : client_id}, function(responseJSON) {
-		var responseObject = JSON.parse(responseJSON);
-		$("#song-length").text(responseObject.songLength);
-	});
-}
+// function updateSongTime() {
+// 	$.get("http://" + server_url + "/songTime", {id : client_id}, function(responseJSON) {
+// 		var responseObject = JSON.parse(responseJSON);
+// 		$("#song-length").text(responseObject.songLength);
+// 	});
+// }
 
-function updateSongTitle() {
-	$.get("http://" + server_url + "/songTitle", {id : client_id}, function(responseJSON) {
-		var responseObject = JSON.parse(responseJSON);
-		$("#song-title").text(responseObject.songTitle);
-	});
-}
+// function updateSongTitle() {
+// 	$.get("http://" + server_url + "/songTitle", {id : client_id}, function(responseJSON) {
+// 		var responseObject = JSON.parse(responseJSON);
+// 		$("#song-title").text(responseObject.songTitle);
+// 	});
+// }
 
 /* Volume */
 function updateVolume() {
 	$.get("http://" + server_url + "/volume", {id : client_id}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
-		volume = min(responseObject.volume, max_volume);
-		console.log(volume);
+		volume = responseObject.volume;
+		quick = responseObject.quick;
+		if (quick) {
+			clearInterval(updateVolumeTimer);
+			updateVolumeTimer = setInterval(updateVolume, 50);
+		}
+		else {			
+			clearInterval(updateVolumeTimer);
+			updateVolumeTimer = setInterval(updateVolume, 1000);
+		}
+
 	});
 }
 
-$("client-volume").on("change", function(e) {
-	console.log("Changed volume.");
-	console.log($(this).value);
-	max_volume = $(this).value / 10;
-});
-
 /* Update Client Positions */
 function updateClientPositions() {
-	$.get("http://" + server_url + "/clientPositions", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
+	$.get("http://" + server_url + "/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
+		console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
-		var clients = responseObject;
+		var clients = responseObject.clients;
 
+		console.log(clients);
 		draw_clients(clients);
 	});
 }
@@ -90,12 +97,21 @@ function draw_clients(clients) {
 
 	//Get 2D context for canvas drawing
 	var ctx = canvas.getContext("2d");
-	ctx.clearRect(CANVAS_SIZE, CANVAS_SIZE);
+	ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
-	for (client in clients) {
+	for (var i in clients) {
+		var client = clients[i];
+		console.log("drawing");
 		ctx.beginPath();
-		ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
+		console.log(client.x);
+		console.log(client.y);
+		if (client.x != -1 || client.y != -1) {
+			ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
+		}
+
 		ctx.stroke();
+		ctx.font = "18px serif";
+	  	ctx.fillText(client.id, client.x - 10, client.y - 10);
 	}
 }
 
@@ -103,9 +119,9 @@ $("#client-connect").click(function(event) {
 	var url = $("#server-url").val();
 	setupClient(url);
 });
-
+var updateVolumeTimer;
 function setupClient(url) {
-	$.get("http://" + url + "/connectClient", function(responseJSON) {
+	$.post("http://" + url + "/connectClient", {name : "Name"}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 
 		if (!responseObject.error) {
@@ -116,10 +132,10 @@ function setupClient(url) {
 
 			setupSocketConnection(socket_server_url, socket_server_port);
 
-			var updateSongTimeTimer = setInterval(updateSongTime, 10000000);
-			var updateSongTitleTimer = setInterval(updateSongTitle, 10000000);
-			var updateVolumeTimer = setInterval(updateVolume, 100000000);
-			var updateClientPositions = setInterval(updateClientPositions, 100000000);
+			// var updateSongTimeTimer = setInterval(updateSongTime, 1000);
+			// var updateSongTitleTimer = setInterval(updateSongTitle, 1000);
+			updateVolumeTimer = setInterval(updateVolume, 1000);
+			var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
 		} else {
 			connected = false;
 		}

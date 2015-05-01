@@ -16,16 +16,26 @@
 	</div>
 	<div id="server-canvas">
 		<label for="=clientpositions">Client Positions</label></br>
-		<canvas id="clients-canvas">
-			
-		</canvas>
-		<a class="btn btn-default btn-block" href="/songs" role="button" target="_blank">Songs</a>
+		<div id="clients-canvas">
+
+		</div>
+
+		<!--<svg id="clients-canvas"></svg>-->
+
+
+		</br>
+		<div class="btn-group" role="btn-group-justified">
+			<button class="btn btn-default" id="clear-focus">Clear Focus</button>
+			<a class="btn btn-default" href="/songs" role="button" target="_blank">Songs</a>
+		</div>
 	</div>
 </div>
 </#assign>
 
 <#assign pagescripts>
+
 	<script src="js/socket.io.js"></script>
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 	<script src="js/server.js"></script>
 	<script src="http://cdn.peerjs.com/0.3/peer.js"></script>
 </#assign>

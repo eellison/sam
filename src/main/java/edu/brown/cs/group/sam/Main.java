@@ -1,4 +1,5 @@
 package edu.brown.cs.group.sam;
+import java.sql.SQLException;
 
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -6,9 +7,11 @@ import joptsimple.OptionSpec;
 
 public class Main {
   private String[] args;
-  private static final int DEFAULT_PORT = 3333;
-  private static final int DEFAULT_S_PORT = 7777;
+  private static final int DEFAULT_PORT = 3335;
+  private static final int DEFAULT_S_PORT = 7782;
   private static final String DEFAULT_ADDR = "localhost";
+  private static final String DEFAULT_DB = 
+      "src/main/resources/static/metadata/metadata.sqlite3";
 
   public static void main(String[] args) {
     new Main(args).run();
@@ -29,6 +32,8 @@ public class Main {
         parser.accepts("server").withRequiredArg().ofType(String.class);
     OptionSpec<Integer> serverPortSpec =
         parser.accepts("sport").withRequiredArg().ofType(Integer.class);
+    OptionSpec<String> dbSpec =
+        parser.accepts("db").withRequiredArg().ofType(String.class);
 
     OptionSet options = null;
     try {
@@ -38,38 +43,69 @@ public class Main {
       System.exit(1);
     }
 
+//    OptionSet options = null;
+//    try {
+//      options = parser.parse(args);
+//    } catch (joptsimple.OptionException e) {
+//      System.err.println("ERROR: Issue Parsing Arguments");
+//      System.exit(1);
+//    }
+//
     int port = DEFAULT_PORT;
-    if (options.has("port")) {
-      port = options.valueOf(portSpec);
-    }
+//    if (options.has("port")) {
+//      port = options.valueOf(portSpec);
+//    }
 
     String address = DEFAULT_ADDR;
-    if (options.has("server")) {
-      address = options.valueOf(serverSpec);
-    }
+//    if (options.has("server")) {
+//      address = options.valueOf(serverSpec);
+//    }
 
     int sPort = DEFAULT_S_PORT;
-    if (options.has("sport")) {
-      sPort = options.valueOf(serverPortSpec);
+//    if (options.has("sport")) {
+//      sPort = options.valueOf(serverPortSpec);
+////    }
+//    setPort(Integer.parseInt(System.getenv("PORT")));
+//    get(new Route("/hello") {
+//       @Override
+//       public Object handle(Request request, Response response) {
+//          return "Hello World!";
+//       }
+//    });
+
+    
+    
+
+
+    String db = DEFAULT_DB;
+    if (options.has("db")) {
+      db = options.valueOf(dbSpec);
     }
 
     // start the gui
-    SamGui gui = new SamGui(port, address, sPort);
-    gui.runSparkServer();
+    
+    try {
+      SamGui gui = new SamGui(port, address, sPort, db);
+      gui.runSparkServer();
 
-    // add a hook to shut down the server:
-    Thread mainThread = Thread.currentThread();
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-        try {
-          mainThread.join();
-        } catch (InterruptedException e) {
-          System.err.println("ERROR: InterruptedException in main");
-        } finally {
-          gui.shutdown();
+      // add a hook to shut down the server:
+      Thread mainThread = Thread.currentThread();
+      Runtime.getRuntime().addShutdownHook(new Thread() {
+        @Override
+        public void run() {
+          try {
+            mainThread.join();
+          } catch (InterruptedException e) {
+            System.err.println("ERROR: InterruptedException in main");
+          } finally {
+            gui.shutdown();
+          }
         }
-      }
-    });
+      });
+    } catch (SQLException e1) {
+      // TODO Auto-generated catch block
+      // not sure if this try catch block is the best idea... 
+      e1.printStackTrace();
+    }
   }
 }
