@@ -2,10 +2,13 @@ var current_dir = "";
 var last_dirs = [];
 var DIRECTORY_LABEL_LENGTH = 12;
 var FILE_LABEL_LENGTH = 5;
+var filesdiv = $("<div></div>");
+var songsdiv = $("<div></div>");
 
 function queryFilesystem(dir) {
 	$.post("/queryFilesystem", {path : dir}, function(responseJSON) {
-		$("#files-div").empty();
+		filesdiv.remove();
+		filesdiv = $("<ul id='files-div'></ul>");
 
 		last_dirs.push(dir);
 		current_dir = dir;
@@ -21,7 +24,7 @@ function queryFilesystem(dir) {
 				queryFilesystem(elem.path);
 			});
 			
-			$("#files-div").append(directory);
+			filesdiv.append(directory);
 		});
 
 		files.forEach(function(elem) {
@@ -31,8 +34,10 @@ function queryFilesystem(dir) {
 				
 			});
 
-			$("#files-div").append(file);
+			filesdiv.append(file);
 		});
+
+		$("#files-bound-div").append(filesdiv);
 	});
 }
 
@@ -45,17 +50,18 @@ $("#back").click(function(event) {
 });
 
 $("#use").click(function(event) {
-	$("#songs-div").empty();
 	$.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
+		songsdiv.remove();
+		songsdiv = $("<div id='songs-div'></div>");
+
 		var songs = JSON.parse(responseJSON);
-		alert(songs);
 		songs.forEach(function(elem) {
 			var path = elem.filePath;
 			var title = elem.title;
 			var album = elem.album;
 			var artist = elem.artist;
 
-			var song = $("<button class='song-button'></button>");
+			var song = $("<div class='song'><h4>" + title + " by " + artist + "</h4></div>");
 			
 			song.on('click', function(e) {
 				$.post("/playSong", {songPath : path}, function(responseJSON) {
@@ -63,8 +69,10 @@ $("#use").click(function(event) {
 				});
 			});
 
-			$("#songs-div").append(song);
+			songsdiv.append(song);
 		});
+
+		$("#songs-bound-div").append(songsdiv);
 	});
 });
 

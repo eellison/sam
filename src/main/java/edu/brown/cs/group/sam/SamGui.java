@@ -55,14 +55,14 @@ public class SamGui extends SparkGui {
   private int port;
   private String serverAddress;
   private int serverPort;
-  private MusicServer server;
+  private static MusicServer server;
   private AmplitudePanner ap;
   private Map<String, ClientPoint> allClients;
   private AtomicInteger clientId;
   private MetadataQuery mq;
 
   public SamGui(int port, String address, int sPort, String db)
-    throws SQLException {
+      throws SQLException {
     this.port = port;
     serverAddress = address;
     serverPort = sPort;
@@ -297,9 +297,9 @@ public class SamGui extends SparkGui {
 
       Map<String, Object> variables =
           new ImmutableMap.Builder<String, Object>()
-          .put("message", message).put("id", clientNumber)
-          .put("server_url", serverAddress)
-          .put("server_port", serverPort).put("success", 0).build();
+              .put("message", message).put("id", clientNumber)
+              .put("server_url", serverAddress)
+              .put("server_port", serverPort).put("success", 0).build();
 
       return GSON.toJson(variables);
     }
@@ -384,11 +384,11 @@ public class SamGui extends SparkGui {
       Coordinate c1 = new Coordinate(x, y);
       ap.calcluteVolume(c1);
       String message = "Success";
-      
+
       Map<String, ClientPoint> allClients = ap.getClients();
       List<HashMap<String, Object>> clientInfo =
           new ArrayList<HashMap<String, Object>>();
-      
+
       for (ClientPoint c : allClients.values()) {
 
         HashMap<String, Object> client = new HashMap<String, Object>();
@@ -410,7 +410,7 @@ public class SamGui extends SparkGui {
         client.put("volume", volume);
         clientInfo.add(client);
       }
-      
+
       Map<String, Object> variables =
           ImmutableMap.of("message", message, "success", 0, "clients", clientInfo);
       System.out.println(variables);
@@ -434,8 +434,8 @@ public class SamGui extends SparkGui {
 
       Map<String, Object> variables =
           new ImmutableMap.Builder<String, Object>()
-              .put("socket_url", serverAddress)
-              .put("socket_port", serverPort).build();
+          .put("socket_url", serverAddress)
+          .put("socket_port", serverPort).build();
 
       return GSON.toJson(variables);
     }
@@ -497,9 +497,14 @@ public class SamGui extends SparkGui {
     @Override
     public Object handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
-      String musicDirectory = qm.value("dir");
+      String musicDirectoryPath = qm.value("dir");
+      File musicDirectory = new File(musicDirectoryPath);
 
-      File[] files = new File(musicDirectory).listFiles();
+      if (musicDirectory.getName().equals("")) {
+        musicDirectory = new File(System.getProperty("user.home"));
+      }
+
+      File[] files = musicDirectory.listFiles();
 
       List<SongInfo> songs =
           getSongInfoFromFlattenedDirectory(files, new ArrayList<>());
@@ -512,7 +517,7 @@ public class SamGui extends SparkGui {
       for (File f : files) {
         if (f.isDirectory()) {
           songs.addAll(getSongInfoFromFlattenedDirectory(f.listFiles(),
-              songs));
+              new ArrayList<>()));
         }
 
         String[] fileNameArr = f.getName().split("\\.");
@@ -568,10 +573,6 @@ public class SamGui extends SparkGui {
       QueryParamsMap qm = req.queryMap();
       String path = qm.value("path");
 
-      if (path == null) {
-        path = "";
-      }
-
       FilesystemViewer viewer = new FilesystemViewer(path);
       return GSON.toJson(viewer);
     }
@@ -593,7 +594,7 @@ public class SamGui extends SparkGui {
         fileType = fileNameArr[1];
       }
 
-      if (!fileType.equals(".mp3")) {
+      if (!fileType.equals("mp3")) {
         song = new File(fileNameArr[0] + ".mp3");
         if (!song.exists()) {
           try {
@@ -607,7 +608,15 @@ public class SamGui extends SparkGui {
         }
       }
 
-      return null; // this needs to change
+      // now that we have the song play it
+      server.setMusicFile(song);
+      server.broadcast();
+      
+      Map<String, Object> variables =
+          new ImmutableMap.Builder<String, Object>()
+              .build();
+
+      return GSON.toJson(variables);
     }
 
   }
