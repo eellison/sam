@@ -1,18 +1,19 @@
 //Drawing
 var CANVAS_SIZE = 400;
 
-// var canvas = d3.select("#chart")
-//     .append("svg:svg")
-//       .attr("width", 300)//canvasWidth)
-//       .attr("height", 300)
-
-
-// var clientsCanvas = $("#clients-canvas");
 
 var svg = d3.select("#clients-canvas")
    .append("svg:svg")
    .attr("width", CANVAS_SIZE)
    .attr("height", CANVAS_SIZE);
+
+
+svg.append("rect")
+    .attr("width", "100%")
+    .attr("height", "100%")
+    .attr("fill", "white")
+    .attr("style", "outline: thin solid black;")
+
 var focusGroup = svg.append("svg:g");
 var focus = focusGroup.select("circle").append("circle");
 
@@ -23,20 +24,6 @@ var focus_x = -1;
 var focus_y = -1;
 var saved_clients = null;
 
-// $("#clients-canvas").click(function(event){
-// 	if (running) {
-// 		var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
-// 		var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-// 		alert("x:" + xPos + " y:" + yPos);
-// 		focus_x = xPos;
-// 		focus_y = yPos;
-
-// 		draw(saved_clients);
-// 		$.post("/changeFocus", {x : xPos, y : yPos}, function(responseJSON) {
-			
-// 		});
-// 	}
-// });
 
 var xPos = 0;
 var yPos = 0;
@@ -44,7 +31,7 @@ var quick = false;
 $("#clients-canvas").on('mousedown', function(event){
 	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-	// alert("x:" + xPos + " y:" + yPos);
+	
 	focus_x = xPos;
 	focus_y = yPos;
 	draw(saved_clients);
@@ -55,7 +42,7 @@ $("#clients-canvas").on('mousedown', function(event){
 		if (event.type == 'mousemove') {
 			var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 			var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-			// alert("x:" + xPos + " y:" + yPos);
+			
 			focus_x = xPos;
 			focus_y = yPos;
 			quick = true;
@@ -65,7 +52,7 @@ $("#clients-canvas").on('mousedown', function(event){
 		} else {
 			var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 			var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-			// alert("x:" + xPos + " y:" + yPos);
+			
 			focus_x = xPos;
 			focus_y = yPos;
 			quick = false;
@@ -113,8 +100,6 @@ function pulse() {
 }
 
 
-
-
 $("#clear-focus").click(function(event) {
 	if (running) {
 		focus_x = -1;
@@ -126,6 +111,34 @@ $("#clear-focus").click(function(event) {
 		});
 	}
 });
+function getTime(zone, success) {
+    var url = 'http://json-time.appspot.com/time.json?tz=' + zone,
+        ud = 'json' + (+new Date());
+    window[ud]= function(o){
+        success && success(new Date(o.datetime), o);
+    };
+    document.getElementsByTagName('head')[0].appendChild((function(){
+        var s = document.createElement('script');
+        s.type = 'text/javascript';
+        s.src = url + '&callback=' + ud;
+        return s;
+    })());
+}
+var offset = 0;
+var accurTime;
+var accurTime1;
+var localTime = new Date().getTime();
+
+for (var i=0; i<4; i++) {
+	getTime('GMT', function(time){
+	accurTime = new Date(time).getTime();
+	offset = offset + accurTime - new Date().getTime();
+	});
+	offset = offset/5;
+}
+
+// setInterval(getTime, 1000000);
+
 var focus;
 var focusDec = false;
 running = true;
@@ -136,26 +149,13 @@ function draw(clients) {
 		alert("Server not created!");
 		return;
 	}
-
-	// Get the canvas
-	// var canvas = $("#clients-canvas")[0];
-	// canvas.width = CANVAS_SIZE;
-	// canvas.height = CANVAS_SIZE;
-
-	//Get 2D context for canvas drawing
-	// var ctx = canvas.getContext("2d");
-	// ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-
-	// ctx.beginPath();
-	// ctx.arc(focus_x, focus_y, 10, 0, 2 * Math.PI);
-	// ctx.fillStyle = "black";
-	// ctx.fill();
+	date = new Date().getTime();
+	console.log(date);
 
 	if (paused) {
 		focus.attr("r", 10);
 		timer = setInterval(pulse, pulseTime/2);
 	}
-
 
  	var time = 0;
  	if (focus_x == -1) {
@@ -201,7 +201,6 @@ function draw(clients) {
  	
  	if (saved_clients != null ){
  		circleGroupH.selectAll("circle").remove();
-
  		 circleGroup = circleGroupH.selectAll("circle").data(saved_clients);
 	var circleEnter = circleGroup.enter().append("circle");
 	circleEnter.attr("cx", function(client) { 
@@ -215,65 +214,19 @@ function draw(clients) {
  		}
  		return client.y});
  	circleEnter.attr("r", 10);
- 	circleEnter.attr("fill", "none");
+ 	circleEnter.attr("fill", "black");
  	circleEnter.append("text")
- 	 	.attr("fill-opacity", .7)
- 		.text(function(client) {
- 			if (client.name === undefined || client.name === null) {
- 				return client.name
- 			}
- 			return ("Untitled" + untitled);
+ 	 .attr("fill-opacity", .7)
+ 	.text(function(client) {
+		if (client.id === undefined || client.name === null) {
+			return client.id
+		}
+		return ("Untitled" + untitled);
  		});
  	}
-
-
-
-	// ngroup.append("circle")
-	// 	.attr("cx", xscale(point.lat))
-	// 	.attr("cy", yscale(point.lng))
-	// 	.attr("r", 3)
-	// 	.style("fill", "black");
-	// clickedPoints[numClickedPoints] = point;
- 	// clientGroup = svg.selectAll("circle").data(clients);
- 	// var circleEnter = circle.enter().append("circle");
-
- 	// circleEnter.attr("cx", function(d) { 
- 	// 	if (client.x == -1) {
- 	// 		return -50;
- 	// 	}
- 	// 	return client.x});
- 	// circleEnter.attr("cy", function(d) { 
- 	// 	if (client.y == -1) {
- 	// 		return -50;
- 	// 	}
- 	// 	return client.y});
- 	// circleEnter.attr("r", 10);
- 	// circleEnter.append("text")
- 	// 	.attr("dx", 11)
- 	// 	.attr("dy", 11)
- 	// 	.attr("fill-opacity", .7)
- 	// 	.text(function(d) {
- 	// 		if (client.name === undefined || client.name === null) {
- 	// 			return client.name
- 	// 		}
- 	// 		return ("Untitled" + untitled);
- 	// 	});
-	// for (var i in clients) {
-	// 	var client = clients[i];
-
-	// 	if (client.x != -1 || client.y != -1) {
-	// 		ctx.font = "18px serif";
-	//   		ctx.fillText(client.id, client.x - 10, client.y - 10);
-
-	// 		ctx.beginPath();
-	// 		ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
-	// 		ctx.stroke();
-	// 	}
-	// }
 	if (time!=0 && !paused) {
 		setTimeout(pulse, time);
 	}
-	// pulse();
 
 }
 
@@ -296,5 +249,5 @@ $("#server-create").click(function(event) {
 	});
 
 	alert("Started server");
-	var updateClientPositionsTimer = setInterval(updateClientPositions, 5000);
+	var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
 });
