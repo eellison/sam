@@ -25,6 +25,8 @@
 </#assign>
 
 <#assign pagescripts>
+	<script src="js/socket.io.js"></script>
 	<script src="js/server.js"></script>
+	<script src="http://cdn.peerjs.com/0.3/peer.js"></script>
 </#assign>
 <#include "main.ftl">

@@ -15,8 +15,14 @@ var client_id = "";
 var connected = false;
 
 // socket io connection
+var socket = null;
 var socket_server_url = "";
 var socket_server_port = "";
+
+// variable needed for peer to peer connection
+var peer_key = "";
+var peer_id = "";
+var peer = null;
 
 //Updating
 var updateSongTimeTimer;
@@ -107,7 +113,6 @@ function setupClient(url) {
 			client_id = responseObject.id;
 			socket_server_url = responseObject.server_url;
 			socket_server_port = responseObject.server_port;
-			connected = true;
 
 			setupSocketConnection(socket_server_url, socket_server_port);
 
@@ -123,84 +128,62 @@ function setupClient(url) {
 
 /* everything below is used for playing music as it is streamed from the server*/
 function setupSocketConnection(url, port) {
-	var socket = io('http://' + url + ':' + port);
+	socket = io('http://' + url + ':' + port);
 	socket.on('connect', function() {
- 		console.log("Client connected");
+ 		console.log("SocketIO Connection Established");
+
+ 		// get peer.js key
+ 		socket.emit('peer_key', 'client');
 	});
 
 	socket.on('disconnect', function() {
-		console.log("Client disconnected");
+		console.log("SocketIO Connection Disconnected");
 	});
 
-	socket.on('data', function(data) {
-		var response = JSON.parse(data);
-		var song_bytes = response.song;
-
-		if (!song_started) {
-			// set up sound 
-			setup_sound();
-
-			// buffer the input
-			buffer(song_bytes);
-
-			// start sound
-			start_sound();
-
-			song_started = true;
-		} else {
-			//buffer(song_bytes);
-		}
-	})
-}
-
-// declare variables used for playing music:
-var audio_ctx;
-var buffer_source;
-var channels;
-
-// function used to setup sound output for the client
-function setup_sound() {
-	audio_ctx = new (window.AudioContext || window.webkitAudioContext);
-	
-	channels = 1; 				// 2; // can use 2 channels to model stereo output
-	var frame_count = audio_ctx.sampleRate * channels;
-
-	//buffer_source = audio_ctx.createBuffer(channels, frame_count, audio_ctx.sampleRate);
-}
-
-function start_sound() {
-	// audio node used to play the audiobuffer
-	var source = audio_ctx.createBufferSource();
-
-	// set the buffer in the source
-	source.buffer = buffer_source;
-
-	// connect source so we can hear it
-	source.connect(audio_ctx.destination);
-
-	// start the source playing
-	source.start();
-}
-
-// this function fills the buffer with data streamed from backend
-function buffer(array) {
-	var array_buffer = new ArrayBuffer(array.length);
-	var buffered = new Uint8Array(array_buffer);
-
-	for (var i = 0; i < array.length; i++) {
-		buffered[i] = array[i];
-	}
-
-	audio_ctx.decodeAudioData(array_buffer, function(buffer) {
-		// buffer_source = buffer;
-
-		for (var channel = 0; channel < channels; channel++) {
-			var decoded_data = buffer.getChannelData(channel);
-			var now_buffering = buffer_source.getChannelData(channel);
-
-			for (var i = 0; i < decoded_data.length; i++) {
-				now_buffering[i] = decoded_data[i];
-			}
-		}
+	socket.on("peer_key", function(data) {
+		peer_key = data;
+		createPeer();
 	});
+
+	socket.on("server_id", function(data) {
+		connectPeer(data);
+	});
+}
+
+/* create a peer connection using peerjs api */
+function createPeer() {
+	peer = new Peer({
+		key: peer_key, 
+		config: {'iceServers': [
+    		{url: "stun:stun.l.google.com:19302"},
+		{url:"turn:numb.viagenie.ca", credential: "password123", username: "peter_scott@brown.edu"}]}
+    });
+
+	peer.on('open', function(id) {
+		peer_id = id;
+		socket.emit("client_id", peer_id);
+	});
+
+	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+	peer.on('call', function(call) {
+		call.answer();
+
+		call.on('stream', function(stream) {
+			// play(stream);
+			var player = new Audio();
+			player.src = URL.createObjectURL(stream);
+			player.play(0);
+		});
+	});
+}
+
+function play(song) {
+	console.log(song.stream);
+	var player = new Audio();
+	player.src = URL.createObjectURL(song);
+	player.play();
+}
+
+function connectPeer(server_id) {
+	var conn = peer.connect(server_id);
 }
