@@ -31,7 +31,7 @@ function queryFilesystem(dir) {
 				
 			});
 
-			$("#files-div").append(file);
+			//$("#files-div").append(file);
 		});
 	});
 }
