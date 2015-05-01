@@ -1,12 +1,22 @@
 //Drawing
 var CANVAS_SIZE = 400;
 
+// audio context (global variable)
+var context = new (window.AudioContext || window.webkitAudioContext);
+
+// object used to represent the socket io connection
+var socket = null;
+
+// variable needed for peer to peer connection
+var peer_key = "";
+var peer_id = "";
+var peer = null;
+var client_ids = [];
 
 var svg = d3.select("#clients-canvas")
    .append("svg:svg")
    .attr("width", CANVAS_SIZE)
    .attr("height", CANVAS_SIZE);
-
 
 svg.append("rect")
     .attr("width", "100%")
@@ -23,7 +33,6 @@ var running = false;
 var focus_x = -1;
 var focus_y = -1;
 var saved_clients = null;
-
 
 var xPos = 0;
 var yPos = 0;
@@ -42,7 +51,7 @@ $("#clients-canvas").on('mousedown', function(event){
 		if (event.type == 'mousemove') {
 			var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 			var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-			
+
 			focus_x = xPos;
 			focus_y = yPos;
 			quick = true;
@@ -107,50 +116,23 @@ $("#clear-focus").click(function(event) {
 
 		draw(saved_clients);
 		$.post("/changeFocus", {x : focus_x, y : focus_y}, function(responseJSON) {
-			
 		});
 	}
 });
-function getTime(zone, success) {
-    var url = 'http://json-time.appspot.com/time.json?tz=' + zone,
-        ud = 'json' + (+new Date());
-    window[ud]= function(o){
-        success && success(new Date(o.datetime), o);
-    };
-    document.getElementsByTagName('head')[0].appendChild((function(){
-        var s = document.createElement('script');
-        s.type = 'text/javascript';
-        s.src = url + '&callback=' + ud;
-        return s;
-    })());
-}
-var offset = 0;
-var accurTime;
-var accurTime1;
-var localTime = new Date().getTime();
 
-for (var i=0; i<4; i++) {
-	getTime('GMT', function(time){
-	accurTime = new Date(time).getTime();
-	offset = offset + accurTime - new Date().getTime();
-	});
-	offset = offset/5;
-}
 
-// setInterval(getTime, 1000000);
+
 
 var focus;
 var focusDec = false;
 running = true;
 var paused = false;
-function draw(clients) {
 
+function draw(clients) {
 	if (!running) {
 		alert("Server not created!");
 		return;
 	}
-	date = new Date().getTime();
-	console.log(date);
 
 	if (paused) {
 		focus.attr("r", 10);
@@ -196,38 +178,41 @@ function draw(clients) {
  		.attr("cx", focus_x)
 		.attr("cy", focus_y);
  	}
- 	// clearInterval(timer);
- 	// timer = setInterval(pulse, pulseTime);
  	
  	if (saved_clients != null ){
  		circleGroupH.selectAll("circle").remove();
- 		 circleGroup = circleGroupH.selectAll("circle").data(saved_clients);
-	var circleEnter = circleGroup.enter().append("circle");
-	circleEnter.attr("cx", function(client) { 
- 		if (client.x == -1) {
- 			return -50;
- 		}
- 		return client.x});
- 	circleEnter.attr("cy", function(client) { 
- 		if (client.y == -1) {
- 			return -50;
- 		}
- 		return client.y});
- 	circleEnter.attr("r", 10);
- 	circleEnter.attr("fill", "black");
- 	circleEnter.append("text")
- 	 .attr("fill-opacity", .7)
- 	.text(function(client) {
-		if (client.id === undefined || client.name === null) {
-			return client.id
-		}
-		return ("Untitled" + untitled);
+ 		circleGroup = circleGroupH.selectAll("circle").data(saved_clients);
+		var circleEnter = circleGroup.enter().append("circle");
+		circleEnter.attr("cx", function(client) { 
+ 			if (client.x == -1) {
+ 				return -50;
+ 			}
+ 			
+ 			return client.x;
  		});
+ 	
+ 		circleEnter.attr("cy", function(client) { 
+ 			if (client.y == -1) {
+ 				return -50;
+ 			}
+ 			
+ 			return client.y;
+ 		});
+ 		
+ 		circleEnter.attr("r", 10);
+ 		circleEnter.attr("fill", "none");
+ 		circleEnter.append("text")
+ 	 		.attr("fill-opacity", .7)
+ 			.text(function(client) {
+ 				if (client.name === undefined || client.name === null) {
+ 					return client.name
+ 				}
+ 				return ("Untitled" + untitled);
+ 			});
  	}
 	if (time!=0 && !paused) {
 		setTimeout(pulse, time);
 	}
-
 }
 
 /* Update Client Positions */
@@ -244,10 +229,110 @@ function updateClientPositions() {
 }
 
 $("#server-create").click(function(event) {
-	$.post("/startServer", {}, function(responseJSON) {
-		running = true;
+	if (!socket) {
+		// start the socket server
+		$.post("/startServer", {}, function(responseJSON) {
+			var responseObject = JSON.parse(responseJSON);
+
+			if (!responseObject.error) {
+				// get the socket io url and port for the socket connection
+				socket_url = responseObject.socket_url;
+				socket_port = responseObject.socket_port;
+
+				// set up the socket io connection
+				setupSocketConnection(socket_url, socket_port);
+			
+				var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
+			}
+		});
+	} 
+});
+
+/* everything below is used for playing music as it is streamed from the server*/
+function setupSocketConnection(url, port) {
+	socket = io('http://' + url + ':' + port);
+	socket.on('connect', function() {
+ 		console.log("SocketIO Connection Established");
+
+ 		// get peer.js key
+ 		socket.emit('peer_key', 'server');
 	});
 
-	alert("Started server");
-	var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
-});
+	socket.on('disconnect', function() {
+		console.log("SocketIO Connection Disconnected");
+	});
+
+	socket.on('data', function(data) {
+		var response = JSON.parse(data);
+		var song_bytes = response.song;
+		client_ids = response.client_ids;
+
+		stream(song_bytes);
+	});
+
+	socket.on("peer_key", function(data) {
+		peer_key = data;
+		createPeer();
+	});
+}
+
+/* function used to stream the song to the peer connections */
+function stream(bytes) {
+	var array_buffer = new ArrayBuffer(bytes.length);
+	var buffered = new Uint8Array(array_buffer);
+
+	for (var i = 0; i < bytes.length; i++) {
+		buffered[i] = bytes[i];
+	}
+	
+	context.decodeAudioData(array_buffer, function(buffer) {
+		var source = context.createBufferSource();
+		source.buffer = buffer;
+		source.start();
+
+		//source.connect(context.destination);
+		var remote = context.createMediaStreamDestination();
+		source.connect(remote);
+
+		// pass the stream to the peer
+		streamToPeers(remote.stream);	
+	});
+}
+
+
+/* create a peer connection using peerjs api */
+function createPeer() {
+	peer = new Peer({
+		key: peer_key, 
+		config: {'iceServers': [
+    		{url: "stun:stun.l.google.com:19302"},
+			{url:"turn:numb.viagenie.ca", credential: "password123", username: "peter_scott@brown.edu"}]}
+    });
+
+	peer.on('open', function(id) {
+		peer_id = id;
+		socket.emit("server_id", peer_id);
+	});
+
+	peer.on('connection', function(conn) {
+		alert("connected to another peer");
+	});
+}
+
+function streamToPeers(stream) {
+	// play song on server as well ??
+	play(stream);
+
+	for (var i = 0; i < client_ids.length; i++) {
+		var id = client_ids[i];
+		if (id != peer_id) {
+			var call = peer.call(id, stream);
+		}
+	}
+}
+
+function play(song) {
+	var player = new Audio();
+	player.src = URL.createObjectURL(song);
+	player.play();
+}

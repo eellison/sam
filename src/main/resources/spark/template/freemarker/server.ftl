@@ -33,7 +33,10 @@
 </#assign>
 
 <#assign pagescripts>
+
+	<script src="js/socket.io.js"></script>
 	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 	<script src="js/server.js"></script>
+	<script src="http://cdn.peerjs.com/0.3/peer.js"></script>
 </#assign>
 <#include "main.ftl">

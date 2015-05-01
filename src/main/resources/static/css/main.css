@@ -102,15 +102,18 @@ h4.title {
 .folder-button {
     height: 100px;
     width: 100px;
+    float: left;
     background: url("../images/folder.png");
     background-repeat: no-repeat;
     background-size: contain;
     border: 0px;
+    vertical-align: middle;
 }
 
 .file-button {
     height: 100px;
     width: 100px;
+    float: left;
     background: url("../images/file.png");
     background-repeat: no-repeat;
     background-size: contain;
@@ -141,32 +144,60 @@ h4.title {
     margin-top: 50px;
 }
 
-#files-div {
+#files-bound-div {
     width: 502px;
     height: 550px;
-    overflow-y: scroll;
+    min-width: 502px;
+    min-height: 550px;
     background-color: rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-top: 0px;
     float: left;
+    overflow: auto;
+}
+
+#files-div {
+    width: 502px;
+    height: 550px;
+    min-width: 502px;
+    min-height: 550px;
+    float: left;
+    overflow: auto;
 }
 
 #songs-div {
     width: 502px;
-    height: 550px;
-    overflow-y: scroll;
-    background-color: rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    height: 600px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.8);
     float: right;
+    margin-top: -50px;
+}
+
+#songs-div {
+    width: 502px;
+    height: 600px;
+    overflow-y: scroll;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    float: right;
+    margin-top: -50px;
 }
 
 #directory-label-text {
-    text-align: center;
-    margin-top: 12px;
     color: rgba(80, 80, 80, 0.6);
-    vertical-align: center;
-    font-size: 12px;
+    font-size: 10px;
+    width: 80px;
+    height: 40px;
+    margin-top: 25px;
+    margin-left: 5px;
+    float: left;
+    text-align: center;
+    vertical-align: middle;
     word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: table-cell;
 }
 
 #file-label-text {
@@ -180,3 +211,5 @@ h4.title {
     width: 45px;
     margin-left: 22.5px;
     margin-top: 25px;
+    float: left;
+}

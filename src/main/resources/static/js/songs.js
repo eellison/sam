@@ -5,10 +5,10 @@ var FILE_LABEL_LENGTH = 5;
 
 function queryFilesystem(dir) {
 	$.post("/queryFilesystem", {path : dir}, function(responseJSON) {
+		$("#files-div").empty();
+
 		last_dirs.push(dir);
 		current_dir = dir;
-
-		$("#files-div").empty();
 
 		var responseObject = JSON.parse(responseJSON);
 		var files = responseObject.files;
@@ -40,7 +40,8 @@ queryFilesystem(current_dir);
 
 $("#back").click(function(event) {
 	last_dirs.pop();
-	queryFilesystem(last_dirs.pop());
+	var dir = last_dirs.pop();
+	queryFilesystem(dir);
 });
 
 $("#use").click(function(event) {
