@@ -78,9 +78,11 @@ function updateVolume() {
 		volume = responseObject.volume;
 		quick = responseObject.quick;
 		if (quick) {
-			updateVolumeTimer = setInterval(updateVolume, 10);
+			clearInterval(updateVolumeTimer);
+			updateVolumeTimer = setInterval(updateVolume, 50);
 		}
-		else {
+		else {			
+			clearInterval(updateVolumeTimer);
 			updateVolumeTimer = setInterval(updateVolume, 1000);
 		}
 
@@ -167,8 +169,8 @@ function setupClient(url) {
 
 			setupSocketConnection(socket_server_url, socket_server_port);
 
-			var updateSongTimeTimer = setInterval(updateSongTime, 1000);
-			var updateSongTitleTimer = setInterval(updateSongTitle, 1000);
+			// var updateSongTimeTimer = setInterval(updateSongTime, 1000);
+			// var updateSongTitleTimer = setInterval(updateSongTitle, 1000);
 			updateVolumeTimer = setInterval(updateVolume, 1000);
 			var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
 		} else {
