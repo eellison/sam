@@ -23,6 +23,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/Users/vcohen/Documents/workspace/sam/libs/it.sauronsoftware/jave/1.0.2/jave-1.0.2.jar"/>
+	<classpathentry kind="lib" path="/gpfs/main/home/eselliso/course/cs032/sam/libs/it.sauronsoftware/jave/1.0.2/jave-1.0.2.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

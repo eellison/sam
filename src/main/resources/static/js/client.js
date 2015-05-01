@@ -24,24 +24,24 @@ var updateSongTitleTimer;
 var updateVolumeTimer;
 var updateClientPositions;
 
-<<<<<<< HEAD
+// <<<<<<< HEAD
 
-var ntpClient = require('ntp-client');
+// var ntpClient = require('ntp-client');
  
-ntpClient.getNetworkTime("pool.ntp.org", 123, function(err, date) {
-    if(err) {
-        console.error(err);
-        return;
-    }
+// ntpClient.getNetworkTime("pool.ntp.org", 123, function(err, date) {
+//     if(err) {
+//         console.error(err);
+//         return;
+//     }
  
-    console.log("Current time : ");
-    console.log(date); // Mon Jul 08 2013 21:31:31 GMT+0200 (Paris, Madrid (heure d’été)) 
-});
+//     console.log("Current time : ");
+//     console.log(date); // Mon Jul 08 2013 21:31:31 GMT+0200 (Paris, Madrid (heure d’été)) 
+// });
 
 
 
-=======
->>>>>>> 5e2ba3a4eeb6d6ae805b959cdc00ccf9a7722f47
+// =======
+// >>>>>>> 5e2ba3a4eeb6d6ae805b959cdc00ccf9a7722f47
 $("#clients-canvas").click(function(event) {
 	if (connected) {
 		var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
@@ -57,19 +57,19 @@ $("#clients-canvas").click(function(event) {
 });
 
 /* Song Info */
-function updateSongTime() {
-	$.get("http://" + server_url + "/songTime", {id : client_id}, function(responseJSON) {
-		var responseObject = JSON.parse(responseJSON);
-		$("#song-length").text(responseObject.songLength);
-	});
-}
+// function updateSongTime() {
+// 	$.get("http://" + server_url + "/songTime", {id : client_id}, function(responseJSON) {
+// 		var responseObject = JSON.parse(responseJSON);
+// 		$("#song-length").text(responseObject.songLength);
+// 	});
+// }
 
-function updateSongTitle() {
-	$.get("http://" + server_url + "/songTitle", {id : client_id}, function(responseJSON) {
-		var responseObject = JSON.parse(responseJSON);
-		$("#song-title").text(responseObject.songTitle);
-	});
-}
+// function updateSongTitle() {
+// 	$.get("http://" + server_url + "/songTitle", {id : client_id}, function(responseJSON) {
+// 		var responseObject = JSON.parse(responseJSON);
+// 		$("#song-title").text(responseObject.songTitle);
+// 	});
+// }
 
 /* Volume */
 function updateVolume() {
@@ -78,25 +78,27 @@ function updateVolume() {
 		volume = responseObject.volume;
 		quick = responseObject.quick;
 		if (quick) {
-			updateVolumeTimer = setInterval(updateVolume, 10);
+			clearInterval(updateVolumeTimer);
+			updateVolumeTimer = setInterval(updateVolume, 50);
 		}
-		else {
+		else {			
+			clearInterval(updateVolumeTimer);
 			updateVolumeTimer = setInterval(updateVolume, 1000);
 		}
 
 	});
 }
-var ntpClient = require('ntp-client');
+// var ntpClient = require('ntp-client');
  
-ntpClient.getNetworkTime("pool.ntp.org", 123, function(err, date) {
-    if(err) {
-        console.error(err);
-        return;
-    }
+// ntpClient.getNetworkTime("pool.ntp.org", 123, function(err, date) {
+//     if(err) {
+//         console.error(err);
+//         return;
+//     }
  
-    console.log("Current time : ");
-    console.log(date); // Mon Jul 08 2013 21:31:31 GMT+0200 (Paris, Madrid (heure d’été)) 
-});
+//     console.log("Current time : ");
+//     console.log(date); // Mon Jul 08 2013 21:31:31 GMT+0200 (Paris, Madrid (heure d’été)) 
+// });
 /*
 $.getTime = function(zone, success) {
     var url = 'http://json-time.appspot.com/time.json?tz='
@@ -167,8 +169,8 @@ function setupClient(url) {
 
 			setupSocketConnection(socket_server_url, socket_server_port);
 
-			var updateSongTimeTimer = setInterval(updateSongTime, 1000);
-			var updateSongTitleTimer = setInterval(updateSongTitle, 1000);
+			// var updateSongTimeTimer = setInterval(updateSongTime, 1000);
+			// var updateSongTitleTimer = setInterval(updateSongTitle, 1000);
 			updateVolumeTimer = setInterval(updateVolume, 1000);
 			var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
 		} else {

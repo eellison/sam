@@ -36,7 +36,6 @@
 </#assign>
 
 <#assign pagescripts>
-	<script data-main="scripts/main" src="scripts/require.js"></script>
 	<script src="js/socket.io.js"></script>
 	<script src="js/client.js"></script>
 </#assign>
