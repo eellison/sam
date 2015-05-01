@@ -77,18 +77,15 @@ function updateVolume() {
 			clearInterval(updateVolumeTimer);
 			updateVolumeTimer = setInterval(updateVolume, 1000);
 		}
-
 	});
 }
 
 /* Update Client Positions */
 function updateClientPositions() {
 	$.get("http://" + server_url + "/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
-		// console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject.clients;
 
-		// console.log(clients);
 		draw_clients(clients);
 	});
 }
@@ -156,8 +153,10 @@ function setupSocketConnection(url, port) {
 	socket.on('connect', function() {
  		console.log("SocketIO Connection Established");
 
- 		// get peer.js key
- 		socket.emit('peer_key', 'client');
+ 		// get peer.js key (wait 1 second first)
+ 		setTimeout(function() {
+ 			socket.emit('peer_key', 'client');
+ 		}, 1000);
 	});
 
 	socket.on('disconnect', function() {
@@ -165,13 +164,12 @@ function setupSocketConnection(url, port) {
 	});
 
 	socket.on("peer_key", function(data) {
-		console.log("received peer key");
+		console.log("Peer Created");
 		peer_key = data;
 		createPeer();
 	});
 
 	socket.on("server_id", function(data) {
-		console.log("received server id");
 		connectPeer(data);
 	});
 }
@@ -182,13 +180,12 @@ function createPeer() {
 		key: peer_key, 
 		config: {'iceServers': [
     		{url: "stun:stun.l.google.com:19302"},
-			{url:"turn:numb.viagenie.ca", credential: "password123", username: "peter_scott@brown.edu"}]}
+			{url:"turn:numb.viagenie.ca", credential: "password123"}]}
     });
 
 	peer.on('open', function(id) {
 		peer_id = id;
 		socket.emit("client_id", peer_id);
-		console.log('opened peer');
 	});
 
 	peer.on('call', function(call) {
@@ -219,14 +216,17 @@ function changeVolumeLevel(vol) {
 function connectPeer(server_id) {
 	peer_connection = peer.connect(server_id);
 
-	peer_connection.on('data', function(data) {
-		var saved_clients = JSON.parse(data);
-		
-		for (var i = 0; i < saved_clients.length; i++) {
-			var curr = saved_clients[i];
-			if (curr.id = client_id) {
-				changeVolumeLevel(curr.volume);
+	peer_connection.on('open', function() {
+		// receive volume info:
+		peer_connection.on('data', function(data) {
+			var saved_clients = JSON.parse(data);
+			
+			for (var i = 0; i < saved_clients.length; i++) {
+				var curr = saved_clients[i];
+				if (curr.id = client_id) {
+					changeVolumeLevel(curr.volume);
+				}
 			}
-		}
+		});
 	});
 }

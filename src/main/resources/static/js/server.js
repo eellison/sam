@@ -236,7 +236,6 @@ function draw(clients) {
 /* Update Client Positions */
 function updateClientPositions() {
 	$.get("/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
-		// console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject.clients;
 
@@ -266,7 +265,9 @@ $("#server-create").click(function(event) {
 				var updateClientPositionsTimer = setInterval(updateClientPositions, 3000);
 			}
 		});
-	} 
+	} else {
+		socket.emit('play', false);
+	}
 });
 
 /* everything below is used for playing music as it is streamed from the server*/
@@ -275,8 +276,10 @@ function setupSocketConnection(url, port) {
 	socket.on('connect', function() {
  		console.log("SocketIO Connection Established");
 
- 		// get peer.js key
- 		socket.emit('peer_key', 'server');
+ 		// get peer.js key (wait 1 second first)
+ 		setTimeout(function() {
+ 			socket.emit('peer_key', 'server');
+ 		}, 1000);
 	});
 
 	socket.on('disconnect', function() {
@@ -292,7 +295,7 @@ function setupSocketConnection(url, port) {
 	});
 
 	socket.on("peer_key", function(data) {
-		console.log("created peer");
+		console.log("Peer Created");
 		peer_key = data;
 		createPeer();
 	});
@@ -328,7 +331,7 @@ function createPeer() {
 		key: peer_key, 
 		config: {'iceServers': [
     		{url: "stun:stun.l.google.com:19302"},
-			{url:"turn:numb.viagenie.ca", credential: "password123", username: "peter_scott@brown.edu"}]}
+			{url:"turn:numb.viagenie.ca", credential: "password123"}]}
     });
 
 	peer.on('open', function(id) {
@@ -337,18 +340,13 @@ function createPeer() {
 	});
 
 	peer.on('connection', function(conn) {
-		alert("connected to another peer");
-
-		// add connection to a hashmap of ids to connection
+		// peer connections not really working right now
 		peer_connections[conn.peer] = conn;
 	});
 }
 
 /* function used to stream the song to the peer connections */
 function streamToPeers(stream) {
-	// play song on server as well ??
-	play(stream);
-
 	for (var i = 0; i < peer_client_ids.length; i++) {
 		var id = peer_client_ids[i];
 		if (id != peer_id) {
@@ -370,7 +368,7 @@ function updateVolumeOfPeers() {
 		var id = peer_client_ids[i];
 		if (id != peer_id) {
 			var curr_conn = peer_connections[id];
-			conn.send(JSON.stringify(saved_clients));
+			//curr_conn.send(JSON.stringify(saved_clients));
 		}
 	}
 }
