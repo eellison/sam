@@ -266,8 +266,6 @@ $("#server-create").click(function(event) {
 
 			alert("Your IP address: ");
 		});
-	} else {
-		socket.emit('play', false);
 	}
 });
 
