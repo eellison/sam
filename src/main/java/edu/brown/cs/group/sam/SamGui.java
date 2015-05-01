@@ -13,25 +13,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
-
-import edu.brown.cs.group.sam.mp3converter.Mp3Encoder;
-import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
-import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
-import edu.brown.cs.group.sam.server.MusicServer;
-import edu.brown.cs.group.sam.sparkgui.SparkGui;
-
 import org.apache.tika.exception.TikaException;
 import org.xml.sax.SAXException;
-
-import spark.ModelAndView;
-import spark.QueryParamsMap;
-import spark.Request;
-import spark.Response;
-import spark.Route;
-import spark.Spark;
-import spark.TemplateViewRoute;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
@@ -46,6 +29,14 @@ import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
 import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
 import edu.brown.cs.group.sam.server.MusicServer;
 import edu.brown.cs.group.sam.sparkgui.SparkGui;
+
+import spark.ModelAndView;
+import spark.QueryParamsMap;
+import spark.Request;
+import spark.Response;
+import spark.Route;
+import spark.Spark;
+import spark.TemplateViewRoute;
 
 /**
  * Class that extends the basic implementation of a spark graphical user
@@ -71,7 +62,7 @@ public class SamGui extends SparkGui {
   private MetadataQuery mq;
 
   public SamGui(int port, String address, int sPort, String db)
-      throws SQLException {
+    throws SQLException {
     this.port = port;
     serverAddress = address;
     serverPort = sPort;
@@ -88,7 +79,7 @@ public class SamGui extends SparkGui {
    * @param port The port number at which to run the spark server
    */
   public void runSparkServer() {
-    
+
     super.runSparkServer(port);
 
     // set up spark get requests to set up the pages
@@ -246,12 +237,11 @@ public class SamGui extends SparkGui {
       } else {
         weight = ap.getVolume(id);
       }
-      Map<String, Object> variables = ImmutableMap.of("volume", weight, 
-          "quick", quickUpdate.get());
+      Map<String, Object> variables =
+          ImmutableMap.of("volume", weight, "quick", quickUpdate.get());
       return GSON.toJson(variables);
     }
-  }  
-  
+  }
 
   /**
    * Class that returns all positions of clients
@@ -272,7 +262,7 @@ public class SamGui extends SparkGui {
       Map<String, ClientPoint> allClients = ap.getClients();
       List<HashMap<String, Object>> clientInfo =
           new ArrayList<HashMap<String, Object>>();
-      
+
       for (ClientPoint c : allClients.values()) {
 
         HashMap<String, Object> client = new HashMap<String, Object>();
@@ -303,9 +293,9 @@ public class SamGui extends SparkGui {
 
       Map<String, Object> variables =
           new ImmutableMap.Builder<String, Object>()
-              .put("message", message).put("id", clientNumber)
-              .put("server_url", serverAddress)
-              .put("server_port", serverPort).put("success", 0).build();
+          .put("message", message).put("id", clientNumber)
+          .put("server_url", serverAddress)
+          .put("server_port", serverPort).put("success", 0).build();
 
       return GSON.toJson(variables);
     }
@@ -338,7 +328,8 @@ public class SamGui extends SparkGui {
       String x1 = map.value("x");
       String y1 = map.value("y");
       String id = map.value("id");
-      Boolean quick = Boolean.parseBoolean(request.queryMap().value("quick"));
+      Boolean quick =
+          Boolean.parseBoolean(request.queryMap().value("quick"));
       quickUpdate.set(quick);
       String name = request.queryMap().value("name");
 
@@ -426,8 +417,8 @@ public class SamGui extends SparkGui {
 
       Map<String, Object> variables =
           new ImmutableMap.Builder<String, Object>()
-          .put("socket_url", serverAddress)
-          .put("socket_port", serverPort).build();
+              .put("socket_url", serverAddress)
+              .put("socket_port", serverPort).build();
 
       return GSON.toJson(variables);
     }
@@ -472,13 +463,13 @@ public class SamGui extends SparkGui {
         "dts", "dv", "dxa", "ea", "ea_cdata", "ffm", "film_cpk", "flac",
         "flic", "flv", "gif", "gxf", "h261", "h263", "h264", "idcin",
         "image2", "image2pipe", "ingenient", "ipmovie", "libnut", "m4v",
-        "matroska", "mjpeg", "mm", "mmf", "mov", "mp4", "m4a", "3gp", "3g2",
-        "mj2", "mp3", "mpc", "mpc8", "mpeg", "mpegts", "mpegtsraw",
+        "matroska", "mjpeg", "mm", "mmf", "mov", "mp4", "m4a", "3gp",
+        "3g2", "mj2", "mp3", "mpc", "mpc8", "mpeg", "mpegts", "mpegtsraw",
         "mpegvideo", "mulaw", "mxf", "nsv", "nut", "nuv", "ogg", "psxstr",
         "rawvideo", "redir", "rm", "rtsp", "s16be", "s16le", "s8", "sdp",
-        "shn", "siff", "smk", "sol", "swf", "thp", "tiertexseq", "tta", "txd",
-        "u16be", "u16le", "u8", "vc1", "vmd", "voc", "wav", "wc3movie",
-        "wsaud", "wsvqa", "wv", "yuv4mpegpipe");
+        "shn", "siff", "smk", "sol", "swf", "thp", "tiertexseq", "tta",
+        "txd", "u16be", "u16le", "u8", "vc1", "vmd", "voc", "wav",
+        "wc3movie", "wsaud", "wsvqa", "wv", "yuv4mpegpipe");
 
     private MetadataQuery mq;
 
@@ -493,15 +484,18 @@ public class SamGui extends SparkGui {
 
       File[] files = new File(musicDirectory).listFiles();
 
-      List<SongInfo> songs = getSongInfoFromFlattenedDirectory(files, new ArrayList<>());
+      List<SongInfo> songs =
+          getSongInfoFromFlattenedDirectory(files, new ArrayList<>());
 
       return GSON.toJson(songs.toArray(new SongInfo[0]));
     }
 
-    private List<SongInfo> getSongInfoFromFlattenedDirectory(File[] files, List<SongInfo> songs) {
+    private List<SongInfo> getSongInfoFromFlattenedDirectory(File[] files,
+        List<SongInfo> songs) {
       for (File f : files) {
         if (f.isDirectory()) {
-          songs.addAll(getSongInfoFromFlattenedDirectory(f.listFiles(), songs));
+          songs.addAll(getSongInfoFromFlattenedDirectory(f.listFiles(),
+              songs));
         }
 
         String[] fileNameArr = f.getName().split("\\.");
@@ -515,7 +509,8 @@ public class SamGui extends SparkGui {
           SongInfo si;
           try {
             si = mq.getSongInfo(f);
-          } catch (IOException | SAXException | TikaException | SQLException e1) {
+          } catch (IOException | SAXException | TikaException
+              | SQLException e1) {
             si = getMissingSongInfo(f);
           }
 
@@ -585,8 +580,8 @@ public class SamGui extends SparkGui {
         song = new File(fileNameArr[0] + ".mp3");
         if (!song.exists()) {
           try {
-            song = Mp3Encoder.encode(song); //this should
-                                            //effectively be doing nothing
+            song = Mp3Encoder.encode(song); // this should
+            // effectively be doing nothing
             /* Do something here to add in metadata */
           } catch (IllegalArgumentException | EncoderException e) {
             // TODO Auto-generated catch block
@@ -595,7 +590,7 @@ public class SamGui extends SparkGui {
         }
       }
 
-      return null; //this needs to change
+      return null; // this needs to change
     }
 
   }
