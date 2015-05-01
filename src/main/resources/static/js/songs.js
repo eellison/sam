@@ -6,7 +6,7 @@ var FILE_LABEL_LENGTH = 5;
 function queryFilesystem(dir) {
 	$.post("/queryFilesystem", {path : dir}, function(responseJSON) {
 		$("#files-div").empty();
-		
+
 		last_dirs.push(dir);
 		current_dir = dir;
 
@@ -31,7 +31,7 @@ function queryFilesystem(dir) {
 				
 			});
 
-			//$("#files-div").append(file);
+			$("#files-div").append(file);
 		});
 	});
 }
