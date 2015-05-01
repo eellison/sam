@@ -47,7 +47,12 @@ $("#clients-canvas").on('mousedown', function(event){
 	draw(saved_clients);
 	quick = false;
 	$.post("/changeFocus", {x : xPos, y : yPos, quick:quick}, function(responseJSON) {
+		var responseObject = JSON.parse(responseJSON);
+		var clients = responseObject.clients;
+		saved_clients = clients;
+		updateVolumeOfPeers();
 	});
+
 	$("#clients-canvas").on('mouseup mousemove', function handler(event) {
 		if (event.type == 'mousemove') {
 			var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
@@ -55,7 +60,7 @@ $("#clients-canvas").on('mousedown', function(event){
 
 			focus_x = xPos;
 			focus_y = yPos;
-			quick = true;
+			quick = false;
 			draw(saved_clients);
 			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick}, function(responseJSON) {
 			});
@@ -69,6 +74,10 @@ $("#clients-canvas").on('mousedown', function(event){
 			draw(saved_clients);
 			$("#clients-canvas").off('mouseup mousemove', handler);
 			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick}, function(responseJSON) {
+				var responseObject = JSON.parse(responseJSON);
+				var clients = responseObject.clients;
+				saved_clients = clients;
+				updateVolumeOfPeers();
 			});
 		}
 	});
@@ -125,7 +134,8 @@ var focus;
 var focusDec = false;
 running = true;
 var paused = false;
-
+var text;
+var textLabels;
 function draw(clients) {
 	if (!running) {
 		alert("Server not created!");
@@ -149,7 +159,6 @@ function draw(clients) {
 
  	} else if (!focusDec) {
  		timer = setInterval(pulse, pulseTime/2);
- 		console.log("undefined");
  		focus = focusGroup.append("circle")
  			.attr("cx", focus_x)
 			.attr("cy", focus_y)
@@ -200,18 +209,24 @@ function draw(clients) {
  		circleEnter.attr("r", 10);
  		circleEnter.style("stroke", "black");
  		circleEnter.attr("fill", "none");
- 		circleEnter.append("text")
- 	 		.attr("fill-opacity", .7)
- 			.text(function(client) {
- 				return "text";
- 				if (!(client.name === undefined || client.name === null)) {
- 					return client.name;
- 				}
- 				if (!(client.id === undefined || client.id === null)) {
- 					return client.id;
- 				} 				
- 				return "Untitled";
- 			});
+	 	var prev = 	d3.selectAll("text");
+	 	prev.remove();
+
+ 		text = svg.selectAll("text")
+                       .data(saved_clients)
+                        .enter()
+                        .append("text");
+
+
+		//Add SVG Text Element Attributes
+		textLabels = text
+            .attr("x", function(d) { return d.x-10; })
+            .attr("y", function(d) { return d.y-10; })
+            .text( function (d) { return d.id; })
+            .attr("font-family", "sans-serif")
+            .attr("font-size", "20px")
+            .attr("fill", "black")
+            .attr("fill-opacity", .7);
  	}
 	if (time!=0 && !paused) {
 		setTimeout(pulse, time);
@@ -221,13 +236,15 @@ function draw(clients) {
 /* Update Client Positions */
 function updateClientPositions() {
 	$.get("/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
-		console.log("Updated clients");
+		// console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject.clients;
-		
-		console.log(clients);
+
 		draw(clients);
 		saved_clients = clients;
+
+		// update volume
+		updateVolumeOfPeers();
 	});
 }
 
@@ -246,7 +263,7 @@ $("#server-create").click(function(event) {
 				// set up the socket io connection
 				setupSocketConnection(socket_url, socket_port);
 			
-				var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
+				var updateClientPositionsTimer = setInterval(updateClientPositions, 3000);
 			}
 		});
 	} 
@@ -275,6 +292,7 @@ function setupSocketConnection(url, port) {
 	});
 
 	socket.on("peer_key", function(data) {
+		console.log("created peer");
 		peer_key = data;
 		createPeer();
 	});
@@ -320,8 +338,9 @@ function createPeer() {
 
 	peer.on('connection', function(conn) {
 		alert("connected to another peer");
+
 		// add connection to a hashmap of ids to connection
-		console.log(conn);
+		peer_connections[conn.peer] = conn;
 	});
 }
 
@@ -350,7 +369,8 @@ function updateVolumeOfPeers() {
 	for (var i = 0; i < peer_client_ids.length; i++) {
 		var id = peer_client_ids[i];
 		if (id != peer_id) {
-			
+			var curr_conn = peer_connections[id];
+			conn.send(JSON.stringify(saved_clients));
 		}
 	}
 }
