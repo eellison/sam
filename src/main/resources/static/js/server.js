@@ -265,6 +265,8 @@ $("#server-create").click(function(event) {
 			
 				var updateClientPositionsTimer = setInterval(updateClientPositions, 3000);
 			}
+
+			alert("Your IP address: ");
 		});
 	} 
 });
