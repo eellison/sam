@@ -29,7 +29,6 @@ import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
 import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
 import edu.brown.cs.group.sam.server.MusicServer;
 import edu.brown.cs.group.sam.sparkgui.SparkGui;
-
 import spark.ModelAndView;
 import spark.QueryParamsMap;
 import spark.Request;
@@ -480,9 +479,14 @@ public class SamGui extends SparkGui {
     @Override
     public Object handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
-      String musicDirectory = qm.value("dir");
+      String musicDirectoryPath = qm.value("dir");
+      File musicDirectory = new File(musicDirectoryPath);
 
-      File[] files = new File(musicDirectory).listFiles();
+      if (musicDirectory.getName().equals("")) {
+        musicDirectory = new File(System.getProperty("user.home"));
+      }
+
+      File[] files = musicDirectory.listFiles();
 
       List<SongInfo> songs =
           getSongInfoFromFlattenedDirectory(files, new ArrayList<>());
@@ -495,7 +499,7 @@ public class SamGui extends SparkGui {
       for (File f : files) {
         if (f.isDirectory()) {
           songs.addAll(getSongInfoFromFlattenedDirectory(f.listFiles(),
-              songs));
+              new ArrayList<>()));
         }
 
         String[] fileNameArr = f.getName().split("\\.");
@@ -550,10 +554,6 @@ public class SamGui extends SparkGui {
     public Object handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
       String path = qm.value("path");
-
-      if (path == null) {
-        path = "";
-      }
 
       FilesystemViewer viewer = new FilesystemViewer(path);
       return GSON.toJson(viewer);
