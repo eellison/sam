@@ -137,22 +137,42 @@ h4.title {
     margin-top: 50px;
 }
 
-#files-div {
+#files-bound-div {
     width: 502px;
     height: 550px;
-    overflow-y: scroll;
+    min-width: 502px;
+    min-height: 550px;
     background-color: rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-top: 0px;
     float: left;
+    overflow: auto;
+}
+
+#files-div {
+    width: 502px;
+    height: 550px;
+    min-width: 502px;
+    min-height: 550px;
+    float: left;
+    overflow: auto;
+}
+
+#songs-div {
+    width: 502px;
+    height: 600px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    float: right;
+    margin-top: -50px;
 }
 
 #songs-div {
     width: 502px;
     height: 600px;
     overflow-y: scroll;
-    background-color: rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.8);
     float: right;
     margin-top: -50px;
 }
@@ -161,8 +181,8 @@ h4.title {
     color: rgba(80, 80, 80, 0.6);
     font-size: 10px;
     width: 80px;
-    height: 80px;
-    margin-bottom: -50px;
+    height: 50px;
+    margin-top: 40px;
     margin-left: 5px;
     float: left;
     text-align: center;
