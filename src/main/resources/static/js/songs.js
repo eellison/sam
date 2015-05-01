@@ -61,7 +61,7 @@ $("#use").click(function(event) {
 			var album = elem.album;
 			var artist = elem.artist;
 
-			var song = $("<div class='song'></div>");
+			var song = $("<div class='song'><h4>" + title + " by " + artist + "</h4></div>");
 			
 			song.on('click', function(e) {
 				$.post("/playSong", {songPath : path}, function(responseJSON) {
