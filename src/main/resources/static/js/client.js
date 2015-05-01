@@ -65,6 +65,7 @@ $("#clients-canvas").click(function(event) {
 
 /* Volume */
 function updateVolume() {
+	return;
 	$.get("http://" + server_url + "/volume", {id : client_id}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 		volume = responseObject.volume;

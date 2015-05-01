@@ -23,6 +23,7 @@ svg.append("rect")
     .attr("width", "100%")
     .attr("height", "100%")
     .attr("fill", "white")
+    .attr("fill-opacity", .5)
     .attr("style", "outline: thin solid black;")
 
 var focusGroup = svg.append("svg:g");
@@ -85,7 +86,18 @@ $("#clients-canvas").on('mousedown', function(event){
 var pulseTime = 3000;
 var timer;
 var down = false;
+$(document).ready( function() 
+{ 
+  $.getJSON( "http://smart-ip.net/geoip-json?callback=?", function(data){
+  alert( data.host); 
+  } );
+});
+
+
 function pulse() {
+	if (paused) {
+		return;
+	}
 	if (focusDec && !paused) {
 		if (down) {
 			down = false;
@@ -122,7 +134,6 @@ $("#clear-focus").click(function(event) {
 	if (running) {
 		focus_x = -1;
 		focus_y = -1;
-
 		draw(saved_clients);
 		$.post("/changeFocus", {x : focus_x, y : focus_y}, function(responseJSON) {
 		});
@@ -147,7 +158,7 @@ function draw(clients) {
 	}
 
  	var time = 0;
- 	if (focus_x == -1) {
+ 	if (focus_x == -1 && !paused) {
  		paused = true;
  		clearInterval(timer);
  		focus
@@ -157,6 +168,7 @@ function draw(clients) {
  			.attr("r", 0);
 
  	} else if (!focusDec) {
+ 		console.log("else if");
  		timer = setInterval(pulse, pulseTime/2);
  		focus = focusGroup.append("circle")
  			.attr("cx", focus_x)
@@ -168,6 +180,7 @@ function draw(clients) {
 		focusDec = true;
 		time = .01;
  	} else {
+ 		console.log("else");
  		time = Math.sqrt(Math.pow((focus.attr("cx") - focus_x), 2) + 
  			Math.pow((focus.attr("cy")-focus_y), 2));
  		time = time * 3;
@@ -205,7 +218,15 @@ function draw(clients) {
  			return client.y;
  		});
  		
- 		circleEnter.attr("r", 10);
+ 		circleEnter.attr("r", function(d) {	
+ 			var r = d.volume;
+ 			if (r === null || r === undefined || paused ===true) {
+ 				return 10 ;
+ 			}
+ 			r = 10*r;
+ 			r = Math.max(r, 1);
+ 			return r;
+ 		});
  		circleEnter.style("stroke", "black");
  		circleEnter.attr("fill", "none");
 	 	var prev = 	d3.selectAll("text");
