@@ -12,7 +12,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry excluding="spark/template/freemarker/|spark/template/|spark/|songs/|static/testdirectory/test/|static/testdirectory/test/" including="**/*.java" kind="src" path="src/main/resources"/>
+	<classpathentry excluding="spark/template/freemarker/|spark/template/|spark/|songs/|static/testdirectory/test/" including="**/*.java" kind="src" path="src/main/resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
@@ -23,5 +23,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="/gpfs/main/home/eselliso/course/cs032/sam/libs/it.sauronsoftware/jave/1.0.2/jave-1.0.2.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

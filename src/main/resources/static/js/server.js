@@ -80,7 +80,7 @@ var pulseTime = 3000;
 var timer;
 var down = false;
 function pulse() {
-	if (focusDec) {
+	if (focusDec && !paused) {
 		if (down) {
 			down = false;
 			focus

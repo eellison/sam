@@ -100,7 +100,6 @@ h4.title {
     background-repeat: no-repeat;
     background-size: contain;
     border: 0px;
-    margin-top: 10px 10px 10px 10px;
 }
 
 .file-button {
@@ -110,7 +109,6 @@ h4.title {
     background-repeat: no-repeat;
     background-size: contain;
     border: 0px;
-    margin-top: 10px 10px 10px 10px;
 }
 
 .song-button {
@@ -120,32 +118,59 @@ h4.title {
     background-repeat: no-repeat;
     background-size: contain;
     border: 0px;
-    margin-top: 10px 10px 10px 10px;
-}
-
-#songs-gui {
-    width: 50%;
-    margin-left: 25%;
     text-align: center;
 }
 
 #toolbar {
-    width: 500px;
-    height: auto;
+    width: 502px;
+    height: 50px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0px;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+#songs-gui {
+    width: 84%;
+    margin-left: 8%;
+    margin-top: 50px;
 }
 
 #files-div {
-    width: 500px;
-    height: auto;
-    margin-top: 50px;
-    overflow: scroll;
+    width: 502px;
+    height: 550px;
+    overflow-y: scroll;
+    background-color: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-top: 0px;
     float: left;
 }
 
 #songs-div {
-    width: 500px;
-    height: auto;
-    margin-top: 50px;
-    overflow: scroll;
+    width: 502px;
+    height: 550px;
+    overflow-y: scroll;
+    background-color: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     float: right;
 }
+
+#directory-label-text {
+    text-align: center;
+    margin-top: 12px;
+    color: rgba(80, 80, 80, 0.6);
+    vertical-align: center;
+    font-size: 12px;
+    word-wrap: break-word;
+}
+
+#file-label-text {
+    text-align: center;
+    margin-top: 12px;
+    color: rgba(0, 0, 0, 0.6);
+    vertical-align: center;
+    font-size: 10px;
+    word-wrap: break-word;
+    height: 80px;
+    width: 45px;
+    margin-left: 22.5px;
+    margin-top: 25px;

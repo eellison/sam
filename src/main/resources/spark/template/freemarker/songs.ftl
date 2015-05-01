@@ -1,13 +1,14 @@
 <#assign content>
+
 <div id="songs-gui">
-	<div id="toolbar">
-		<span>
-			<button id="back" type="button" class="btn btn-default" float="left">Back</button>
-			<button id="use" type="button" class="btn btn-default btn-primary" float="right">Use</button>
-		</span>
-	</div>
-	<div id="files-div">
-		
+	<div>
+		<div id="toolbar">
+			<button id="back" type="button" class="btn btn-default" style="float:left; margin-top: 8px; margin-left:8px;">Back</button>
+			<button id="use" type="button" class="btn btn-default btn-primary" style="float:right; margin-top:8px; margin-right: 8px;">Use</button>
+		</div>
+		<div id="files-div">
+			
+		</div>
 	</div>
 	<div id="songs-div">
 		
