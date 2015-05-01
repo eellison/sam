@@ -54,7 +54,7 @@ public class SamGui extends SparkGui {
   private int port;
   private String serverAddress;
   private int serverPort;
-  private MusicServer server;
+  private static MusicServer server;
   private AmplitudePanner ap;
   private Map<String, ClientPoint> allClients;
   private AtomicInteger clientId;
@@ -576,7 +576,7 @@ public class SamGui extends SparkGui {
         fileType = fileNameArr[1];
       }
 
-      if (!fileType.equals(".mp3")) {
+      if (!fileType.equals("mp3")) {
         song = new File(fileNameArr[0] + ".mp3");
         if (!song.exists()) {
           try {
@@ -590,7 +590,15 @@ public class SamGui extends SparkGui {
         }
       }
 
-      return null; // this needs to change
+      // now that we have the song play it
+      server.setMusicFile(song);
+      server.broadcast();
+      
+      Map<String, Object> variables =
+          new ImmutableMap.Builder<String, Object>()
+              .build();
+
+      return GSON.toJson(variables);
     }
 
   }
