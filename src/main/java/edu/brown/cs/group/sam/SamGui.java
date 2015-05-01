@@ -13,6 +13,15 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
+
+import edu.brown.cs.group.sam.mp3converter.Mp3Encoder;
+import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
+import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
+import edu.brown.cs.group.sam.server.MusicServer;
+import edu.brown.cs.group.sam.sparkgui.SparkGui;
+
 import org.apache.tika.exception.TikaException;
 import org.xml.sax.SAXException;
 
@@ -396,16 +405,12 @@ public class SamGui extends SparkGui {
       if (server == null) {
         server = new MusicServer(serverAddress, serverPort);
         server.run();
-      } else {
-        // just for testing: set file and broadcast
-        String path = "/Users/Peter/Desktop/bittersweet.mp3";
-        File file = new File(path);
-        server.setMusicFile(file);
-        server.broadcast();
       }
 
       Map<String, Object> variables =
-          new ImmutableMap.Builder<String, Object>().build();
+          new ImmutableMap.Builder<String, Object>()
+          .put("socket_url", serverAddress)
+          .put("socket_port", serverPort).build();
 
       return GSON.toJson(variables);
     }
