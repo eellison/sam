@@ -265,11 +265,15 @@ public class SamGui extends SparkGui {
 
       for (ClientPoint c : allClients.values()) {
 
-        HashMap<String, Object> client = new HashMap<String, Object>();
+        HashMap<String, Object> client = new HashMap<String, Object>();        
         client.put("x", c.getPoint().getCoordinate().x);
         client.put("y", c.getPoint().getCoordinate().y);
         client.put("id", c.getId());
-        client.put("volume", ap.getVolume(c.getId()));
+        Double volume = ap.getVolume(c.getId());
+        if (volume==null) {
+        	volume = 0.;
+        }
+        System.out.println(ap.getVolume(c.getId()));
         clientInfo.add(client);
       }
       Map<String, Object> variables =
@@ -388,15 +392,28 @@ public class SamGui extends SparkGui {
       for (ClientPoint c : allClients.values()) {
 
         HashMap<String, Object> client = new HashMap<String, Object>();
-        client.put("x", c.getPoint().getCoordinate().x);
-        client.put("y", c.getPoint().getCoordinate().y);
+        Double xc = c.getPoint().getCoordinate().x;
+        if (xc == null) {
+        	xc = -50.;
+        }
+        Double yc = c.getPoint().getCoordinate().y;
+        if (xc == null) {
+        	yc = -50.;
+        }
+        client.put("x", xc);
+        client.put("y", yc);
         client.put("id", c.getId());
-        client.put("volume", ap.getVolume(c.getId()));
+        Double volume = ap.getVolume(c.getId());
+        if (volume == null) {
+        	volume = 0.0000001;
+        }
+        client.put("volume", volume);
         clientInfo.add(client);
       }
       
       Map<String, Object> variables =
           ImmutableMap.of("message", message, "success", 0, "clients", clientInfo);
+      System.out.println(variables);
       return GSON.toJson(variables);
     }
   }
