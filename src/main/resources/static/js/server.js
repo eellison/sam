@@ -206,7 +206,15 @@ function draw(clients) {
  			return client.y;
  		});
  		
- 		circleEnter.attr("r", 10);
+ 		circleEnter.attr("r", function(d) {
+ 			var r = d.volume;
+ 			if (r === null) {
+ 				return 10 ;
+ 			}
+ 			r = 10*r;
+ 			r = Math.max(r, 1);
+ 			return r;
+ 		});
  		circleEnter.style("stroke", "black");
  		circleEnter.attr("fill", "none");
 	 	var prev = 	d3.selectAll("text");
