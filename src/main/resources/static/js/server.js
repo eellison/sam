@@ -198,14 +198,19 @@ function draw(clients) {
  		});
  		
  		circleEnter.attr("r", 10);
+ 		circleEnter.style("stroke", "black");
  		circleEnter.attr("fill", "none");
  		circleEnter.append("text")
  	 		.attr("fill-opacity", .7)
  			.text(function(client) {
- 				if (client.name === undefined || client.name === null) {
- 					return client.name
+ 				return "text";
+ 				if (!(client.name === undefined || client.name === null)) {
+ 					return client.name;
  				}
- 				return ("Untitled" + untitled);
+ 				if (!(client.id === undefined || client.id === null)) {
+ 					return client.id;
+ 				} 				
+ 				return "Untitled";
  			});
  	}
 	if (time!=0 && !paused) {

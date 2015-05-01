@@ -31,7 +31,6 @@ var updateSongTitleTimer;
 var updateVolumeTimer;
 var updateClientPositions;
 
-
 $("#clients-canvas").click(function(event) {
 	if (connected) {
 		var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
@@ -69,7 +68,7 @@ function updateVolume() {
 		quick = responseObject.quick;
 		if (quick) {
 			clearInterval(updateVolumeTimer);
-			updateVolumeTimer = setInterval(updateVolume, 50);
+			updateVolumeTimer = setInterval(updateVolume, 100);
 		}
 		else {			
 			clearInterval(updateVolumeTimer);
@@ -78,7 +77,6 @@ function updateVolume() {
 
 	});
 }
-
 // var ntpClient = require('ntp-client');
  
 // ntpClient.getNetworkTime("pool.ntp.org", 123, function(err, date) {
@@ -91,6 +89,7 @@ function updateVolume() {
 //     console.log(date); // Mon Jul 08 2013 21:31:31 GMT+0200 (Paris, Madrid (heure d’été)) 
 // });
 /*
+>>>>>>> bc008fad57bb3ad12af694834585e5e994b33403
 
 /* Update Client Positions */
 function updateClientPositions() {
@@ -146,6 +145,7 @@ function setupClient(url) {
 			socket_server_port = responseObject.server_port;
 
 			setupSocketConnection(socket_server_url, socket_server_port);
+			connected = true;
 
 			// var updateSongTimeTimer = setInterval(updateSongTime, 1000);
 			// var updateSongTitleTimer = setInterval(updateSongTitle, 1000);
