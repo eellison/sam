@@ -168,19 +168,21 @@ h4.title {
 #songs-bound-div {
     width: 502px;
     height: 600px;
-    overflow-y: scroll;
+    min-width: 502px;
+    min-height: 600px;
     background-color: rgba(255, 255, 255, 0.8);
     border: 1px solid rgba(0, 0, 0, 0.1);
-    float: right;
     margin-top: -50px;
+    float: right;
+    overflow: none;
     border-radius: 5px;
 }
 
 #songs-div {
     width: 502px;
-    height: 550px;
+    height: 600px;
     min-width: 502px;
-    min-height: 550px;
+    min-height: 600px;
     float: left;
     overflow: auto;
 }
@@ -215,7 +217,12 @@ h4.title {
     float: left;
 }
 
-.song-item {
-    width: 100%;
+.song {
+    width: 500px;
     height: 50px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
+    margin-bottom: 10px;
+    float: left;
 }

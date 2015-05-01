@@ -29,6 +29,7 @@ import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
 import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
 import edu.brown.cs.group.sam.server.MusicServer;
 import edu.brown.cs.group.sam.sparkgui.SparkGui;
+
 import spark.ModelAndView;
 import spark.QueryParamsMap;
 import spark.Request;
@@ -61,7 +62,7 @@ public class SamGui extends SparkGui {
   private MetadataQuery mq;
 
   public SamGui(int port, String address, int sPort, String db)
-    throws SQLException {
+      throws SQLException {
     this.port = port;
     serverAddress = address;
     serverPort = sPort;
@@ -292,9 +293,9 @@ public class SamGui extends SparkGui {
 
       Map<String, Object> variables =
           new ImmutableMap.Builder<String, Object>()
-          .put("message", message).put("id", clientNumber)
-          .put("server_url", serverAddress)
-          .put("server_port", serverPort).put("success", 0).build();
+              .put("message", message).put("id", clientNumber)
+              .put("server_url", serverAddress)
+              .put("server_port", serverPort).put("success", 0).build();
 
       return GSON.toJson(variables);
     }
@@ -379,11 +380,11 @@ public class SamGui extends SparkGui {
       Coordinate c1 = new Coordinate(x, y);
       ap.calcluteVolume(c1);
       String message = "Success";
-      
+
       Map<String, ClientPoint> allClients = ap.getClients();
       List<HashMap<String, Object>> clientInfo =
           new ArrayList<HashMap<String, Object>>();
-      
+
       for (ClientPoint c : allClients.values()) {
 
         HashMap<String, Object> client = new HashMap<String, Object>();
@@ -393,9 +394,10 @@ public class SamGui extends SparkGui {
         client.put("volume", ap.getVolume(c.getId()));
         clientInfo.add(client);
       }
-      
+
       Map<String, Object> variables =
-          ImmutableMap.of("message", message, "success", 0, "clients", clientInfo);
+          ImmutableMap.of("message", message, "success", 0, "clients",
+              clientInfo);
       return GSON.toJson(variables);
     }
   }
@@ -416,8 +418,8 @@ public class SamGui extends SparkGui {
 
       Map<String, Object> variables =
           new ImmutableMap.Builder<String, Object>()
-              .put("socket_url", serverAddress)
-              .put("socket_port", serverPort).build();
+          .put("socket_url", serverAddress)
+          .put("socket_port", serverPort).build();
 
       return GSON.toJson(variables);
     }

@@ -52,7 +52,7 @@ $("#back").click(function(event) {
 $("#use").click(function(event) {
 	$.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 		songsdiv.remove();
-		songsdiv = $("<ul id='songs-div'></ul>");
+		songsdiv = $("<div id='songs-div'></div>");
 
 		var songs = JSON.parse(responseJSON);
 		songs.forEach(function(elem) {
@@ -61,7 +61,7 @@ $("#use").click(function(event) {
 			var album = elem.album;
 			var artist = elem.artist;
 
-			var song = $("<button class='song-button'></button>");
+			var song = $("<div class='song'><h4>" + title + " by " + artist + "</h4></div>");
 			
 			song.on('click', function(e) {
 				$.post("/playSong", {songPath : path}, function(responseJSON) {
