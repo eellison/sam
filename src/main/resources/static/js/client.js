@@ -23,6 +23,10 @@ var socket_server_port = "";
 var peer_key = "";
 var peer_id = "";
 var peer = null;
+var peer_connection = null;
+
+// variable used for playing song
+var player = null;
 
 //Updating
 var updateSongTimeTimer;
@@ -76,28 +80,15 @@ function updateVolume() {
 
 	});
 }
-// var ntpClient = require('ntp-client');
- 
-// ntpClient.getNetworkTime("pool.ntp.org", 123, function(err, date) {
-//     if(err) {
-//         console.error(err);
-//         return;
-//     }
- 
-//     console.log("Current time : ");
-//     console.log(date); // Mon Jul 08 2013 21:31:31 GMT+0200 (Paris, Madrid (heure d’été)) 
-// });
-/*
->>>>>>> bc008fad57bb3ad12af694834585e5e994b33403
 
 /* Update Client Positions */
 function updateClientPositions() {
 	$.get("http://" + server_url + "/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
-		console.log("Updated clients");
+		// console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject.clients;
 
-		console.log(clients);
+		// console.log(clients);
 		draw_clients(clients);
 	});
 }
@@ -131,6 +122,7 @@ function draw_clients(clients) {
 $("#client-connect").click(function(event) {
 	var url = $("#server-url").val();
 	setupClient(url);
+	setupPlayer();
 });
 var updateVolumeTimer;
 function setupClient(url) {
@@ -173,11 +165,13 @@ function setupSocketConnection(url, port) {
 	});
 
 	socket.on("peer_key", function(data) {
+		console.log("received peer key");
 		peer_key = data;
 		createPeer();
 	});
 
 	socket.on("server_id", function(data) {
+		console.log("received server id");
 		connectPeer(data);
 	});
 }
@@ -194,27 +188,45 @@ function createPeer() {
 	peer.on('open', function(id) {
 		peer_id = id;
 		socket.emit("client_id", peer_id);
+		console.log('opened peer');
 	});
 
 	peer.on('call', function(call) {
 		call.answer();
 
 		call.on('stream', function(stream) {
-			// play(stream);
-			var player = new Audio();
-			player.src = URL.createObjectURL(stream);
-			player.play(0);
+			play(stream);
 		});
 	});
 }
 
-function play(song) {
-	console.log(song.stream);
-	var player = new Audio();
-	player.src = URL.createObjectURL(song);
-	player.play();
+function setupPlayer() {
+	player = new Audio();
 }
 
+/* function used to play the song */
+function play(song) {
+	player.src = URL.createObjectURL(song);
+	player.play(0);
+}
+
+/* function used to set the volume level of the audio player */
+function changeVolumeLevel(vol) {
+	player.volume = vol;
+}
+
+/* function used to connect to a the peer (server) */
 function connectPeer(server_id) {
-	var conn = peer.connect(server_id);
+	peer_connection = peer.connect(server_id);
+
+	peer_connection.on('data', function(data) {
+		var saved_clients = JSON.parse(data);
+		
+		for (var i = 0; i < saved_clients.length; i++) {
+			var curr = saved_clients[i];
+			if (curr.id = client_id) {
+				changeVolumeLevel(curr.volume);
+			}
+		}
+	});
 }

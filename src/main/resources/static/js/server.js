@@ -47,7 +47,12 @@ $("#clients-canvas").on('mousedown', function(event){
 	draw(saved_clients);
 	quick = false;
 	$.post("/changeFocus", {x : xPos, y : yPos, quick:quick}, function(responseJSON) {
+		var responseObject = JSON.parse(responseJSON);
+		var clients = responseObject.clients;
+		saved_clients = clients;
+		updateVolumeOfPeers();
 	});
+
 	$("#clients-canvas").on('mouseup mousemove', function handler(event) {
 		if (event.type == 'mousemove') {
 			var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
@@ -69,6 +74,10 @@ $("#clients-canvas").on('mousedown', function(event){
 			draw(saved_clients);
 			$("#clients-canvas").off('mouseup mousemove', handler);
 			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick}, function(responseJSON) {
+				var responseObject = JSON.parse(responseJSON);
+				var clients = responseObject.clients;
+				saved_clients = clients;
+				updateVolumeOfPeers();
 			});
 		}
 	});
@@ -227,13 +236,15 @@ function draw(clients) {
 /* Update Client Positions */
 function updateClientPositions() {
 	$.get("/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
-		console.log("Updated clients");
+		// console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject.clients;
-		
-		console.log(clients);
+
 		draw(clients);
 		saved_clients = clients;
+
+		// update volume
+		updateVolumeOfPeers();
 	});
 }
 
@@ -281,6 +292,7 @@ function setupSocketConnection(url, port) {
 	});
 
 	socket.on("peer_key", function(data) {
+		console.log("created peer");
 		peer_key = data;
 		createPeer();
 	});
@@ -326,8 +338,9 @@ function createPeer() {
 
 	peer.on('connection', function(conn) {
 		alert("connected to another peer");
+
 		// add connection to a hashmap of ids to connection
-		console.log(conn);
+		peer_connections[conn.peer] = conn;
 	});
 }
 
@@ -356,7 +369,8 @@ function updateVolumeOfPeers() {
 	for (var i = 0; i < peer_client_ids.length; i++) {
 		var id = peer_client_ids[i];
 		if (id != peer_id) {
-			
+			var curr_conn = peer_connections[id];
+			conn.send(JSON.stringify(saved_clients));
 		}
 	}
 }
