@@ -26,11 +26,6 @@
   </repositories>
 
   <dependencies>
-    <dependency>
-      <groupId>it.sauronsoftware</groupId>
-        <artifactId>jave</artifactId>
-      <version>1.0.2</version>
-   </dependency>
    <dependency>
       <groupId>net.sf.jopt-simple</groupId>
       <artifactId>jopt-simple</artifactId>
