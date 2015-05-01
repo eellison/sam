@@ -11,7 +11,8 @@ var socket = null;
 var peer_key = "";
 var peer_id = "";
 var peer = null;
-var client_ids = [];
+var peer_client_ids = [];
+var peer_connections = {};
 
 var svg = d3.select("#clients-canvas")
    .append("svg:svg")
@@ -108,7 +109,6 @@ function pulse() {
 	}
 }
 
-
 $("#clear-focus").click(function(event) {
 	if (running) {
 		focus_x = -1;
@@ -119,8 +119,6 @@ $("#clear-focus").click(function(event) {
 		});
 	}
 });
-
-
 
 
 var focus;
@@ -200,14 +198,19 @@ function draw(clients) {
  		});
  		
  		circleEnter.attr("r", 10);
+ 		circleEnter.style("stroke", "black");
  		circleEnter.attr("fill", "none");
  		circleEnter.append("text")
  	 		.attr("fill-opacity", .7)
  			.text(function(client) {
- 				if (client.name === undefined || client.name === null) {
- 					return client.name
+ 				return "text";
+ 				if (!(client.name === undefined || client.name === null)) {
+ 					return client.name;
  				}
- 				return ("Untitled" + untitled);
+ 				if (!(client.id === undefined || client.id === null)) {
+ 					return client.id;
+ 				} 				
+ 				return "Untitled";
  			});
  	}
 	if (time!=0 && !paused) {
@@ -266,7 +269,7 @@ function setupSocketConnection(url, port) {
 	socket.on('data', function(data) {
 		var response = JSON.parse(data);
 		var song_bytes = response.song;
-		client_ids = response.client_ids;
+		peer_client_ids = response.client_ids;
 
 		stream(song_bytes);
 	});
@@ -317,23 +320,37 @@ function createPeer() {
 
 	peer.on('connection', function(conn) {
 		alert("connected to another peer");
+		// add connection to a hashmap of ids to connection
+		console.log(conn);
 	});
 }
 
+/* function used to stream the song to the peer connections */
 function streamToPeers(stream) {
 	// play song on server as well ??
 	play(stream);
 
-	for (var i = 0; i < client_ids.length; i++) {
-		var id = client_ids[i];
+	for (var i = 0; i < peer_client_ids.length; i++) {
+		var id = peer_client_ids[i];
 		if (id != peer_id) {
 			var call = peer.call(id, stream);
 		}
 	}
 }
 
+/* function used to play song locally */
 function play(song) {
 	var player = new Audio();
 	player.src = URL.createObjectURL(song);
 	player.play();
+}
+
+/* function used to update the volume of all of the clients */
+function updateVolumeOfPeers() {
+	for (var i = 0; i < peer_client_ids.length; i++) {
+		var id = peer_client_ids[i];
+		if (id != peer_id) {
+			
+		}
+	}
 }
