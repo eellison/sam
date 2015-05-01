@@ -1,10 +1,13 @@
 var current_dir = "";
-var last_dir = "";
+var last_dirs = [];
+var DIRECTORY_LABEL_LENGTH = 12;
+var FILE_LABEL_LENGTH = 5;
 
 function queryFilesystem(dir) {
 	$.post("/queryFilesystem", {path : dir}, function(responseJSON) {
-		last_dir = current_dir;
+		last_dirs.push(dir);
 		current_dir = dir;
+
 		$("#files-div").empty();
 
 		var responseObject = JSON.parse(responseJSON);
@@ -12,7 +15,7 @@ function queryFilesystem(dir) {
 		var directories = responseObject.directories;
 
 		directories.forEach(function(elem) {
-			var directory = $("<button class='folder-button'></button>");
+			var directory = $("<button class='folder-button'><p id='directory-label-text'>" + elem.name + "</p></button>");
 			
 			directory.on('click', function(e) {
 				queryFilesystem(elem.path);
@@ -36,10 +39,12 @@ function queryFilesystem(dir) {
 queryFilesystem(current_dir);
 
 $("#back").click(function(event) {
-
+	last_dirs.pop();
+	queryFilesystem(last_dirs.pop());
 });
 
 $("#use").click(function(event) {
+	$("#songs-div").empty();
 	$.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 		var songs = JSON.parse(responseJSON);
 		songs.forEach(function(elem) {
@@ -53,7 +58,7 @@ $("#use").click(function(event) {
 			song.on('click', function(e) {
 				$.post("/playSong", {songPath : path}, function(responseJSON) {
 					alert("Playing " + title + " by " + artist + ".");
-				}
+				});
 			});
 
 			$("#songs-div").append(song);
