@@ -55,7 +55,7 @@ $("#clients-canvas").on('mousedown', function(event){
 
 			focus_x = xPos;
 			focus_y = yPos;
-			quick = true;
+			quick = false;
 			draw(saved_clients);
 			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick}, function(responseJSON) {
 			});
@@ -125,7 +125,8 @@ var focus;
 var focusDec = false;
 running = true;
 var paused = false;
-
+var text;
+var textLabels;
 function draw(clients) {
 	if (!running) {
 		alert("Server not created!");
@@ -149,7 +150,6 @@ function draw(clients) {
 
  	} else if (!focusDec) {
  		timer = setInterval(pulse, pulseTime/2);
- 		console.log("undefined");
  		focus = focusGroup.append("circle")
  			.attr("cx", focus_x)
 			.attr("cy", focus_y)
@@ -200,18 +200,24 @@ function draw(clients) {
  		circleEnter.attr("r", 10);
  		circleEnter.style("stroke", "black");
  		circleEnter.attr("fill", "none");
- 		circleEnter.append("text")
- 	 		.attr("fill-opacity", .7)
- 			.text(function(client) {
- 				return "text";
- 				if (!(client.name === undefined || client.name === null)) {
- 					return client.name;
- 				}
- 				if (!(client.id === undefined || client.id === null)) {
- 					return client.id;
- 				} 				
- 				return "Untitled";
- 			});
+	 	var prev = 	d3.selectAll("text");
+	 	prev.remove();
+
+ 		text = svg.selectAll("text")
+                       .data(saved_clients)
+                        .enter()
+                        .append("text");
+
+
+		//Add SVG Text Element Attributes
+		textLabels = text
+            .attr("x", function(d) { return d.x-10; })
+            .attr("y", function(d) { return d.y-10; })
+            .text( function (d) { return d.id; })
+            .attr("font-family", "sans-serif")
+            .attr("font-size", "20px")
+            .attr("fill", "black")
+            .attr("fill-opacity", .7);
  	}
 	if (time!=0 && !paused) {
 		setTimeout(pulse, time);
@@ -246,7 +252,7 @@ $("#server-create").click(function(event) {
 				// set up the socket io connection
 				setupSocketConnection(socket_url, socket_port);
 			
-				var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
+				var updateClientPositionsTimer = setInterval(updateClientPositions, 3000);
 			}
 		});
 	} 

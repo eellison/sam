@@ -389,8 +389,23 @@ public class SamGui extends SparkGui {
       Coordinate c1 = new Coordinate(x, y);
       ap.calcluteVolume(c1);
       String message = "Success";
+      
+      Map<String, ClientPoint> allClients = ap.getClients();
+      List<HashMap<String, Object>> clientInfo =
+          new ArrayList<HashMap<String, Object>>();
+      
+      for (ClientPoint c : allClients.values()) {
+
+        HashMap<String, Object> client = new HashMap<String, Object>();
+        client.put("x", c.getPoint().getCoordinate().x);
+        client.put("y", c.getPoint().getCoordinate().y);
+        client.put("id", c.getId());
+        client.put("volume", ap.getVolume(c.getId()));
+        clientInfo.add(client);
+      }
+      
       Map<String, Object> variables =
-          ImmutableMap.of("message", message, "success", 0);
+          ImmutableMap.of("message", message, "success", 0, "clients", clientInfo);
       return GSON.toJson(variables);
     }
   }

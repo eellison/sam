@@ -134,26 +134,28 @@ $("#client-connect").click(function(event) {
 });
 var updateVolumeTimer;
 function setupClient(url) {
-	$.post("http://" + url + "/connectClient", {name : "Name"}, function(responseJSON) {
-		var responseObject = JSON.parse(responseJSON);
+	if (!connected) {
+		$.post("http://" + url + "/connectClient", {name : "Name"}, function(responseJSON) {
+			var responseObject = JSON.parse(responseJSON);
 
-		if (!responseObject.error) {
-			server_url = url;
-			client_id = responseObject.id;
-			socket_server_url = responseObject.server_url;
-			socket_server_port = responseObject.server_port;
+			if (!responseObject.error) {
+				server_url = url;
+				client_id = responseObject.id;
+				socket_server_url = responseObject.server_url;
+				socket_server_port = responseObject.server_port;
 
-			setupSocketConnection(socket_server_url, socket_server_port);
-			connected = true;
+				setupSocketConnection(socket_server_url, socket_server_port);
+				connected = true;
 
-			// var updateSongTimeTimer = setInterval(updateSongTime, 1000);
-			// var updateSongTitleTimer = setInterval(updateSongTitle, 1000);
-			updateVolumeTimer = setInterval(updateVolume, 1000);
-			var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
-		} else {
-			connected = false;
-		}
-	});
+				// var updateSongTimeTimer = setInterval(updateSongTime, 1000);
+				// var updateSongTitleTimer = setInterval(updateSongTitle, 1000);
+				updateVolumeTimer = setInterval(updateVolume, 1000);
+				var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
+			} else {
+				connected = false;
+			}
+		});
+	}
 }
 
 /* everything below is used for playing music as it is streamed from the server*/
