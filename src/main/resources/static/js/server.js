@@ -227,6 +227,7 @@ function updateClientPositions() {
 	});
 }
 
+/* create server on click of create */
 $("#server-create").click(function(event) {
 	if (!socket) {
 		// start the socket server
