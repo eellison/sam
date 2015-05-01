@@ -1,4 +1,5 @@
 package edu.brown.cs.group.sam;
+
 import java.sql.SQLException;
 
 import joptsimple.OptionParser;
@@ -7,10 +8,10 @@ import joptsimple.OptionSpec;
 
 public class Main {
   private String[] args;
-  private static final int DEFAULT_PORT = 3336;
+  private static final int DEFAULT_PORT = 3335;
   private static final int DEFAULT_S_PORT = 7783;
   private static final String DEFAULT_ADDR = "localhost";
-  private static final String DEFAULT_DB = 
+  private static final String DEFAULT_DB =
       "src/main/resources/static/metadata/metadata.sqlite3";
 
   public static void main(String[] args) {
@@ -84,7 +85,7 @@ public class Main {
       });
     } catch (SQLException e1) {
       // TODO Auto-generated catch block
-      // not sure if this try catch block is the best idea... 
+      // not sure if this try catch block is the best idea...
       e1.printStackTrace();
     }
   }
