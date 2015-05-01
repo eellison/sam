@@ -48,6 +48,7 @@ $("#use").click(function(event) {
 	$("#songs-div").empty();
 	$.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 		var songs = JSON.parse(responseJSON);
+		alert(songs);
 		songs.forEach(function(elem) {
 			var path = elem.filePath;
 			var title = elem.title;
