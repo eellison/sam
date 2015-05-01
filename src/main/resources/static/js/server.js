@@ -1,4 +1,4 @@
-//Drawing
+// Drawing
 var CANVAS_SIZE = 400;
 
 // audio context (global variable)
@@ -38,7 +38,7 @@ var quick = false;
 $("#clients-canvas").on('mousedown', function(event){
 	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-	// alert("x:" + xPos + " y:" + yPos);
+
 	focus_x = xPos;
 	focus_y = yPos;
 	draw(saved_clients);

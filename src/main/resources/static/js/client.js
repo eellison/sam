@@ -172,7 +172,7 @@ function createPeer() {
 		key: peer_key, 
 		config: {'iceServers': [
     		{url: "stun:stun.l.google.com:19302"},
-		{url:"turn:numb.viagenie.ca", credential: "password123", username: "peter_scott@brown.edu"}]}
+			{url:"turn:numb.viagenie.ca", credential: "password123", username: "peter_scott@brown.edu"}]}
     });
 
 	peer.on('open', function(id) {
@@ -180,7 +180,6 @@ function createPeer() {
 		socket.emit("client_id", peer_id);
 	});
 
-	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 	peer.on('call', function(call) {
 		call.answer();
 
