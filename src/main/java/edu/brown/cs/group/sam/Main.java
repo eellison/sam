@@ -43,39 +43,20 @@ public class Main {
       System.exit(1);
     }
 
-//    OptionSet options = null;
-//    try {
-//      options = parser.parse(args);
-//    } catch (joptsimple.OptionException e) {
-//      System.err.println("ERROR: Issue Parsing Arguments");
-//      System.exit(1);
-//    }
-//
     int port = DEFAULT_PORT;
-//    if (options.has("port")) {
-//      port = options.valueOf(portSpec);
-//    }
+    if (options.has("port")) {
+      port = options.valueOf(portSpec);
+    }
 
     String address = DEFAULT_ADDR;
-//    if (options.has("server")) {
-//      address = options.valueOf(serverSpec);
-//    }
+    if (options.has("server")) {
+      address = options.valueOf(serverSpec);
+    }
 
     int sPort = DEFAULT_S_PORT;
-//    if (options.has("sport")) {
-//      sPort = options.valueOf(serverPortSpec);
-////    }
-//    setPort(Integer.parseInt(System.getenv("PORT")));
-//    get(new Route("/hello") {
-//       @Override
-//       public Object handle(Request request, Response response) {
-//          return "Hello World!";
-//       }
-//    });
-
-    
-    
-
+    if (options.has("sport")) {
+      sPort = options.valueOf(serverPortSpec);
+    }
 
     String db = DEFAULT_DB;
     if (options.has("db")) {
@@ -83,7 +64,6 @@ public class Main {
     }
 
     // start the gui
-    
     try {
       SamGui gui = new SamGui(port, address, sPort, db);
       gui.runSparkServer();
