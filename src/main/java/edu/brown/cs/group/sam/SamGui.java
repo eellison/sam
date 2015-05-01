@@ -29,7 +29,6 @@ import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
 import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
 import edu.brown.cs.group.sam.server.MusicServer;
 import edu.brown.cs.group.sam.sparkgui.SparkGui;
-
 import spark.ModelAndView;
 import spark.QueryParamsMap;
 import spark.Request;
@@ -57,7 +56,7 @@ public class SamGui extends SparkGui {
   private int serverPort;
   private static MusicServer server;
   private AmplitudePanner ap;
-  private Map<String, ClientPoint> allClients;
+  private AtomicBoolean mute;
   private AtomicInteger clientId;
   private MetadataQuery mq;
 
@@ -67,7 +66,6 @@ public class SamGui extends SparkGui {
     serverAddress = address;
     serverPort = sPort;
     ap = new AmplitudePanner();
-    allClients = new HashMap<String, ClientPoint>();
     clientId = new AtomicInteger();
     mq = new MetadataQuery(db);
   }
@@ -91,13 +89,15 @@ public class SamGui extends SparkGui {
     // set up post handlers for interactions with gui
     Spark.post("/startServer", new StartServerHandler());
     AtomicBoolean quickUpdate = new AtomicBoolean();
-    Spark.get("/volume", new VolumeHandler(ap, quickUpdate));
+    mute = new AtomicBoolean(false);
+    Spark.get("/volume", new VolumeHandler(ap, quickUpdate, mute));
     Spark.post("/connectClient", new ConnectClientHandler(clientId));
     Spark.get("/clients", new ClientPosHandler(ap));
     Spark.post("/updatePosition", new UpdatePosHandler(ap, quickUpdate));
+    Spark.post("/updateMute", new MuteHandler(mute));
     Spark.post("/mp3encode", new Mp3EncodeHandler());
     Spark.post("/chooseMusicDirectory", new MusicDirectoryHandler(mq));
-    Spark.post("/changeFocus", new FocusHandler(ap));
+    Spark.post("/changeFocus", new FocusHandler(ap, mute));
     Spark.post("/queryFilesystem", new FilesystemHandler());
     Spark.post("/playSong", new PlaySongHandler());
     Spark.post("/editMetadata", new MetadataHandler(mq));
@@ -203,16 +203,17 @@ public class SamGui extends SparkGui {
    */
   private static class VolumeHandler implements Route {
     private AmplitudePanner ap;
-    private AtomicBoolean quickUpdate;
+    private AtomicBoolean quickUpdate, mute;
 
     /**
      * Constructed with ap
      *
      * @param ap - amplitude panner needed
      */
-    public VolumeHandler(AmplitudePanner ap, AtomicBoolean quickUpdate) {
+    public VolumeHandler(AmplitudePanner ap, AtomicBoolean quickUpdate, AtomicBoolean mute) {
       this.ap = ap;
       this.quickUpdate = quickUpdate;
+      this.mute = mute;
     }
 
     /**
@@ -236,6 +237,9 @@ public class SamGui extends SparkGui {
         weight = 1;
       } else {
         weight = ap.getVolume(id);
+      }
+      if (mute.get()) {
+    	  weight = 0;
       }
       Map<String, Object> variables =
           ImmutableMap.of("volume", weight, "quick", quickUpdate.get());
@@ -273,6 +277,7 @@ public class SamGui extends SparkGui {
         if (volume==null) {
         	volume = 0.;
         }
+        client.put("volume", volume);
         System.out.println(ap.getVolume(c.getId()));
         clientInfo.add(client);
       }
@@ -354,6 +359,22 @@ public class SamGui extends SparkGui {
       return GSON.toJson(variables);
     }
   }
+  private class MuteHandler implements Route {
+	  
+	AtomicBoolean mute;
+	    
+	public MuteHandler(AtomicBoolean mute) {
+	  this.mute = mute;
+	}
+
+	@Override
+	public Object handle(Request request, Response response) {
+		boolean muteI = Boolean.parseBoolean(request.queryMap().value("mute"));
+		mute.set(muteI);
+		return null;
+	}
+  }
+  
 
   /**
    * Handles changing focus
@@ -363,14 +384,16 @@ public class SamGui extends SparkGui {
    */
   private class FocusHandler implements Route {
     AmplitudePanner ap;
+    AtomicBoolean mute;
 
     /**
      * Instantiated withh reference to the Amplitude Panner
      *
      * @param ap
      */
-    public FocusHandler(AmplitudePanner ap) {
+    public FocusHandler(AmplitudePanner ap, AtomicBoolean mute) {
       this.ap = ap;
+      this.mute = mute;
     }
 
     @Override
@@ -406,6 +429,9 @@ public class SamGui extends SparkGui {
         Double volume = ap.getVolume(c.getId());
         if (volume == null) {
         	volume = 0.0000001;
+        }
+        if (mute.get()) { 
+        	volume = 0.;
         }
         client.put("volume", volume);
         clientInfo.add(client);
