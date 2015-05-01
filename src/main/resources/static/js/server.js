@@ -129,7 +129,6 @@ $("#clear-focus").click(function(event) {
 	}
 });
 
-
 var focus;
 var focusDec = false;
 running = true;
@@ -264,6 +263,8 @@ $("#server-create").click(function(event) {
 			
 				var updateClientPositionsTimer = setInterval(updateClientPositions, 3000);
 			}
+
+			alert("Your IP address: ");
 		});
 	} else {
 		socket.emit('play', false);
