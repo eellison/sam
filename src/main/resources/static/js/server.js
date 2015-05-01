@@ -216,11 +216,11 @@ function draw(clients) {
 /* Update Client Positions */
 function updateClientPositions() {
 	$.get("/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
-		console.log("Updated clients");
+		// console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject.clients;
 		
-		console.log(clients);
+		// console.log(clients);
 		draw(clients);
 		saved_clients = clients;
 	});
@@ -315,8 +315,9 @@ function createPeer() {
 
 	peer.on('connection', function(conn) {
 		alert("connected to another peer");
+
 		// add connection to a hashmap of ids to connection
-		console.log(conn);
+		peer_connections[conn.peer] = conn;
 	});
 }
 
@@ -345,7 +346,8 @@ function updateVolumeOfPeers() {
 	for (var i = 0; i < peer_client_ids.length; i++) {
 		var id = peer_client_ids[i];
 		if (id != peer_id) {
-			
+			var curr_conn = peer_connections[id];
+			conn.send(JSON.stringify(saved_clients));
 		}
 	}
 }

@@ -23,6 +23,7 @@ var socket_server_port = "";
 var peer_key = "";
 var peer_id = "";
 var peer = null;
+var peer_connection = null;
 
 //Updating
 var updateSongTimeTimer;
@@ -94,11 +95,11 @@ function updateVolume() {
 /* Update Client Positions */
 function updateClientPositions() {
 	$.get("http://" + server_url + "/clients", {width : CANVAS_SIZE, height : CANVAS_SIZE}, function(responseJSON) {
-		console.log("Updated clients");
+		// console.log("Updated clients");
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject.clients;
 
-		console.log(clients);
+		// console.log(clients);
 		draw_clients(clients);
 	});
 }
@@ -192,6 +193,7 @@ function createPeer() {
 	peer.on('open', function(id) {
 		peer_id = id;
 		socket.emit("client_id", peer_id);
+		console.log(id);
 	});
 
 	peer.on('call', function(call) {
@@ -214,5 +216,10 @@ function play(song) {
 }
 
 function connectPeer(server_id) {
-	var conn = peer.connect(server_id);
+	peer_connection = peer.connect(server_id);
+
+	peer_connection.on('data', function(data) {
+		console.log('received data:');
+		console.log(data);
+	});
 }
