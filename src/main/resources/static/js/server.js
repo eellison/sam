@@ -22,6 +22,9 @@ var API_KEY = "0d73a4465bd208188cc852a95b011b22";
 var address;
 var value;
 getIP();
+
+
+
 function getIP() {
 	$.post("/getIP", {}, function(responseJSON) {
 		var ipResponse = JSON.parse(responseJSON);
@@ -40,8 +43,10 @@ function getIP() {
 		        .attr('data-text', "Join the Party @ " + value);
 		    $('#tweetBtn').append(tweetBtn);
 		    twttr.widgets.load();
-		}
-	})
+		} catch(e) {
+			console.log("Allow twitter cross-platform access");
+		}	
+	}
 }
 
 
@@ -68,6 +73,7 @@ var focus_x = -1;
 var focus_y = -1;
 var nowPause = true;
 var saved_clients = null;
+var paused = false;
 
 var xPos = 0;
 var yPos = 0;
@@ -80,7 +86,7 @@ $("#clients-canvas").on('mousedown', function(event){
 	focus_y = yPos;
 	draw(saved_clients);
 	quick = false;
-	$.post("/changeFocus", {x : xPos, y : yPos, quick:quick}, function(responseJSON) {
+	$.post("/changeFocus", {x : xPos, y : yPos, quick:quick, pause:paused}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject.clients;
 		saved_clients = clients;
@@ -96,7 +102,7 @@ $("#clients-canvas").on('mousedown', function(event){
 			focus_y = yPos;
 			quick = false;
 			draw(saved_clients);
-			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick}, function(responseJSON) {
+			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick, pause:paused}, function(responseJSON) {
 			});
 		} else {
 			var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
@@ -107,7 +113,7 @@ $("#clients-canvas").on('mousedown', function(event){
 			quick = false;
 			draw(saved_clients);
 			$("#clients-canvas").off('mouseup mousemove', handler);
-			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick}, function(responseJSON) {
+			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick, pause:paused}, function(responseJSON) {
 				var responseObject = JSON.parse(responseJSON);
 				var clients = responseObject.clients;
 				saved_clients = clients;
@@ -167,7 +173,7 @@ $("#clear-focus").click(function(event) {
 		nowPause = true;
 		paused = false;
 		draw(saved_clients);
-		$.post("/changeFocus", {x : focus_x, y : focus_y}, function(responseJSON) {
+		$.post("/changeFocus", {x : focus_x, y : focus_y, noFocus:pause}, function(responseJSON) {
 		});
 	}
 });
@@ -188,7 +194,6 @@ $("#mute").click(function(event) {
 var focus;
 var focusDec = false;
 running = true;
-var paused = false;
 var text;
 var textLabels;
 function draw(clients) {
@@ -204,7 +209,6 @@ function draw(clients) {
 
  	var time = 0;
  	if (nowPause && !paused) {
- 		focus_x = -1; focus_y = -1;
  		paused = true;
  		nowPause = false;
  		clearInterval(timer);
