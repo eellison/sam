@@ -93,6 +93,13 @@ function pulse() {
 	if (paused) {
 		return;
 	}
+	console.log("nowPause: " + nowPause);
+	console.log("focusDec: " + focusDec);
+	console.log("pause: " + paused);
+	console.log("focus_x: " + focus_x);
+	console.log("focus_y: " + focus_x);
+
+
 	if (focusDec && !paused) {
 		if (down) {
 			down = false;
@@ -127,6 +134,7 @@ function pulse() {
 $("#clear-focus").click(function(event) {
 	if (running) {
 		nowPause = true;
+		paused = false;
 		draw(saved_clients);
 		$.post("/changeFocus", {x : focus_x, y : focus_y}, function(responseJSON) {
 		});

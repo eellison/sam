@@ -1,6 +1,6 @@
 <#assign content>
 <div id="client-gui">
-	<h2 class="title">Client</h2>
+	<h2 id="client-title" class="title">Client</h2>
 	<div id="client-prefs">
 		<div class="form-group">
 			<label for="server">Server Address</label>

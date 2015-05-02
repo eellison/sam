@@ -137,6 +137,7 @@ function setupClient(url) {
 				setupSocketConnection(socket_server_url, socket_server_port);
 				connected = true;
 				$("#client-connect").text("Connected");
+				$("#client-title").text("Client " + client_id);
 
 				// var updateSongTimeTimer = setInterval(updateSongTime, 1000);
 				// var updateSongTitleTimer = setInterval(updateSongTitle, 1000);
