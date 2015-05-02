@@ -13,7 +13,7 @@
 		</div>
 		<div class="form-group">
     		<label for="volume">Volume</label>
-			<div class="well">
+			<div class="well well-sm">
 			    <input type="range" id="client-volume" min="0" max="10" value="7"></input>
 		    </div>
 		</div>
@@ -27,7 +27,7 @@
 	<div id='songs-wrapper'>
 		<label>Songs</label></br>
 		<div class="btn-group" style="width: 100%;">
-			<input type="search" id="song-search" class="form-control" placeholder="Song name..."></input>
+			<input type="search" id="song-search" class="form-control" placeholder="Input a song name..."></input>
 			<span id="search-clear" class="glyphicon glyphicon-remove-circle"></span>
 		</div>
 		<div id="songs-bound-div-2">
