@@ -18,34 +18,6 @@ var current_dir = "src/main/resources/static/testdirectory";
 var songsdiv = $("<div></div>");
 var API_KEY = "0d73a4465bd208188cc852a95b011b22";
 
-
-var address;
-var value;
-getIP();
-function getIP() {
-	$.post("/getIP", {}, function(responseJSON) {
-		var ipResponse = JSON.parse(responseJSON);
-		if (ipResponse.success) {
-			address = ipResponse.address;
-			value = window.location.host + window.location.pathname;
-			var search = /(server)/i;
-			value = value.replace(search, "client");
-			search = "localhost";
-			value = value.replace(search, address);
-			$('#tweetBtn iframe').remove();
-    		// Generate new markup
-
-    		var tweetBtn = $('<a></a>')
-		        .addClass('twitter-hashtag-button')
-		        .attr('data-text', "Join the Party! | " + value);
-		    $('#tweetBtn').append(tweetBtn);
-		    twttr.widgets.load();
-		}
-	})
-}
-
-
-
 var svg = d3.select("#clients-canvas")
    .append("svg:svg")
    .attr("width", CANVAS_SIZE)
@@ -204,7 +176,6 @@ function draw(clients) {
 
  	var time = 0;
  	if (nowPause && !paused) {
- 		focus_x = -1; focus_y = -1;
  		paused = true;
  		nowPause = false;
  		clearInterval(timer);
@@ -322,16 +293,13 @@ $("#server-create").click(function(event) {
 			var responseObject = JSON.parse(responseJSON);
 			if (!responseObject.error) {
 				$("#server-create").text("Server Created");
-				// $.post("/getIP", {}, function(responseJSON) {
-				// 	var ipResponse = JSON.parse(responseJSON);
-				// 	if (ipResponse.success) {
-						// var address = ipResponse.address;
-				//set earlier for twitter
-				if (address != null)  {
-					$("#server-title").text("Server IP: " + address);
-				}
-					// }
-				// });
+				$.post("/getIP", {}, function(responseJSON) {
+					var ipResponse = JSON.parse(responseJSON);
+					if (ipResponse.success) {
+						var address = ipResponse.address;
+						$("#server-title").text("Server IP: " + address);
+					}
+				});
 				// get the socket io url and port for the socket connection
 				socket_url = responseObject.socket_url;
 				socket_port = responseObject.socket_port;
@@ -341,6 +309,8 @@ $("#server-create").click(function(event) {
 			
 				var updateClientPositionsTimer = setInterval(updateClientPositions, 3000);
 			}
+
+			alert("Server Started At IP Address: ");
 		});
 	}
 });
@@ -470,7 +440,7 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 					song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
 				} else {
 					if (typeof _title == 'undefined') {
-						song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown </p></div>");
+						song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by unknown </p></div>");
 					} else {
 						song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
 					}
@@ -478,7 +448,7 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 			}
 
 			if (typeof _title == 'undefined' || typeof _album == 'undefined' || typeof _artist == 'undefined') {
-				song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div>");
+				song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by unknown</p></div>");
 			}
 
 			song.on('click', function(e) {

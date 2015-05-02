@@ -341,6 +341,8 @@ $("#server-create").click(function(event) {
 			
 				var updateClientPositionsTimer = setInterval(updateClientPositions, 3000);
 			}
+
+			alert("Server Started At IP Address: ");
 		});
 	}
 });
@@ -470,7 +472,7 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 					song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
 				} else {
 					if (typeof _title == 'undefined') {
-						song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown </p></div>");
+						song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by unknown </p></div>");
 					} else {
 						song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
 					}
@@ -478,7 +480,7 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 			}
 
 			if (typeof _title == 'undefined' || typeof _album == 'undefined' || typeof _artist == 'undefined') {
-				song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div>");
+				song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by unknown</p></div>");
 			}
 
 			song.on('click', function(e) {

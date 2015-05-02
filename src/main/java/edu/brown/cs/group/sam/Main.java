@@ -15,7 +15,7 @@ public class Main {
       "src/main/resources/static/metadata/metadata.sqlite3";
 
   public static void main(String[] args) {
-    new Main(args).run();
+    new Main(	args).run();
   }
 
   private Main(String[] args) {
