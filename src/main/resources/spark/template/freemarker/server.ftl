@@ -7,17 +7,6 @@
 	</div></br>
 	<h2 id="server-title" class="title">Server</h2>
 	<div id="server-prefs">
-		<div class="form-group">
-			<label for="roomname">Room Name</label>
-			<input type="text" id="room-name" class="form-control" placeholder="Dave's Room"></input>
-		</div>
-		<div class="form-group">
-    		<label for="volume">Volume</label>
-			<div class="well well-sm">
-			    <input type="range" id="client-volume" min="0" max="10" value="7"></input>
-		    </div>
-		</div>
-		<button class="btn btn-default btn-block btn-primary" id="server-create">Create</button>
 		<div id='current-song' style='margin-top: 25px;float:left;width:200px;height:200px;'>
 			<div id='overlay'>
 
