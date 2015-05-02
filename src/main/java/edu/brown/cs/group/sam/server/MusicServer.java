@@ -8,7 +8,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -27,39 +26,14 @@ public class MusicServer extends Server {
   private static final String PEER_KEY = "ve090qsyoiil766r";
   private String serverId = "";
   private List<String> clientIds = new ArrayList<String>();
+  private int trackId = 0;
 
-  public MusicServer(String address, int port) {
-    super(address, port);
+  public MusicServer(String address) {
+    super(address);
     this.addListeners();
   }
 
   public void addListeners() {
-    server.addEventListener("offer", String.class, new DataListener<String>() {
-      @Override
-      public void onData(SocketIOClient client, String data,
-          AckRequest ackSender) throws Exception {
-        sendOffer(data);
-      }
-    });
-
-    server.addEventListener("answer", String.class, new DataListener<String>() {
-      @Override
-      public void onData(SocketIOClient client, String data,
-          AckRequest ackSender) throws Exception {
-        sendAnswer(data);
-      }
-    });
-
-    server.addEventListener("play", Boolean.class, new DataListener<Boolean>() {
-      @Override
-      public void onData(SocketIOClient client, Boolean data,
-          AckRequest ackSender) throws Exception {
-        if (!data) {
-          playSong();
-        }
-      }
-    });
-
     server.addEventListener("peer_key", String.class, new DataListener<String>() {
       @Override
       public void onData(SocketIOClient client, String data,
@@ -84,39 +58,6 @@ public class MusicServer extends Server {
         client.sendEvent("server_id", serverId);
       }
     });
-
-    server.addEventListener("candidate", String.class, new DataListener<String>() {
-      @Override
-      public void onData(SocketIOClient client, String data,
-          AckRequest ackSender) throws Exception {
-        Collection<SocketIOClient> clients = server.getAllClients();
-        System.out.println("candidate");
-        for (SocketIOClient c: clients) {
-          if (!c.equals(clients)) {
-            c.sendEvent("candidate", data);
-          }
-        }
-      }
-    });
-  }
-
-  public void sendOffer(String offer) {
-    BroadcastOperations br = server.getBroadcastOperations();
-    br.sendEvent("offer", offer);
-  }
-
-  public void sendAnswer(String answer) {
-    BroadcastOperations br = server.getBroadcastOperations();
-    br.sendEvent("answer", answer);
-  }
-
-  /* METHOD FOR TESTING ONLY!! */
-  public void playSong() {
-    // just for testing: set file and broadcast
-    String path = "/Users/Peter/Desktop/bittersweet.mp3";
-    File file = new File(path);
-    this.setMusicFile(file);
-    this.broadcast();
   }
 
   @Override
@@ -124,8 +65,8 @@ public class MusicServer extends Server {
   	if (data == null) {
   	  return;
   	}
-
-    System.out.println("BROADCASTING");
+  	
+  	// broadcasts a song to the server to stream
     BroadcastOperations br = server.getBroadcastOperations();
 
     try (InputStream stream = new ByteArrayInputStream(data)) {
@@ -134,8 +75,9 @@ public class MusicServer extends Server {
 
       while (stream.read(b, 0, length) != -1) {
         Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
-            .put("song", b).put("client_ids", clientIds).build();
-
+            .put("song", b).put("track_id", trackId).build();
+        
+        trackId++;
         String json = GSON.toJson(variables);
         br.sendEvent("data", json);
       }
