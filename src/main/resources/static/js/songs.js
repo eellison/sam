@@ -68,7 +68,12 @@ $("#use").click(function(event) {
 
 		    	if (typeof responseJSONSong.error == 'undefined') {
 					var albumart = responseJSONSong.album.image[1]["#text"];
-					song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:48px;height:48px'><h4 style='text-align: center; float: left; margin-left: 15px;'>" + _title + " by " + _artist + "</h4></div>");
+					
+					if (typeof _title == 'undefined') {
+						song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:48px;height:48px'><h4 style='text-align: center; float: left; margin-left: 15px;'>Unknown by unknown </h4></div>");
+					} else {
+						song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:48px;height:48px'><h4 style='text-align: center; float: left; margin-left: 15px;'>" + _title + " by " + _artist + "</h4></div>");
+					}
 					
 					if (typeof albumart != "undefined") {
 						song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:48px;height:48px'><h4 style='text-align: center; float: left; margin-left: 15px;'>" + _title + " by " + _artist + "</h4></div>");
@@ -86,9 +91,14 @@ $("#use").click(function(event) {
 		    .fail(function(xhr, textStatus, errorThrown) {
 		    	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:48px;height:48px'><h4 style='text-align: center; float: left; margin-left: 15px;'>" + _title + " by " + _artist + "</h4></div>");
 				
+				if (typeof _title == 'undefined') {
+					song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:48px;height:48px'><h4 style='text-align: center; float: left; margin-left: 15px;'>Unknown by unknown </h4></div>");
+				}
+
 				song.on('click', function(e) {
+					alert("Playing " + _title + " by " + _artist + ".");
 					$.post("/playSong", {songPath : _path}, function(responseJSON) {
-						alert("Playing " + _title + " by " + _artist + ".");
+						
 					});
 				});
 
