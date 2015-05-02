@@ -517,3 +517,7 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 
 	$("#songs-bound-div-2").append(songsdiv);
 });
+
+$("#search-clear").click(function(){
+    $("#song-search").val('');
+});

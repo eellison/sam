@@ -26,7 +26,10 @@
 	</div>
 	<div id='songs-wrapper'>
 		<label>Songs</label></br>
-		<input type="text" id="song-search" class="form-control" placeholder="Song name..."></input>
+		<div class="btn-group" style="width: 100%;">
+			<input type="search" id="song-search" class="form-control" placeholder="Song name..."></input>
+			<span id="search-clear" class="glyphicon glyphicon-remove-circle"></span>
+		</div>
 		<div id="songs-bound-div-2">
 		
 		</div>
