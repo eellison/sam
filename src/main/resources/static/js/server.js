@@ -20,9 +20,9 @@ var API_KEY = "0d73a4465bd208188cc852a95b011b22";
 
 
 var address;
+var localAddress;
 var value;
 getIP();
-
 
 
 function getIP() {
@@ -32,6 +32,8 @@ function getIP() {
 			if (ipResponse.success) {
 				address = ipResponse.address;
 				value = window.location.host + window.location.pathname;
+				console.log()
+
 				var search = /(server)/i;
 				value = value.replace(search, "client");
 				search = "localhost";
@@ -49,6 +51,7 @@ function getIP() {
 	} catch (e) {
 		console.log("Allow twitter cross-platform access");
 	} 
+	setUpServer();
 }
 
 
@@ -321,7 +324,7 @@ function updateClientPositions() {
 }
 
 /* create server on click of create */
-$("#server-create").click(function(event) {
+function setUpServer() {
 	if (!socket) {
 		// start the socket server
 		$.post("/startServer", {}, function(responseJSON) {
@@ -349,7 +352,8 @@ $("#server-create").click(function(event) {
 			}
 		});
 	}
-});
+
+}
 
 /* everything below is used for playing music as it is streamed from the server*/
 function setupSocketConnection(url, port) {
