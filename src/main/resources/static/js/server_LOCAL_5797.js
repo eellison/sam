@@ -11,53 +11,12 @@ var socket = null;
 var peer_key = "";
 var peer_id = "";
 var peer = null;
-var self_peer = null;
 var peer_client_ids = [];
 var peer_connections = {};
 var muted = false;
 var current_dir = "src/main/resources/static/testdirectory";
 var songsdiv = $("<div></div>");
 var API_KEY = "0d73a4465bd208188cc852a95b011b22";
-
-
-var address;
-var value;
-getIP();
-
-
-
-function getIP() {
-	$.post("/getIP", {}, function(responseJSON) {
-		var ipResponse = JSON.parse(responseJSON);
-		if (ipResponse.success) {
-			address = ipResponse.address;
-			value = window.location.host + window.location.pathname;
-			var search = /(server)/i;
-			value = value.replace(search, "client");
-			search = "localhost";
-			value = value.replace(search, address);
-			$('#tweetBtn iframe').remove();
-    		// Generate new markup
-
-    		var tweetBtn = $('<a></a>')
-		        .addClass('twitter-hashtag-button')
-		        .attr('data-text', "Join the Party @ " + value);
-		    $('#tweetBtn').append(tweetBtn);
-		    twttr.widgets.load();
-		} catch(e) {
-			console.log("Allow twitter cross-platform access");
-		}	
-	}
-}
-
-
-
-// media stream used to represent audio streaming to clients
-var audio_stream = null;
-var stream_started = false;
-var audio_tracks = {};
-var audio_track_ids = [];
-var current_song_id = -1;
 
 var svg = d3.select("#clients-canvas")
    .append("svg:svg")
@@ -81,7 +40,6 @@ var focus_x = -1;
 var focus_y = -1;
 var nowPause = true;
 var saved_clients = null;
-var paused = false;
 
 var xPos = 0;
 var yPos = 0;
@@ -94,7 +52,7 @@ $("#clients-canvas").on('mousedown', function(event){
 	focus_y = yPos;
 	draw(saved_clients);
 	quick = false;
-	$.post("/changeFocus", {x : xPos, y : yPos, quick:quick, pause:paused}, function(responseJSON) {
+	$.post("/changeFocus", {x : xPos, y : yPos, quick:quick}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject.clients;
 		saved_clients = clients;
@@ -110,7 +68,7 @@ $("#clients-canvas").on('mousedown', function(event){
 			focus_y = yPos;
 			quick = false;
 			draw(saved_clients);
-			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick, pause:paused}, function(responseJSON) {
+			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick}, function(responseJSON) {
 			});
 		} else {
 			var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
@@ -121,7 +79,7 @@ $("#clients-canvas").on('mousedown', function(event){
 			quick = false;
 			draw(saved_clients);
 			$("#clients-canvas").off('mouseup mousemove', handler);
-			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick, pause:paused}, function(responseJSON) {
+			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick}, function(responseJSON) {
 				var responseObject = JSON.parse(responseJSON);
 				var clients = responseObject.clients;
 				saved_clients = clients;
@@ -138,6 +96,12 @@ function pulse() {
 	if (paused) {
 		return;
 	}
+	console.log("nowPause: " + nowPause);
+	console.log("focusDec: " + focusDec);
+	console.log("pause: " + paused);
+	console.log("focus_x: " + focus_x);
+	console.log("focus_y: " + focus_x);
+
 
 	if (focusDec && !paused) {
 		if (down) {
@@ -175,28 +139,28 @@ $("#clear-focus").click(function(event) {
 		nowPause = true;
 		paused = false;
 		draw(saved_clients);
-		$.post("/changeFocus", {x : focus_x, y : focus_y, noFocus:pause}, function(responseJSON) {
+		$.post("/changeFocus", {x : focus_x, y : focus_y}, function(responseJSON) {
 		});
 	}
 });
 
 $("#mute").click(function(event) {
-	if (audio_stream) {
-		audio_stream.getAudioTracks()[0].enabled = !(audio_stream.getAudioTracks()[0].enabled);
-		muted = !muted;
-		if (muted) {
-			$("#mute").text("Unmute");
-		} else {
-			$("#mute").text("Mute");
-		}
-	} else {
-		alert('no song playing!');
+	if (running) {
+		$.post("/mute", {}, function(responseJSON) {
+			muted = !muted;
+			if (muted) {
+				$("#mute").text("Unmute");
+			} else {
+				$("#mute").text("Mute");
+			}
+		});
 	}
 });
 
 var focus;
 var focusDec = false;
 running = true;
+var paused = false;
 var text;
 var textLabels;
 function draw(clients) {
@@ -222,6 +186,7 @@ function draw(clients) {
  			.attr("r", 0);
 
  	} else if (!focusDec) {
+ 		console.log("else if");
  		timer = setInterval(pulse, pulseTime/2);
  		focus = focusGroup.append("circle")
  			.attr("cx", focus_x)
@@ -233,6 +198,7 @@ function draw(clients) {
 		focusDec = true;
 		time = .01;
  	} else {
+ 		console.log("else");
  		time = Math.sqrt(Math.pow((focus.attr("cx") - focus_x), 2) + 
  			Math.pow((focus.attr("cy")-focus_y), 2));
  		time = time * 3;
@@ -327,16 +293,14 @@ $("#server-create").click(function(event) {
 			var responseObject = JSON.parse(responseJSON);
 			if (!responseObject.error) {
 				$("#server-create").text("Server Created");
-				// $.post("/getIP", {}, function(responseJSON) {
-				// 	var ipResponse = JSON.parse(responseJSON);
-				// 	if (ipResponse.success) {
-						// var address = ipResponse.address;
-				//set earlier for twitter
-				if (address != null)  {
-					$("#server-title").text("Server IP: " + address);
-				}
-					// }
-				// });
+				$.post("/getIP", {}, function(responseJSON) {
+					var ipResponse = JSON.parse(responseJSON);
+					if (ipResponse.success) {
+						var address = ipResponse.address;
+						$("#server-title").text("Server IP: " + address);
+						alert("Server IP address: " + address);
+					}
+				});
 				// get the socket io url and port for the socket connection
 				socket_url = responseObject.socket_url;
 				socket_port = responseObject.socket_port;
@@ -347,11 +311,6 @@ $("#server-create").click(function(event) {
 				var updateClientPositionsTimer = setInterval(updateClientPositions, 3000);
 			}
 		});
-	} else {
-		if (audio_stream) {
-			// skip to next song (FOR TESTING)
-			skipSong();
-		}
 	}
 });
 
@@ -374,22 +333,20 @@ function setupSocketConnection(url, port) {
 	socket.on('data', function(data) {
 		var response = JSON.parse(data);
 		var song_bytes = response.song;
-		var song_id = response.track_id;
+		peer_client_ids = response.client_ids;
 
-		stream(song_bytes, song_id);
+		stream(song_bytes);
 	});
 
 	socket.on("peer_key", function(data) {
 		console.log("Peer Created");
 		peer_key = data;
 		createPeer();
-		createSelfPeer();
 	});
 }
 
-var source = null;
 /* function used to stream the song to the peer connections */
-function stream(bytes, song_id) {
+function stream(bytes) {
 	var array_buffer = new ArrayBuffer(bytes.length);
 	var buffered = new Uint8Array(array_buffer);
 
@@ -398,28 +355,16 @@ function stream(bytes, song_id) {
 	}
 	
 	context.decodeAudioData(array_buffer, function(buffer) {
-		audio_tracks[song_id] = buffer;
-		audio_track_ids.push(song_id);
+		var source = context.createBufferSource();
+		source.buffer = buffer;
+		source.start();
 
-		console.log("decoded");
-		if (!audio_stream) { // start right away
-			console.log("no audio stream");
+		//source.connect(context.destination);
+		var remote = context.createMediaStreamDestination();
+		source.connect(remote);
 
-			source = context.createBufferSource();
-			source.buffer = buffer;
-			source.start();
-
-			var remote = context.createMediaStreamDestination();
-			source.connect(remote);
-
-			// pass the stream to the peer
-			audio_stream = remote.stream;
-			current_song_id = song_id;
-
-			streamToPeers(audio_stream);
-		} else { // queue
-			console.log("audio stream exists");
-		}
+		// pass the stream to the peer
+		streamToPeers(remote.stream);	
 	});
 }
 
@@ -441,117 +386,40 @@ function createPeer() {
 	peer.on('connection', function(conn) {
 		// peer connections not really working right now
 		peer_connections[conn.peer] = conn;
-		if (!(peer_client_ids.indexOf(conn.peer) > -1)) {
-			peer_client_ids.push(conn.peer);
-		
-			console.log("connected");
-			if (stream_started) {
-				console.log("call sent");
-				peer.call(conn.peer, audio_stream);
-			}
-		}
 	});
 }
 
-
 /* function used to stream the song to the peer connections */
 function streamToPeers(stream) {
-	console.log("streaming");
-	stream_started = true;
 	for (var i = 0; i < peer_client_ids.length; i++) {
 		var id = peer_client_ids[i];
-		console.log("call sent");
-		var call = peer.call(id, stream);
+		if (id != peer_id) {
+			var call = peer.call(id, stream);
+		}
 	}
+}
+
+/* function used to play song locally */
+function play(song) {
+	var player = new Audio();
+	player.src = URL.createObjectURL(song);
+	player.play();
 }
 
 /* function used to update the volume of all of the clients */
 function updateVolumeOfPeers() {
 	for (var i = 0; i < peer_client_ids.length; i++) {
 		var id = peer_client_ids[i];
-		
-		var curr_conn = peer_connections[id];
-		//curr_conn.send(JSON.stringify(saved_clients));
-	}
-}
-
-/* method used to pause the song playing */
-function pauseAudio() {
-	audio_stream.getAudioTracks()[0].enabled = !(audio_stream.getAudioTracks()[0].enabled);
-}
-
-/* function used to skip to the next song (if there is one) */
-function skipSong() {
-	if (audio_stream) {
-		if (audio_track_ids.length > 1) {
-			var curr_track = audio_tracks[current_song_id];
-			var next_track = audio_tracks[current_song_id + 1];
-
-			source = context.createBufferSource();
-			source.buffer = next_track;
-			source.start();
-
-			var remote = context.createMediaStreamDestination();
-			source.connect(remote);
-			
-			audio_stream = remote.stream;
-			streamToPeers(audio_stream); 
-
-			current_song_id++;
-		} else {
-			audio_stream.getAudioTracks()[0].enabled = false;
-			current_song_id = -1;
-			audio_stream = null;
+		if (id != peer_id) {
+			var curr_conn = peer_connections[id];
+			//curr_conn.send(JSON.stringify(saved_clients));
 		}
 	}
-	
-	//tracks[0].stop();
-}
-
-/* everything here is needed to play song on server as if it were a client */
-function createSelfPeer() {
-	setupPlayer();
-
-	self_peer = new Peer({
-		key: peer_key, 
-		config: {'iceServers': [
-    		{url: "stun:stun.l.google.com:19302"},
-			{url:"turn:numb.viagenie.ca", credential: "password123"}]}
-    });
-
-    self_peer.on('open', function(id) {
-		socket.emit("client_id", id);
-
-		// connect to peer, but wait for split second
-		setTimeout(function() {
- 			self_peer.connect(peer_id);
- 		}, 1000);
-		
-	});
-
-	self_peer.on('call', function(call) {
-		console.log("call received");
-		call.answer();
-
-		call.on('stream', function(stream) {
-			play(stream);
-		});
-	});
-}
-
-function setupPlayer() {
-	player = new Audio();
-}
-
-/* function used to play the song */
-function play(song) {
-	player.src = URL.createObjectURL(song);
-	player.play(0);
 }
 
 $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 	songsdiv.remove();
-	songsdiv = $("<div id='songs-div' style='margin-top: 10px;'></div>");
+	songsdiv = $("<div id='songs-div' style='margin-top: 25px;'></div>");
 
 	var songs = JSON.parse(responseJSON);
 	songs.forEach(function(elem) {
@@ -566,7 +434,6 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 
 	    	if (typeof responseJSONSong.error == 'undefined') {
 				var albumart = responseJSONSong.album.image[1]["#text"];
-				var albumarthighres = responseJSONSong.album.image[3]["#text"];
 				
 				if (typeof albumart != "undefined") {
 					song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
@@ -584,14 +451,8 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 			}
 
 			song.on('click', function(e) {
-				alert("Playing " + _title + " by " + _artist + ".");
-				if (typeof albumarthighres != "undefined") {
-				 	$("#current-song").css("background-image", "url('" + albumarthighres + "')");
-				 } else {
-				 	$("#current-song").css("background-image", "url('../images/placeholder.png')");
-				 }
 				$.post("/playSong", {songPath : _path}, function(responseJSON) {
-				
+					alert("Playing " + _title + " by " + _artist + ".");
 				});
 			});
 
@@ -606,9 +467,8 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 
 			song.on('click', function(e) {
 				alert("Playing " + _title + " by " + _artist + ".");
-				
 				$.post("/playSong", {songPath : _path}, function(responseJSON) {
-				
+					
 				});
 			});
 
@@ -617,8 +477,4 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 	});
 
 	$("#songs-bound-div-2").append(songsdiv);
-});
-
-$("#search-clear").click(function(){
-    $("#song-search").val('');
 });

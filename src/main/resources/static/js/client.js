@@ -65,7 +65,9 @@ $("#clients-canvas").click(function(event) {
 
 /* Volume */
 function updateVolume() {
-	$.get("http://" + server_url + "/volume", {id : client_id}, function(responseJSON) {
+	var name = "";
+	name = $.("#client-name");
+	$.get("http://" + server_url + "/volume", {id : client_id, name: name}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 		volume = responseObject.volume;
 		changeVolumeLevel(volume);
@@ -116,12 +118,16 @@ function draw_clients(clients) {
 	  	ctx.fillText(client.id, client.x - 10, client.y - 10);
 	}
 }
-
-$("#client-connect").click(function(event) {
-	var url = $("#server-url").val();
+prepareClientJoin();
+function prepareClientJoin() {
+	value = window.location.host + window.location.pathname;
+	var search = /(client)/i;
+	value = value.replace(search, "");
+	url = value;
 	setupClient(url);
 	setupPlayer();
-});
+};
+
 var updateVolumeTimer;
 function setupClient(url) {
 	if (!connected) {

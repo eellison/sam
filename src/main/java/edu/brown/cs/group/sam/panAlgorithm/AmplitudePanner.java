@@ -78,6 +78,10 @@ public class AmplitudePanner {
     }
     return null;
   }
+  public boolean removeClient(String id) {
+	 return (clients.remove(id)) != null;
+  }
+  
 
   public Map<String, Double> removeClient(ClientPoint client) {
 
@@ -247,6 +251,7 @@ public class AmplitudePanner {
   public Map<String, ClientPoint> getClients() {
     return clients;
   }
+  
 
   public double getVolume(String id) {
     return currentWeighting.get(id);

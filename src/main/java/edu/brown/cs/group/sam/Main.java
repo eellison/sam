@@ -8,14 +8,14 @@ import joptsimple.OptionSpec;
 
 public class Main {
   private String[] args;
-  private static final int DEFAULT_PORT = 3336;
+  private static final int DEFAULT_PORT = 3335;
   private static final int DEFAULT_S_PORT = 4000;
   private static final String DEFAULT_ADDR = "localhost";
   private static final String DEFAULT_DB =
       "src/main/resources/static/metadata/metadata.sqlite3";
 
   public static void main(String[] args) {
-    new Main(args).run();
+    new Main(	args).run();
   }
 
   private Main(String[] args) {

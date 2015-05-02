@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -51,23 +52,27 @@ import spark.TemplateViewRoute;
 public class SamGui extends SparkGui {
   /* a GSON object for communicating with the GUI */
   private static final Gson GSON = new Gson();
-
+  private static final int TIMEOUT = 15;
   // instance variables declared
   private int port;
   private String serverAddress;
   private static MusicServer server;
   private AmplitudePanner ap;
-  private AtomicBoolean mute;
+  private AtomicBoolean mute, noFocus;
   private AtomicInteger clientId;
   private MetadataQuery mq;
+  private ConcurrentHashMap<String, Long> timeoutMap;
 
   public SamGui(int port, String address, String db)
           throws SQLException {
     this.port = port;
     serverAddress = address;
     ap = new AmplitudePanner();
+    mute = new AtomicBoolean(false);
+    noFocus = new AtomicBoolean(true);
     clientId = new AtomicInteger();
     mq = new MetadataQuery(db);
+    timeoutMap = new ConcurrentHashMap<String, Long>();
   }
 
   /**
@@ -88,15 +93,14 @@ public class SamGui extends SparkGui {
     // set up post handlers for interactions with gui
     Spark.post("/startServer", new StartServerHandler());
     AtomicBoolean quickUpdate = new AtomicBoolean();
-    mute = new AtomicBoolean(false);
-    Spark.get("/volume", new VolumeHandler(ap, quickUpdate, mute));
-    Spark.post("/connectClient", new ConnectClientHandler(clientId));
+    Spark.get("/volume", new VolumeHandler(ap, quickUpdate, mute, noFocus, timeoutMap));
+    Spark.post("/connectClient", new ConnectClientHandler(clientId, timeoutMap));
     Spark.get("/clients", new ClientPosHandler(ap));
     Spark.post("/updatePosition", new UpdatePosHandler(ap, quickUpdate));
     Spark.post("/mute", new MuteHandler(mute));
     Spark.post("/mp3encode", new Mp3EncodeHandler());
     Spark.post("/chooseMusicDirectory", new MusicDirectoryHandler(mq));
-    Spark.post("/changeFocus", new FocusHandler(ap, mute));
+    Spark.post("/changeFocus", new FocusHandler(ap, mute, timeoutMap, noFocus));
     Spark.post("/queryFilesystem", new FilesystemHandler());
     Spark.post("/playSong", new PlaySongHandler());
     Spark.post("/editMetadata", new MetadataHandler(mq));
@@ -204,17 +208,22 @@ public class SamGui extends SparkGui {
    */
   private static class VolumeHandler implements Route {
     private AmplitudePanner ap;
-    private AtomicBoolean quickUpdate, mute;
+    private AtomicBoolean quickUpdate, mute, noFocus;
+    private Map<String, Long> timeoutMap;
 
     /**
      * Constructed with ap
      *
      * @param ap - amplitude panner needed
+     * @param timeoutMap 
      */
-    public VolumeHandler(AmplitudePanner ap, AtomicBoolean quickUpdate, AtomicBoolean mute) {
+    public VolumeHandler(AmplitudePanner ap, AtomicBoolean quickUpdate, 
+    		AtomicBoolean mute, AtomicBoolean noFocus, Map<String, Long> timeoutMap) {
       this.ap = ap;
       this.quickUpdate = quickUpdate;
       this.mute = mute;
+      this.timeoutMap = timeoutMap;
+      this.noFocus = noFocus;
     }
 
     /**
@@ -229,7 +238,10 @@ public class SamGui extends SparkGui {
       QueryParamsMap map = req.queryMap();
 
       String id = map.value("id");
-      System.out.println(id);
+      long unixTime = System.currentTimeMillis() / 1000L;
+      timeoutMap.put(id, unixTime);
+//      timeoutMap.put, value);
+      
       Map<String, ClientPoint> clients = ap.getClients();
       double weight = 1;
       if (ap.getCoordinate() == null) {
@@ -322,9 +334,12 @@ public class SamGui extends SparkGui {
 
   private class ConnectClientHandler implements Route {
     AtomicInteger clientNum;
+    Map<String, Long> timeoutMap;
 
-    public ConnectClientHandler(AtomicInteger clientCounter) {
+    public ConnectClientHandler(AtomicInteger clientCounter, Map<String, Long> timeoutMap) {
       clientNum = clientCounter;
+      this.timeoutMap = timeoutMap;	
+
     }
 
     @Override
@@ -332,6 +347,8 @@ public class SamGui extends SparkGui {
       int clientNumber = clientNum.incrementAndGet();
       String message = "Successful";
 
+      timeoutMap.put(String.valueOf(clientNumber),  (System.currentTimeMillis() / 1000L));
+      System.out.println(System.currentTimeMillis() / 1000L);
       Map<String, Object> variables =
               new ImmutableMap.Builder<String, Object>()
               .put("message", message).put("id", clientNumber)
@@ -373,9 +390,6 @@ public class SamGui extends SparkGui {
               Boolean.parseBoolean(request.queryMap().value("quick"));
       quickUpdate.set(quick);
       String name = request.queryMap().value("name");
-
-      System.out.println(x1);
-      System.out.println(request);
       Double x = Double.parseDouble(x1);
       Double y = Double.parseDouble(y1);
       double[] pos = { x, y };
@@ -401,10 +415,7 @@ public class SamGui extends SparkGui {
 
     @Override
     public Object handle(Request request, Response response) {
-      System.out.println("mute");
       mute.set(!mute.get());
-      System.out.println("Mute handler");
-      System.out.println(mute.get());
       Map<String, Object> variables = ImmutableMap.of("message", "success");
       return GSON.toJson(variables);
     }
@@ -417,16 +428,20 @@ public class SamGui extends SparkGui {
    */
   private class FocusHandler implements Route {
     AmplitudePanner ap;
-    AtomicBoolean mute;
+    AtomicBoolean mute, noFocus;
+    Map<String, Long> timeoutMap;
 
     /**
      * Instantiated withh reference to the Amplitude Panner
      *
      * @param ap
+     * @param noFocus 
      */
-    public FocusHandler(AmplitudePanner ap, AtomicBoolean mute) {
+    public FocusHandler(AmplitudePanner ap, AtomicBoolean mute, Map<String, Long> timeoutMap, AtomicBoolean noFocus) {
       this.ap = ap;
       this.mute = mute;
+      this.timeoutMap = timeoutMap;
+      this.noFocus = noFocus;
     }
 
     @Override
@@ -435,17 +450,27 @@ public class SamGui extends SparkGui {
 
       String x1 = map.value("x");
       String y1 = map.value("y");
+      Boolean noFocusB = Boolean.parseBoolean(map.value("pause"));
+      noFocus.set(noFocusB);
       Double x = Double.parseDouble(x1);
       Double y = Double.parseDouble(y1);
       Coordinate c1 = new Coordinate(x, y);
       ap.calcluteVolume(c1);
       String message = "Success";
-
-      Map<String, ClientPoint> allClients = ap.getClients();
       List<HashMap<String, Object>> clientInfo =
               new ArrayList<HashMap<String, Object>>();
-
+      for (String s: timeoutMap.keySet()) {
+    	  if (((System.currentTimeMillis() / 1000L) - timeoutMap.get(s)) > TIMEOUT) {
+    		  System.out.println(s);
+    		  System.out.println(timeoutMap.get(s));
+    		  timeoutMap.remove(s);
+    		  ap.removeClient(s);
+    	  }
+      }      
+      Map<String, ClientPoint> allClients = ap.getClients();
       for (ClientPoint c : allClients.values()) {
+    	
+        Integer idInt = Integer.parseInt(c.getId());
 
         HashMap<String, Object> client = new HashMap<String, Object>();
         Double xc = c.getPoint().getCoordinate().x;
@@ -461,13 +486,16 @@ public class SamGui extends SparkGui {
         client.put("id", c.getId());
         Double volume = ap.getVolume(c.getId());
         if (volume == null) {
-          volume = 0.0000001;
+          volume = 0.0;
+        }
+        if (Double.isNaN(volume)) {
+      	  volume = 1.;
+        }
+        if (noFocus) {
+        	volume = 1.0;
         }
         if (mute.get()) { 
           volume = 0.;
-        }
-        if (Double.isNaN(volume)) {
-        	  volume = 1.;
         }
         client.put("volume", volume);
         clientInfo.add(client);
@@ -475,7 +503,6 @@ public class SamGui extends SparkGui {
 
       Map<String, Object> variables =
               ImmutableMap.of("message", message, "success", 0, "clients", clientInfo);
-      System.out.println(variables);
       return GSON.toJson(variables);
     }
   }
