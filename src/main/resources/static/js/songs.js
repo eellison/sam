@@ -64,11 +64,15 @@ $("#use").click(function(event) {
 
 			$.get("http://ws.audioscrobbler.com/2.0/", {method : "album.getinfo", artist : _artist, album : _album, api_key : API_KEY, format : "json"})
 		    .done(function(responseJSONSong) {
-				var albumart = responseJSONSong.album.image[1]["#text"];
-				var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:48px;height:48px'><h4 style='margin-left: 10px;'>" + _title + " by " + _artist + "</h4></div>");
-				
-				if (typeof albumart != "undefined") {
-					song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:48px;height:48px'><h4 style='margin-left: 10px;'>" + _title + " by " + _artist + "</h4></div>");
+		    	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:48px;height:48px'><h4 style='text-align: center; float: left; margin-left: 15px;'>" + _title + " by " + _artist + "</h4></div>");
+
+		    	if (typeof responseJSONSong.error == 'undefined') {
+					var albumart = responseJSONSong.album.image[1]["#text"];
+					song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:48px;height:48px'><h4 style='text-align: center; float: left; margin-left: 15px;'>" + _title + " by " + _artist + "</h4></div>");
+					
+					if (typeof albumart != "undefined") {
+						song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:48px;height:48px'><h4 style='text-align: center; float: left; margin-left: 15px;'>" + _title + " by " + _artist + "</h4></div>");
+					}
 				}
 
 				song.on('click', function(e) {
@@ -80,7 +84,7 @@ $("#use").click(function(event) {
 				songsdiv.append(song);
 			})
 		    .fail(function(xhr, textStatus, errorThrown) {
-		    	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:48px;height:48px'><h4 style='margin-left: 10px;'>" + _title + " by " + _artist + "</h4></div>");
+		    	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:48px;height:48px'><h4 style='text-align: center; float: left; margin-left: 15px;'>" + _title + " by " + _artist + "</h4></div>");
 				
 				song.on('click', function(e) {
 					$.post("/playSong", {songPath : _path}, function(responseJSON) {
