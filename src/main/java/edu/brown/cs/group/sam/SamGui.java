@@ -491,7 +491,7 @@ public class SamGui extends SparkGui {
         if (Double.isNaN(volume)) {
       	  volume = 1.;
         }
-        if (noFocus) {
+        if (noFocus.get()) {
         	volume = 1.0;
         }
         if (mute.get()) { 
