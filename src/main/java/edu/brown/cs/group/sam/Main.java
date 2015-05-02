@@ -9,7 +9,7 @@ import joptsimple.OptionSpec;
 public class Main {
   private String[] args;
   private static final int DEFAULT_PORT = 3335;
-  private static final int DEFAULT_S_PORT = 7784;
+  private static final int DEFAULT_S_PORT = 7785;
   private static final String DEFAULT_ADDR = "localhost";
   private static final String DEFAULT_DB =
       "src/main/resources/static/metadata/metadata.sqlite3";

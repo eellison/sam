@@ -88,13 +88,6 @@ $("#clients-canvas").on('mousedown', function(event){
 var pulseTime = 3000;
 var timer;
 var down = false;
-$(document).ready( function() 
-{ 
-  $.getJSON( "http://smart-ip.net/geoip-json?callback=?", function(data){
-  alert( data.host); 
-  } );
-});
-
 
 function pulse() {
 	if (paused) {
