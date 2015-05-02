@@ -18,39 +18,6 @@ var current_dir = "src/main/resources/static/testdirectory";
 var songsdiv = $("<div></div>");
 var API_KEY = "0d73a4465bd208188cc852a95b011b22";
 
-
-var address;
-var value;
-getIP();
-
-
-
-function getIP() {
-	$.post("/getIP", {}, function(responseJSON) {
-		var ipResponse = JSON.parse(responseJSON);
-		if (ipResponse.success) {
-			address = ipResponse.address;
-			value = window.location.host + window.location.pathname;
-			var search = /(server)/i;
-			value = value.replace(search, "client");
-			search = "localhost";
-			value = value.replace(search, address);
-			$('#tweetBtn iframe').remove();
-    		// Generate new markup
-
-    		var tweetBtn = $('<a></a>')
-		        .addClass('twitter-hashtag-button')
-		        .attr('data-text', "Join the Party @ " + value);
-		    $('#tweetBtn').append(tweetBtn);
-		    twttr.widgets.load();
-		} catch(e) {
-			console.log("Allow twitter cross-platform access");
-		}	
-	}
-}
-
-
-
 var svg = d3.select("#clients-canvas")
    .append("svg:svg")
    .attr("width", CANVAS_SIZE)
@@ -73,7 +40,6 @@ var focus_x = -1;
 var focus_y = -1;
 var nowPause = true;
 var saved_clients = null;
-var paused = false;
 
 var xPos = 0;
 var yPos = 0;
@@ -86,7 +52,7 @@ $("#clients-canvas").on('mousedown', function(event){
 	focus_y = yPos;
 	draw(saved_clients);
 	quick = false;
-	$.post("/changeFocus", {x : xPos, y : yPos, quick:quick, pause:paused}, function(responseJSON) {
+	$.post("/changeFocus", {x : xPos, y : yPos, quick:quick}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 		var clients = responseObject.clients;
 		saved_clients = clients;
@@ -102,7 +68,7 @@ $("#clients-canvas").on('mousedown', function(event){
 			focus_y = yPos;
 			quick = false;
 			draw(saved_clients);
-			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick, pause:paused}, function(responseJSON) {
+			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick}, function(responseJSON) {
 			});
 		} else {
 			var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
@@ -113,7 +79,7 @@ $("#clients-canvas").on('mousedown', function(event){
 			quick = false;
 			draw(saved_clients);
 			$("#clients-canvas").off('mouseup mousemove', handler);
-			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick, pause:paused}, function(responseJSON) {
+			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick}, function(responseJSON) {
 				var responseObject = JSON.parse(responseJSON);
 				var clients = responseObject.clients;
 				saved_clients = clients;
@@ -173,7 +139,7 @@ $("#clear-focus").click(function(event) {
 		nowPause = true;
 		paused = false;
 		draw(saved_clients);
-		$.post("/changeFocus", {x : focus_x, y : focus_y, noFocus:pause}, function(responseJSON) {
+		$.post("/changeFocus", {x : focus_x, y : focus_y}, function(responseJSON) {
 		});
 	}
 });
@@ -194,6 +160,7 @@ $("#mute").click(function(event) {
 var focus;
 var focusDec = false;
 running = true;
+var paused = false;
 var text;
 var textLabels;
 function draw(clients) {
@@ -326,16 +293,14 @@ $("#server-create").click(function(event) {
 			var responseObject = JSON.parse(responseJSON);
 			if (!responseObject.error) {
 				$("#server-create").text("Server Created");
-				// $.post("/getIP", {}, function(responseJSON) {
-				// 	var ipResponse = JSON.parse(responseJSON);
-				// 	if (ipResponse.success) {
-						// var address = ipResponse.address;
-				//set earlier for twitter
-				if (address != null)  {
-					$("#server-title").text("Server IP: " + address);
-				}
-					// }
-				// });
+				$.post("/getIP", {}, function(responseJSON) {
+					var ipResponse = JSON.parse(responseJSON);
+					if (ipResponse.success) {
+						var address = ipResponse.address;
+						$("#server-title").text("Server IP: " + address);
+						alert("Server IP address: " + address);
+					}
+				});
 				// get the socket io url and port for the socket connection
 				socket_url = responseObject.socket_url;
 				socket_port = responseObject.socket_port;
@@ -454,7 +419,7 @@ function updateVolumeOfPeers() {
 
 $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 	songsdiv.remove();
-	songsdiv = $("<div id='songs-div' style='margin-top: 10px;'></div>");
+	songsdiv = $("<div id='songs-div' style='margin-top: 25px;'></div>");
 
 	var songs = JSON.parse(responseJSON);
 	songs.forEach(function(elem) {
@@ -469,7 +434,6 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 
 	    	if (typeof responseJSONSong.error == 'undefined') {
 				var albumart = responseJSONSong.album.image[1]["#text"];
-				var albumarthighres = responseJSONSong.album.image[3]["#text"];
 				
 				if (typeof albumart != "undefined") {
 					song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
@@ -487,14 +451,8 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 			}
 
 			song.on('click', function(e) {
-				alert("Playing " + _title + " by " + _artist + ".");
-				if (typeof albumarthighres != "undefined") {
-				 	$("#current-song").css("background-image", "url('" + albumarthighres + "')");
-				 } else {
-				 	$("#current-song").css("background-image", "url('../images/placeholder.png')");
-				 }
 				$.post("/playSong", {songPath : _path}, function(responseJSON) {
-				
+					alert("Playing " + _title + " by " + _artist + ".");
 				});
 			});
 
@@ -509,9 +467,8 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 
 			song.on('click', function(e) {
 				alert("Playing " + _title + " by " + _artist + ".");
-				
 				$.post("/playSong", {songPath : _path}, function(responseJSON) {
-				
+					
 				});
 			});
 
@@ -520,8 +477,4 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 	});
 
 	$("#songs-bound-div-2").append(songsdiv);
-});
-
-$("#search-clear").click(function(){
-    $("#song-search").val('');
 });

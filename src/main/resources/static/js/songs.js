@@ -73,7 +73,7 @@ $("#use").click(function(event) {
 						song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
 					} else {
 						if (typeof _title == 'undefined') {
-							song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by unknown </p></div>");
+							song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown </p></div>");
 						} else {
 							song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
 						}
@@ -81,7 +81,7 @@ $("#use").click(function(event) {
 				}
 
 				if (typeof _title == 'undefined' || typeof _album == 'undefined' || typeof _artist == 'undefined') {
-					song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by unknown</p></div>");
+					song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div>");
 				}
 
 				song.on('click', function(e) {
@@ -96,7 +96,7 @@ $("#use").click(function(event) {
 		    	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
 				
 				if (typeof _title == 'undefined' || typeof _album == 'undefined' || typeof _artist == 'undefined') {
-					song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by unknown</p></div>");
+					song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div>");
 				}
 
 				song.on('click', function(e) {
