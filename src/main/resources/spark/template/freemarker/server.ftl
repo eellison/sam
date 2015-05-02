@@ -16,6 +16,7 @@
 	</div>
 	<div id='songs-wrapper'>
 		<label>Songs</label></br>
+		<input type="text" id="song-search" class="form-control" placeholder="Song name..."></input>
 		<div id="songs-bound-div-2">
 		
 		</div>

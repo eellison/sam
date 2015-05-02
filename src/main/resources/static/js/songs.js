@@ -80,6 +80,10 @@ $("#use").click(function(event) {
 					}
 				}
 
+				if (typeof _title == 'undefined' || typeof _album == 'undefined' || typeof _artist == 'undefined') {
+					song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by unknown</p></div>");
+				}
+
 				song.on('click', function(e) {
 					$.post("/playSong", {songPath : _path}, function(responseJSON) {
 						alert("Playing " + _title + " by " + _artist + ".");
@@ -91,7 +95,7 @@ $("#use").click(function(event) {
 		    .fail(function(xhr, textStatus, errorThrown) {
 		    	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
 				
-				if (typeof _title == 'undefined') {
+				if (typeof _title == 'undefined' || typeof _album == 'undefined' || typeof _artist == 'undefined') {
 					song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by unknown</p></div>");
 				}
 
