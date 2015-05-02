@@ -309,3 +309,14 @@ h4.title {
     cursor: pointer;
     color: #ccc;
 }
+
+#queue-wrapper {
+    width: 302px;
+    height: 400px;
+    min-width: 302px;
+    min-height: 400px;
+    margin-top: 25px;
+    margin-left: 75px;
+    text-align: center;
+    float: left;
+}
