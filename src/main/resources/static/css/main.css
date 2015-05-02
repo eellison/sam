@@ -18,6 +18,7 @@ body {
     text-align: left;
     float: left;
     margin-top: 25px;
+    margin-right: 50px;
 }
 
 #client-canvas {
@@ -26,9 +27,10 @@ body {
 }
 
 #server-gui {
-    width: 50%;
-    margin-left: 25%;
-    max-width: 680px;
+    width: 80%;
+    margin-left: 10%;
+    max-width: 1100px;
+    min-width: 1100px;
     text-align: center;
 }
 
@@ -38,6 +40,7 @@ body {
     text-align: left;
     float: left;
     margin-top: 25px;
+    margin-right: 25px;
 }
 
 #server-canvas {
@@ -83,17 +86,11 @@ canvas {
     background-color: rgba(255, 255, 255, 0.5);
 }
 
-h5.song {
-    overflow: hidden;
-    width: 400px;
-    height: 40px;
-    text-align: center; 
-    float: left; 
-    margin-left: 50px;
+p.song {
     border: 0px;
     background-color: rgba(0, 0, 0, 0.0);
-    margin-top: -40px;
     word-wrap: break-word;
+    font-size: 12px;
 }
 
 h2.title {
@@ -193,11 +190,34 @@ h4.title {
     border-radius: 5px;
 }
 
+#songs-bound-div-2 {
+    width: 302px;
+    height: 400px;
+    min-width: 302px;
+    min-height: 400px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    float: left;
+    overflow: none;
+    border-radius: 5px;
+}
+
+#songs-wrapper {
+    width: 302px;
+    height: 400px;
+    min-width: 302px;
+    min-height: 400px;
+    margin-top: 25px;
+    margin-left: 75px;
+    text-align: center;
+    float: left;
+}
+
 #songs-div {
-    width: 502px;
-    height: 600px;
-    min-width: 502px;
-    min-height: 600px;
+    width: auto;
+    height: auto;
+    min-width: auto;
+    min-height: auto;
     float: left;
     overflow: auto;
 }
@@ -233,13 +253,15 @@ h4.title {
 }
 
 .song {
-    width: 450px;
-    height: 50px;
+    width: 80%;
+    margin-left: 10%;
+    height: 40px;
     border: 1px solid rgba(0, 0, 0, 0.1);
     background-color: rgba(100, 100, 100, 0.1);
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
     float: left;
     border-radius: 5px;
-    margin-left: 25px;
+    overflow: hidden;
+    vertical-align: middle;
 }
