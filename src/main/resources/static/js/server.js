@@ -15,6 +15,34 @@ var peer_client_ids = [];
 var peer_connections = {};
 var muted = false;
 
+
+var address;
+var value;
+getIP();
+function getIP() {
+	$.post("/getIP", {}, function(responseJSON) {
+		var ipResponse = JSON.parse(responseJSON);
+		if (ipResponse.success) {
+			address = ipResponse.address;
+			value = window.location.host + window.location.pathname;
+			var search = /(server)/i;
+			value = value.replace(search, "client");
+			search = "localhost";
+			value = value.replace(search, address);
+			$('#tweetBtn iframe').remove();
+    		// Generate new markup
+
+    		var tweetBtn = $('<a></a>')
+		        .addClass('twitter-hashtag-button')
+		        .attr('data-text', "Join the Party! | " + value);
+		    $('#tweetBtn').append(tweetBtn);
+		    twttr.widgets.load();
+		}
+	})
+}
+
+
+
 var svg = d3.select("#clients-canvas")
    .append("svg:svg")
    .attr("width", CANVAS_SIZE)
@@ -173,6 +201,7 @@ function draw(clients) {
 
  	var time = 0;
  	if (nowPause && !paused) {
+ 		focus_x = -1; focus_y = -1;
  		paused = true;
  		nowPause = false;
  		clearInterval(timer);
@@ -290,13 +319,16 @@ $("#server-create").click(function(event) {
 			var responseObject = JSON.parse(responseJSON);
 			if (!responseObject.error) {
 				$("#server-create").text("Server Created");
-				$.post("/getIP", {}, function(responseJSON) {
-					var ipResponse = JSON.parse(responseJSON);
-					if (ipResponse.success) {
-						var address = ipResponse.address;
-						$("#server-title").text("Server IP: " + address);
-					}
-				});
+				// $.post("/getIP", {}, function(responseJSON) {
+				// 	var ipResponse = JSON.parse(responseJSON);
+				// 	if (ipResponse.success) {
+						// var address = ipResponse.address;
+				//set earlier for twitter
+				if (address != null)  {
+					$("#server-title").text("Server IP: " + address);
+				}
+					// }
+				// });
 				// get the socket io url and port for the socket connection
 				socket_url = responseObject.socket_url;
 				socket_port = responseObject.socket_port;
