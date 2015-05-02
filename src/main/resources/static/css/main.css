@@ -291,4 +291,5 @@ h4.title {
     background-image: url("../images/placeholder.png");
     background-size: cover;
     background-repeat: no-repeat;
+    border-radius: 5px;
 }
