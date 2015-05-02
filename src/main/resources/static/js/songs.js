@@ -4,6 +4,7 @@ var DIRECTORY_LABEL_LENGTH = 12;
 var FILE_LABEL_LENGTH = 5;
 var filesdiv = $("<div></div>");
 var songsdiv = $("<div></div>");
+var API_KEY = "0d73a4465bd208188cc852a95b011b22";
 
 function queryFilesystem(dir) {
 	$.post("/queryFilesystem", {path : dir}, function(responseJSON) {
@@ -56,20 +57,39 @@ $("#use").click(function(event) {
 
 		var songs = JSON.parse(responseJSON);
 		songs.forEach(function(elem) {
-			var path = elem.filePath;
-			var title = elem.title;
-			var album = elem.album;
-			var artist = elem.artist;
+			var _path = elem.filePath;
+			var _title = elem.title;
+			var _album = elem.album;
+			var _artist = elem.artist;
 
-			var song = $("<div class='song'><h4>" + title + " by " + artist + "</h4></div>");
-			
-			song.on('click', function(e) {
-				$.post("/playSong", {songPath : path}, function(responseJSON) {
-					alert("Playing " + title + " by " + artist + ".");
+			$.get("http://ws.audioscrobbler.com/2.0/", {method : "album.getinfo", artist : _artist, album : _album, api_key : API_KEY, format : "json"})
+		    .done(function(responseJSONSong) {
+				var albumart = responseJSONSong.album.image[1]["#text"];
+				var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:48px;height:48px'><h4 style='margin-left: 10px;'>" + _title + " by " + _artist + "</h4></div>");
+				
+				if (typeof albumart != "undefined") {
+					song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:48px;height:48px'><h4 style='margin-left: 10px;'>" + _title + " by " + _artist + "</h4></div>");
+				}
+
+				song.on('click', function(e) {
+					$.post("/playSong", {songPath : _path}, function(responseJSON) {
+						alert("Playing " + _title + " by " + _artist + ".");
+					});
 				});
-			});
 
-			songsdiv.append(song);
+				songsdiv.append(song);
+			})
+		    .fail(function(xhr, textStatus, errorThrown) {
+		    	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:48px;height:48px'><h4 style='margin-left: 10px;'>" + _title + " by " + _artist + "</h4></div>");
+				
+				song.on('click', function(e) {
+					$.post("/playSong", {songPath : _path}, function(responseJSON) {
+						alert("Playing " + _title + " by " + _artist + ".");
+					});
+				});
+
+				songsdiv.append(song);
+		    });
 		});
 
 		$("#songs-bound-div").append(songsdiv);
