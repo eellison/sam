@@ -18,7 +18,11 @@
 		    </div>
 		</div>
 		<button class="btn btn-default btn-block btn-primary" id="server-create">Create</button>
-		<img id='current-song' src='../images/placeholder.png' style='margin-top: 25px;float:left;width:200px;height:200px;'>
+		<div id='current-song' style='margin-top: 25px;float:left;width:200px;height:200px;'>
+			<div id='overlay'>
+
+			</div>
+		</div>
 	</div>
 	<div id='songs-wrapper'>
 		<label>Songs</label></br>

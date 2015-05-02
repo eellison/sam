@@ -485,9 +485,9 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 			song.on('click', function(e) {
 				alert("Playing " + _title + " by " + _artist + ".");
 				if (typeof albumarthighres != "undefined") {
-				 	$("#current-song").attr('src', albumarthighres);
+				 	$("#current-song").css("background-image", "url('" + albumarthighres + "')");
 				 } else {
-				 	$("#current-song").attr('src', "../images/placeholder.png");
+				 	$("#current-song").css("background-image", "url('../images/placeholder.png')");
 				 }
 				$.post("/playSong", {songPath : _path}, function(responseJSON) {
 				
