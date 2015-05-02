@@ -472,6 +472,10 @@ public class SamGui extends SparkGui {
         if (mute.get()) { 
         	volume = 0.;
         }
+        if (Double.isNaN(volume)) {
+        	  volume = 1.;
+        }
+        
         client.put("volume", volume);
         clientInfo.add(client);
       }
