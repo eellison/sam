@@ -312,6 +312,9 @@ public class SamGui extends SparkGui {
         if (volume==null) {
         	volume = 0.;
         }
+        if (Double.isNaN(volume)) {
+      	  volume = 1.;
+        }
         client.put("volume", volume);
         System.out.println(ap.getVolume(c.getId()));
         clientInfo.add(client);
