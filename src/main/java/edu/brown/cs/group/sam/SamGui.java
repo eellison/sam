@@ -55,18 +55,16 @@ public class SamGui extends SparkGui {
   // instance variables declared
   private int port;
   private String serverAddress;
-  private int serverPort;
   private static MusicServer server;
   private AmplitudePanner ap;
   private AtomicBoolean mute;
   private AtomicInteger clientId;
   private MetadataQuery mq;
 
-  public SamGui(int port, String address, int sPort, String db)
+  public SamGui(int port, String address, String db)
           throws SQLException {
     this.port = port;
     serverAddress = address;
-    serverPort = sPort;
     ap = new AmplitudePanner();
     clientId = new AtomicInteger();
     mq = new MetadataQuery(db);
@@ -338,7 +336,7 @@ public class SamGui extends SparkGui {
               new ImmutableMap.Builder<String, Object>()
               .put("message", message).put("id", clientNumber)
               .put("server_url", serverAddress)
-              .put("server_port", serverPort).put("success", 0).build();
+              .put("server_port", server.getPort()).put("success", 0).build();
 
       return GSON.toJson(variables);
     }
@@ -492,14 +490,14 @@ public class SamGui extends SparkGui {
     @Override
     public Object handle(Request req, Response res) {
       if (server == null) {
-        server = new MusicServer(serverAddress, serverPort);
+        server = new MusicServer(serverAddress);
         server.run();
       }
 
       Map<String, Object> variables =
               new ImmutableMap.Builder<String, Object>()
               .put("socket_url", serverAddress)
-              .put("socket_port", serverPort).build();
+              .put("socket_port", server.getPort()).build();
 
       return GSON.toJson(variables);
     }

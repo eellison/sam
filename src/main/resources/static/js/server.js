@@ -11,9 +11,17 @@ var socket = null;
 var peer_key = "";
 var peer_id = "";
 var peer = null;
+var self_peer = null;
 var peer_client_ids = [];
 var peer_connections = {};
 var muted = false;
+
+// media stream used to represent audio streaming to clients
+var audio_stream = null;
+var stream_started = false;
+var audio_tracks = {};
+var audio_track_ids = [];
+var current_song_id = -1;
 
 var svg = d3.select("#clients-canvas")
    .append("svg:svg")
@@ -93,12 +101,6 @@ function pulse() {
 	if (paused) {
 		return;
 	}
-	console.log("nowPause: " + nowPause);
-	console.log("focusDec: " + focusDec);
-	console.log("pause: " + paused);
-	console.log("focus_x: " + focus_x);
-	console.log("focus_y: " + focus_x);
-
 
 	if (focusDec && !paused) {
 		if (down) {
@@ -142,15 +144,16 @@ $("#clear-focus").click(function(event) {
 });
 
 $("#mute").click(function(event) {
-	if (running) {
-		$.post("/mute", {}, function(responseJSON) {
-			muted = !muted;
-			if (muted) {
-				$("#mute").text("Unmute");
-			} else {
-				$("#mute").text("Mute");
-			}
-		});
+	if (audio_stream) {
+		audio_stream.getAudioTracks()[0].enabled = !(audio_stream.getAudioTracks()[0].enabled);
+		muted = !muted;
+		if (muted) {
+			$("#mute").text("Unmute");
+		} else {
+			$("#mute").text("Mute");
+		}
+	} else {
+		alert('no song playing!');
 	}
 });
 
@@ -183,7 +186,6 @@ function draw(clients) {
  			.attr("r", 0);
 
  	} else if (!focusDec) {
- 		console.log("else if");
  		timer = setInterval(pulse, pulseTime/2);
  		focus = focusGroup.append("circle")
  			.attr("cx", focus_x)
@@ -195,7 +197,6 @@ function draw(clients) {
 		focusDec = true;
 		time = .01;
  	} else {
- 		console.log("else");
  		time = Math.sqrt(Math.pow((focus.attr("cx") - focus_x), 2) + 
  			Math.pow((focus.attr("cy")-focus_y), 2));
  		time = time * 3;
@@ -309,6 +310,11 @@ $("#server-create").click(function(event) {
 
 			alert("Server Started At IP Address: ");
 		});
+	} else {
+		if (audio_stream) {
+			// skip to next song (FOR TESTING)
+			skipSong();
+		}
 	}
 });
 
@@ -331,20 +337,22 @@ function setupSocketConnection(url, port) {
 	socket.on('data', function(data) {
 		var response = JSON.parse(data);
 		var song_bytes = response.song;
-		peer_client_ids = response.client_ids;
+		var song_id = response.track_id;
 
-		stream(song_bytes);
+		stream(song_bytes, song_id);
 	});
 
 	socket.on("peer_key", function(data) {
 		console.log("Peer Created");
 		peer_key = data;
 		createPeer();
+		createSelfPeer();
 	});
 }
 
+var source = null;
 /* function used to stream the song to the peer connections */
-function stream(bytes) {
+function stream(bytes, song_id) {
 	var array_buffer = new ArrayBuffer(bytes.length);
 	var buffered = new Uint8Array(array_buffer);
 
@@ -353,16 +361,28 @@ function stream(bytes) {
 	}
 	
 	context.decodeAudioData(array_buffer, function(buffer) {
-		var source = context.createBufferSource();
-		source.buffer = buffer;
-		source.start();
+		audio_tracks[song_id] = buffer;
+		audio_track_ids.push(song_id);
 
-		//source.connect(context.destination);
-		var remote = context.createMediaStreamDestination();
-		source.connect(remote);
+		console.log("decoded");
+		if (!audio_stream) { // start right away
+			console.log("no audio stream");
 
-		// pass the stream to the peer
-		streamToPeers(remote.stream);	
+			source = context.createBufferSource();
+			source.buffer = buffer;
+			source.start();
+
+			var remote = context.createMediaStreamDestination();
+			source.connect(remote);
+
+			// pass the stream to the peer
+			audio_stream = remote.stream;
+			current_song_id = song_id;
+
+			streamToPeers(audio_stream);
+		} else { // queue
+			console.log("audio stream exists");
+		}
 	});
 }
 
@@ -384,33 +404,110 @@ function createPeer() {
 	peer.on('connection', function(conn) {
 		// peer connections not really working right now
 		peer_connections[conn.peer] = conn;
+		if (!(peer_client_ids.indexOf(conn.peer) > -1)) {
+			peer_client_ids.push(conn.peer);
+		
+			console.log("connected");
+			if (stream_started) {
+				console.log("call sent");
+				peer.call(conn.peer, audio_stream);
+			}
+		}
 	});
 }
 
+
 /* function used to stream the song to the peer connections */
 function streamToPeers(stream) {
+	console.log("streaming");
+	stream_started = true;
 	for (var i = 0; i < peer_client_ids.length; i++) {
 		var id = peer_client_ids[i];
-		if (id != peer_id) {
-			var call = peer.call(id, stream);
-		}
+		console.log("call sent");
+		var call = peer.call(id, stream);
 	}
-}
-
-/* function used to play song locally */
-function play(song) {
-	var player = new Audio();
-	player.src = URL.createObjectURL(song);
-	player.play();
 }
 
 /* function used to update the volume of all of the clients */
 function updateVolumeOfPeers() {
 	for (var i = 0; i < peer_client_ids.length; i++) {
 		var id = peer_client_ids[i];
-		if (id != peer_id) {
-			var curr_conn = peer_connections[id];
-			//curr_conn.send(JSON.stringify(saved_clients));
+		
+		var curr_conn = peer_connections[id];
+		//curr_conn.send(JSON.stringify(saved_clients));
+	}
+}
+
+/* method used to pause the song playing */
+function pauseAudio() {
+	audio_stream.getAudioTracks()[0].enabled = !(audio_stream.getAudioTracks()[0].enabled);
+}
+
+/* function used to skip to the next song (if there is one) */
+function skipSong() {
+	if (audio_stream) {
+		if (audio_track_ids.length > 1) {
+			var curr_track = audio_tracks[current_song_id];
+			var next_track = audio_tracks[current_song_id + 1];
+
+			source = context.createBufferSource();
+			source.buffer = next_track;
+			source.start();
+
+			var remote = context.createMediaStreamDestination();
+			source.connect(remote);
+			
+			audio_stream = remote.stream;
+			streamToPeers(audio_stream); 
+
+			current_song_id++;
+		} else {
+			audio_stream.getAudioTracks()[0].enabled = false;
+			current_song_id = -1;
+			audio_stream = null;
 		}
 	}
+	
+	//tracks[0].stop();
+}
+
+/* everything here is needed to play song on server as if it were a client */
+function createSelfPeer() {
+	setupPlayer();
+
+	self_peer = new Peer({
+		key: peer_key, 
+		config: {'iceServers': [
+    		{url: "stun:stun.l.google.com:19302"},
+			{url:"turn:numb.viagenie.ca", credential: "password123"}]}
+    });
+
+    self_peer.on('open', function(id) {
+		socket.emit("client_id", id);
+
+		// connect to peer, but wait for split second
+		setTimeout(function() {
+ 			self_peer.connect(peer_id);
+ 		}, 1000);
+		
+	});
+
+	self_peer.on('call', function(call) {
+		console.log("call received");
+		call.answer();
+
+		call.on('stream', function(stream) {
+			play(stream);
+		});
+	});
+}
+
+function setupPlayer() {
+	player = new Audio();
+}
+
+/* function used to play the song */
+function play(song) {
+	player.src = URL.createObjectURL(song);
+	player.play(0);
 }

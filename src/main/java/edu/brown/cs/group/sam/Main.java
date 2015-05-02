@@ -31,8 +31,6 @@ public class Main {
         parser.accepts("port").withRequiredArg().ofType(Integer.class);
     OptionSpec<String> serverSpec =
         parser.accepts("server").withRequiredArg().ofType(String.class);
-    OptionSpec<Integer> serverPortSpec =
-        parser.accepts("sport").withRequiredArg().ofType(Integer.class);
     OptionSpec<String> dbSpec =
         parser.accepts("db").withRequiredArg().ofType(String.class);
 
@@ -54,11 +52,6 @@ public class Main {
       address = options.valueOf(serverSpec);
     }
 
-    int sPort = DEFAULT_S_PORT;
-    if (options.has("sport")) {
-      sPort = options.valueOf(serverPortSpec);
-    }
-
     String db = DEFAULT_DB;
     if (options.has("db")) {
       db = options.valueOf(dbSpec);
@@ -66,7 +59,7 @@ public class Main {
 
     // start the gui
     try {
-      SamGui gui = new SamGui(port, address, sPort, db);
+      SamGui gui = new SamGui(port, address, db);
       gui.runSparkServer();
 
       // add a hook to shut down the server:

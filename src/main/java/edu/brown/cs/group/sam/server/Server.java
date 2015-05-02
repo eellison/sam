@@ -8,24 +8,35 @@ import com.corundumstudio.socketio.listener.DisconnectListener;
 
 public abstract class Server {
   protected String address;
-  protected int port;
   protected SocketIOServer server;
   protected byte[] data;
+  private int port;
 
-  public Server(String address, int port) {
+  public Server(String address) {
     this.address = address;
-    this.port = port;
 
     Configuration config = new Configuration();
     config.setHostname(address);
-    config.setPort(port);
 
-    this.server = new SocketIOServer(config);
+    boolean exit = true;
+    for (int port = 3333; port < 5000; port++) {
+      try {
+        config.setPort(port);
+        this.server = new SocketIOServer(config);
+        server.start();
+      } catch (Exception e) {
+        // the current port does not work
+        continue;
+      }
+
+      this.port = port;
+      break;
+    }
   }
 
   public void run() {
     this.setupServer();
-    server.start();
+    //server.start();
   }
 
   private void setupServer() {    
@@ -54,5 +65,9 @@ public abstract class Server {
 
   public void close() {
     server.stop();
+  }
+  
+  public int getPort() {
+    return this.port;
   }
 }
