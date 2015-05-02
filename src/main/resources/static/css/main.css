@@ -188,7 +188,7 @@ h4.title {
     height: 600px;
     min-width: 502px;
     min-height: 600px;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.5);
     border: 1px solid rgba(0, 0, 0, 0.1);
     margin-top: -50px;
     float: right;
@@ -201,7 +201,7 @@ h4.title {
     height: 400px;
     min-width: 302px;
     min-height: 400px;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.5);
     border: 1px solid rgba(0, 0, 0, 0.1);
     float: left;
     overflow: none;
@@ -277,4 +277,12 @@ h4.title {
 
 #song-search {
     width: 100%;
+}
+
+#song-search {
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+#room-name {
+    background-color: rgba(255, 255, 255, 0.7);
 }

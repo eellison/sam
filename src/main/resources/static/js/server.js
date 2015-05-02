@@ -37,7 +37,7 @@ function getIP() {
 
     		var tweetBtn = $('<a></a>')
 		        .addClass('twitter-hashtag-button')
-		        .attr('data-text', "Join the Party! | " + value);
+		        .attr('data-text', "Join the Party @ " + value);
 		    $('#tweetBtn').append(tweetBtn);
 		    twttr.widgets.load();
 		}
@@ -450,7 +450,7 @@ function updateVolumeOfPeers() {
 
 $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 	songsdiv.remove();
-	songsdiv = $("<div id='songs-div' style='margin-top: 25px;'></div>");
+	songsdiv = $("<div id='songs-div' style='margin-top: 10px;'></div>");
 
 	var songs = JSON.parse(responseJSON);
 	songs.forEach(function(elem) {
@@ -465,6 +465,7 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 
 	    	if (typeof responseJSONSong.error == 'undefined') {
 				var albumart = responseJSONSong.album.image[1]["#text"];
+				var albumarthighres = responseJSONSong.album.image[3]["#text"];
 				
 				if (typeof albumart != "undefined") {
 					song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
@@ -482,8 +483,14 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 			}
 
 			song.on('click', function(e) {
+				alert("Playing " + _title + " by " + _artist + ".");
+				if (typeof albumarthighres != "undefined") {
+				 	$("#current-song").attr('src', albumarthighres);
+				 } else {
+				 	$("#current-song").attr('src', "../images/placeholder.png");
+				 }
 				$.post("/playSong", {songPath : _path}, function(responseJSON) {
-					alert("Playing " + _title + " by " + _artist + ".");
+				
 				});
 			});
 
@@ -498,8 +505,9 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 
 			song.on('click', function(e) {
 				alert("Playing " + _title + " by " + _artist + ".");
+				
 				$.post("/playSong", {songPath : _path}, function(responseJSON) {
-					
+				
 				});
 			});
 
