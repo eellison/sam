@@ -13,6 +13,7 @@ var peer_id = "";
 var peer = null;
 var peer_client_ids = [];
 var peer_connections = {};
+var muted = false;
 
 var svg = d3.select("#clients-canvas")
    .append("svg:svg")
@@ -136,6 +137,19 @@ $("#clear-focus").click(function(event) {
 		focus_y = -1;
 		draw(saved_clients);
 		$.post("/changeFocus", {x : focus_x, y : focus_y}, function(responseJSON) {
+		});
+	}
+});
+
+$("#mute").click(function(event) {
+	if (running) {
+		$.post("/mute", {}, function(responseJSON) {
+			muted = !muted;
+			if (muted) {
+				$("#mute").text("Unmute");
+			} else {
+				$("#mute").text("Mute");
+			}
 		});
 	}
 });
@@ -273,8 +287,15 @@ $("#server-create").click(function(event) {
 		// start the socket server
 		$.post("/startServer", {}, function(responseJSON) {
 			var responseObject = JSON.parse(responseJSON);
-
 			if (!responseObject.error) {
+				$("#server-create").text("Server Created");
+				$.post("/getIP", {}, function(responseJSON) {
+					var ipResponse = JSON.parse(responseJSON);
+					if (ipResponse.success) {
+						var address = ipResponse.address;
+						$("#server-title").text("Server IP: " + address);
+					}
+				});
 				// get the socket io url and port for the socket connection
 				socket_url = responseObject.socket_url;
 				socket_port = responseObject.socket_port;

@@ -1,6 +1,6 @@
 <#assign content>
 <div id="server-gui">
-	<h2 class="title">Server</h2>
+	<h2 id="server-title" class="title">Server</h2>
 	<div id="server-prefs">
 		<div class="form-group">
 			<label for="=roomname">Room Name</label>
@@ -17,15 +17,11 @@
 	<div id="server-canvas">
 		<label for="=clientpositions">Client Positions</label></br>
 		<div id="clients-canvas">
-
 		</div>
-
-		<!--<svg id="clients-canvas"></svg>-->
-
-
 		</br>
 		<div class="btn-group" role="btn-group-justified">
 			<button class="btn btn-default" id="clear-focus">Clear Focus</button>
+			<button class="btn btn-default" id="mute">Mute</button>
 			<a class="btn btn-default" href="/songs" role="button" target="_blank">Songs</a>
 		</div>
 	</div>

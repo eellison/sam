@@ -4,6 +4,8 @@ import it.sauronsoftware.jave.EncoderException;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,7 +87,6 @@ public class SamGui extends SparkGui {
     Spark.get("/server", new ServerHandler(), super.getEngine());
     Spark.get("/client", new ClientHandler(), super.getEngine());
     Spark.get("/songs", new SongsHandler(), super.getEngine());
-
     // set up post handlers for interactions with gui
     Spark.post("/startServer", new StartServerHandler());
     AtomicBoolean quickUpdate = new AtomicBoolean();
@@ -94,13 +95,14 @@ public class SamGui extends SparkGui {
     Spark.post("/connectClient", new ConnectClientHandler(clientId));
     Spark.get("/clients", new ClientPosHandler(ap));
     Spark.post("/updatePosition", new UpdatePosHandler(ap, quickUpdate));
-    Spark.post("/updateMute", new MuteHandler(mute));
+    Spark.post("/mute", new MuteHandler(mute));
     Spark.post("/mp3encode", new Mp3EncodeHandler());
     Spark.post("/chooseMusicDirectory", new MusicDirectoryHandler(mq));
     Spark.post("/changeFocus", new FocusHandler(ap, mute));
     Spark.post("/queryFilesystem", new FilesystemHandler());
     Spark.post("/playSong", new PlaySongHandler());
     Spark.post("/editMetadata", new MetadataHandler(mq));
+    Spark.post("/getIP", new IPAddressHandler());
   }
 
   /**
@@ -111,6 +113,7 @@ public class SamGui extends SparkGui {
    *
    */
   private class HomeHandler implements TemplateViewRoute {
+	 
     /**
      * Method that handles get requests from the home page on the front-end.
      *
@@ -238,6 +241,8 @@ public class SamGui extends SparkGui {
       } else {
         weight = ap.getVolume(id);
       }
+      System.out.println("Volume handler");
+      System.out.println(mute.get());
       if (mute.get()) {
     	  weight = 0;
       }
@@ -246,6 +251,32 @@ public class SamGui extends SparkGui {
       return GSON.toJson(variables);
     }
   }
+  private static class IPAddressHandler implements Route {
+
+	@Override
+	public Object handle(Request arg0, Response arg1) {
+		
+		String address = "";
+		boolean success = true;
+	    InetAddress ip = null;;
+		try {
+			ip = InetAddress.getLocalHost();			
+		} catch (UnknownHostException e) {
+			success = false;
+		}
+		if (success) {
+			String[]  addr = ip.getHostAddress().split("/");
+			address = addr[addr.length-1];
+		}
+	    Map<String, Object> variables =
+	    		ImmutableMap.of("success", success, "address", address);
+
+		// TODO Auto-generated method stub
+		return GSON.toJson(variables);
+	}	  
+  }
+  
+  
 
   /**
    * Class that returns all positions of clients
@@ -369,13 +400,14 @@ public class SamGui extends SparkGui {
 
 	@Override
 	public Object handle(Request request, Response response) {
-		boolean muteI = Boolean.parseBoolean(request.queryMap().value("mute"));
-		mute.set(muteI);
-		return null;
+		System.out.println("mute");
+		mute.set(!mute.get());
+		System.out.println("Mute handler");
+		System.out.println(mute.get());
+		Map<String, Object> variables = ImmutableMap.of("message", "success");
+		return GSON.toJson(variables);
 	}
   }
-  
-
   /**
    * Handles changing focus
    *
