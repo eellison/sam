@@ -631,6 +631,10 @@ public class SamGui extends SparkGui {
       QueryParamsMap qm = req.queryMap();
       String path = qm.value("path");
 
+      if (path == null) {
+        path = "";
+      }
+
       FilesystemViewer viewer = new FilesystemViewer(path);
       return GSON.toJson(viewer);
     }
@@ -652,19 +656,19 @@ public class SamGui extends SparkGui {
         fileType = fileNameArr[1];
       }
 
-      if (!fileType.equals("mp3")) {
-        song = new File(fileNameArr[0] + ".mp3");
-        if (!song.exists()) {
-          try {
-            song = Mp3Encoder.encode(song); // this should
-            // effectively be doing nothing
-            /* Do something here to add in metadata */
-          } catch (IllegalArgumentException | EncoderException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          }
-        }
-      }
+//      if (!fileType.equals("mp3")) {
+//        song = new File(fileNameArr[0] + ".mp3");
+//        if (!song.exists()) {
+//          try {
+//            song = Mp3Encoder.encode(song); // this should
+//            // effectively be doing nothing
+//            /* Do something here to add in metadata */
+//          } catch (IllegalArgumentException | EncoderException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//          }
+//        }
+//      }
 
       // now that we have the song play it
       server.setMusicFile(song);
