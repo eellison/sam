@@ -6,12 +6,8 @@
 		</script>
 	</div></br>
 	<h2 id="server-title" class="title">Server</h2>
-	<div id="server-prefs">
-		<div id='current-song' style='margin-top: 25px;float:left;width:200px;height:200px;'>
-			<div id='overlay'>
+	<div id="queue-wrapper">
 
-			</div>
-		</div>
 	</div>
 	<div id='songs-wrapper'>
 		<label>Songs</label></br>
@@ -34,6 +30,12 @@
 			<a class="btn btn-default btn-primary" href="/songs" role="button" target="_blank">Select Directory</a>
 		</div>
 	</div>
+</div></br>
+<div>
+<div id='current-song' style='margin-top: 25px;float:left;width:200px;height:200px;'></div>
+<span>
+	
+</span>
 </div>
 </#assign>
 <#assign pagescripts>
