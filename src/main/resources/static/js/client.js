@@ -125,7 +125,8 @@ $("#client-connect").click(function(event) {
 var updateVolumeTimer;
 function setupClient(url) {
 	if (!connected) {
-		$.post("http://" + url + "/connectClient", {name : "Name"}, function(responseJSON) {
+		$.post("http://" + url + "/connectClient", {name : "Name"})
+		.done(function(responseJSON) {
 			var responseObject = JSON.parse(responseJSON);
 
 			if (!responseObject.error) {
@@ -135,14 +136,20 @@ function setupClient(url) {
 				socket_server_port = responseObject.server_port;
 				setupSocketConnection(socket_server_url, socket_server_port);
 				connected = true;
+				$("#client-connect").text("Connected");
 
 				// var updateSongTimeTimer = setInterval(updateSongTime, 1000);
 				// var updateSongTitleTimer = setInterval(updateSongTitle, 1000);
 				updateVolumeTimer = setInterval(updateVolume, 1000);
 				var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
 			} else {
+				alert("Error connecting to server");
 				connected = false;
 			}
+		})
+		.fail(function(xhr, textStatus, errorThrown) {
+			$("#client-connect").text("Failure: Retry Connect");
+			connected = false;
 		});
 	}
 }

@@ -241,6 +241,9 @@ public class SamGui extends SparkGui {
       } else {
         weight = ap.getVolume(id);
       }
+      if (Double.isNaN(weight)) {
+    	  weight = 1;
+      }
       System.out.println("Volume handler");
       System.out.println(mute.get());
       if (mute.get()) {
@@ -248,6 +251,7 @@ public class SamGui extends SparkGui {
       }
       Map<String, Object> variables =
           ImmutableMap.of("volume", weight, "quick", quickUpdate.get());
+      System.out.println(variables);
       return GSON.toJson(variables);
     }
   }

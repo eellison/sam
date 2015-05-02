@@ -35,6 +35,7 @@ var circleGroup;
 var running = false;
 var focus_x = -1;
 var focus_y = -1;
+var nowPause = true;
 var saved_clients = null;
 
 var xPos = 0;
@@ -130,11 +131,9 @@ function pulse() {
 		}
 	}
 }
-
 $("#clear-focus").click(function(event) {
 	if (running) {
-		focus_x = -1;
-		focus_y = -1;
+		nowPause = true;
 		draw(saved_clients);
 		$.post("/changeFocus", {x : focus_x, y : focus_y}, function(responseJSON) {
 		});
@@ -172,8 +171,9 @@ function draw(clients) {
 	}
 
  	var time = 0;
- 	if (focus_x == -1 && !paused) {
+ 	if (nowPause && !paused) {
  		paused = true;
+ 		nowPause = false;
  		clearInterval(timer);
  		focus
  			.transition()
