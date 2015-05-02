@@ -65,10 +65,10 @@ $("#clients-canvas").click(function(event) {
 
 /* Volume */
 function updateVolume() {
-	return;
 	$.get("http://" + server_url + "/volume", {id : client_id}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 		volume = responseObject.volume;
+		changeVolumeLevel(volume);
 		quick = responseObject.quick;
 		if (quick) {
 			clearInterval(updateVolumeTimer);
@@ -133,7 +133,6 @@ function setupClient(url) {
 				client_id = responseObject.id;
 				socket_server_url = responseObject.server_url;
 				socket_server_port = responseObject.server_port;
-
 				setupSocketConnection(socket_server_url, socket_server_port);
 				connected = true;
 

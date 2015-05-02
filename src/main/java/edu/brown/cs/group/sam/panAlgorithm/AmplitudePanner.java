@@ -163,10 +163,13 @@ public class AmplitudePanner {
     for (String s : clients.keySet()) {
       double di =
           cartesianDist(clients.get(s).getPoint().getCoordinate(), vs, 0);
-
+      
       weight +=
           Math.pow(distPoint, 2 * distanceExp)
           / Math.pow(di, 2 * distanceExp);
+    }
+    if (weight == 0) {
+    	weight = 1;
     }
     return (1 / weight);
   }
