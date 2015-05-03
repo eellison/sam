@@ -657,6 +657,12 @@ function removeFromGUIQueue(id) {
 
 function nowPlaying(song_ele) {
 	//update album artwork
+	var albumarthighres = song_ele.albumarthighres;
+	if (typeof albumarthighres != "undefined") {
+		$("current-song").css("background", "url('" + albumarthighres + "'')");
+	} else {
+		$("current-song").css("background", "url('../images/placeholder.png'')");
+	}
 }
 
 /* define what happens when user pauses */
@@ -775,9 +781,7 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 			}
 
 			song.on('click', function(e) {
-				$.post("/playSong", {songPath : _path}, function(responseJSON) {
-					alert("Playing " + _title + " by " + _artist + ".");
-				});
+				addSongToQueue(song);
 			});
 
 			songsdiv.append(song);
@@ -790,10 +794,7 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 			}
 
 			song.on('click', function(e) {
-				alert("Playing " + _title + " by " + _artist + ".");
-				$.post("/playSong", {songPath : _path}, function(responseJSON) {
-					
-				});
+				addSongToQueue(song);
 			});
 
 			songsdiv.append(song);
