@@ -39,13 +39,12 @@ body {
     height: 300px;
     text-align: left;
     float: left;
-    margin-top: 25px;
-    margin-right: 25px;
+    margin-top: 5px;
 }
 
 #server-canvas {
     float: right;
-    margin-top: 25px;
+    margin-top: 5px;
 }
 
 #song-search {
@@ -198,6 +197,18 @@ h4.title {
 
 #songs-bound-div-2 {
     width: 302px;
+    height: 366px;
+    min-width: 302px;
+    min-height: 366px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    float: left;
+    overflow: none;
+    border-radius: 5px;
+}
+
+#songs-bound-div-3 {
+    width: 302px;
     height: 400px;
     min-width: 302px;
     min-height: 400px;
@@ -210,11 +221,10 @@ h4.title {
 
 #songs-wrapper {
     width: 302px;
-    height: 400px;
+    height: 366px;
     min-width: 302px;
-    min-height: 400px;
-    margin-top: 25px;
-    margin-left: 75px;
+    min-height: 366px;
+    margin-top: 5px;
     text-align: center;
     float: left;
 }
@@ -315,8 +325,29 @@ h4.title {
     height: 400px;
     min-width: 302px;
     min-height: 400px;
-    margin-top: 25px;
-    margin-left: 75px;
+    margin-top: 5px;
     text-align: center;
     float: left;
+}
+
+#song-controls {
+    width: 602px;
+    height: 72px;
+    min-width: 302px;
+    min-height: 72px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    float: left;
+    border-radius: 5px;
+}
+
+#pause-play {
+    height: 50px;
+    width: 50px;
+    margin: 10px 10px 10px 10px;
+    float: left;
+    background: url("../images/play.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+    border: 0px;
 }

@@ -76,6 +76,7 @@ var circleGroup;
 var running = false;
 var focus_x = -1;
 var focus_y = -1;
+var foci = [];
 var nowPause = true;
 var saved_clients = null;
 var paused = false;
@@ -84,6 +85,24 @@ var xPos = 0;
 var yPos = 0;
 var quick = false;
 $("#clients-canvas").on('mousedown', function(event){
+
+	var isRightMB;
+    e = e || window.event;
+
+    if ("which" in e)  // Gecko (Firefox), WebKit (Safari/Chrome) & Opera
+        isRightMB = e.which == 3; 
+    else if ("button" in e)  // IE, Opera 
+        isRightMB = e.button == 2; 
+
+   	if (isRightMB) {
+   		updateServerPosition(event);
+   		return;
+   	}
+
+   	if (event.shiftKey) {
+   		addFocusPoint(event);
+   		return;
+   	}
 	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
 
@@ -127,6 +146,38 @@ $("#clients-canvas").on('mousedown', function(event){
 		}
 	});
 });
+
+
+function addFocusPoint(event) {
+	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
+	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
+
+	focus = focusGroup.append("circle")
+ 		.attr("cx", focus_x)
+		.attr("cy", focus_y)
+		.attr("r", 10)
+		.attr("stroke-width", 1)
+		.attr("stroke", "black")
+		.attr("fill", "none");
+	focusDec = true;
+	time = .01;
+}
+
+
+
+/*
+function updateServerPosition(event) {
+	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
+	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
+	$.post("http://" + server_url + "/updatePosition", {id : client_id, x : xPos, y : yPos}, function(responseJSON) {
+		$.post("/changeFocus", {x : focus_x, y : focus_y, noFocus:pause}, function(responseJSON) {
+		});
+	});
+}
+*/
+
+
+
 var pulseTime = 3000;
 var timer;
 var down = false;
@@ -180,6 +231,19 @@ $("#clear-focus").click(function(event) {
 		draw(saved_clients);
 		$.post("/changeFocus", {x : focus_x, y : focus_y, noFocus:pause}, function(responseJSON) {
 		});
+		var tempClients = [];
+		point1 = [];
+		point2 = [];
+		point1[x] = -5;
+		point1[y] = -10;
+		point2[x] = 5;
+		point2[y] = 10;
+
+
+
+
+		$.post("/changeFocus", {})
+
 	}
 });
 
@@ -195,6 +259,11 @@ $("#mute").click(function(event) {
 		});
 	}
 });
+
+
+
+
+
 
 var focus;
 var focusDec = false;
@@ -224,7 +293,6 @@ function draw(clients) {
  			.attr("r", 0);
 
  	} else if (!focusDec) {
- 		console.log("else if");
  		timer = setInterval(pulse, pulseTime/2);
  		focus = focusGroup.append("circle")
  			.attr("cx", focus_x)
@@ -232,11 +300,10 @@ function draw(clients) {
 			.attr("r", 10)
 			.attr("stroke-width", 1)
 			.attr("stroke", "black")
-			.attr("fill", "none")
+			.attr("fill", "none");
 		focusDec = true;
 		time = .01;
  	} else {
- 		console.log("else");
  		time = Math.sqrt(Math.pow((focus.attr("cx") - focus_x), 2) + 
  			Math.pow((focus.attr("cy")-focus_y), 2));
  		time = time * 3;
