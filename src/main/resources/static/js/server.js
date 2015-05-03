@@ -20,6 +20,7 @@ var queuediv = $("<div></div>");
 var API_KEY = "0d73a4465bd208188cc852a95b011b22";
 
 // variable needed for queueing the stream
+var audio_stream = null;
 var stream_started = false;
 
 // variable used to represent the song queue
