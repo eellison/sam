@@ -339,6 +339,7 @@ h4.title {
     border: 1px solid rgba(0, 0, 0, 0.1);
     float: left;
     border-radius: 5px;
+    vertical-align: middle;
 }
 
 #pause-play {
@@ -356,7 +357,7 @@ h4.title {
     height: 50px;
     width: 50px;
     margin: 10px 10px 10px 10px;
-    float: left;
+    float: right;
     background: url("../images/skip.png");
     background-repeat: no-repeat;
     background-size: contain;
@@ -366,18 +367,26 @@ h4.title {
 #progressbar {
   background-color: rgba(0, 0, 0, 0.1);
   border-radius: 4px; /* (height of inner div) / 2 + padding */
-  padding: 5px;
+  padding: 2px;
   float: left;
-  width: 80%;
-  height: 10px;
+  width: 74%;
+  height: 5px;
   margin-top: 30px;
 }
 
 #progressbar > div {
    background-color: rgba(165, 208, 254, 0.8);
    width: 40%; /* Adjust with JavaScript */
-   height: 8px;
-   border-radius: 5px;
-   margin-top: -4px;
+   height: 4px;
+   border-radius: 1px;
+   margin-top: -2px;
    float: left;
+}
+
+#song-controls > p {
+    float: left;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 22px;
+    color: rgba(165, 208, 254, 0.8);
 }

@@ -40,9 +40,11 @@
 		<div id="song-controls">
 			<div id='current-song' style='float:left;width:70px;height:70px;'></div>
 			<button id="pause-play"></button>
+			<p style="float: left;">0:00</p>
 			<div id="progressbar">
   				<div></div>
 			</div>
+			<p style="float: left;">0:00</p>
 			<button id="skip"></button>
 		</div>
 	</div>
