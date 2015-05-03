@@ -544,13 +544,15 @@ function count_song_time() {
 function update_total_time() {
 	var total_time = get_mins_from_seconds(current_song_total_time);
 
+	// Show total time of song here:
 
 }
 
 function update_current_time() {
 	var current_time = get_mins_from_seconds(current_song_time);
 
-	
+	// Show current time of song here:
+		
 }
 
 /* function used to convert from seconds to mins/seconds */
