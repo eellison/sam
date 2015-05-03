@@ -90,8 +90,7 @@ var quick = false;
 $("#clients-canvas").on('mousedown', function(event){
 
 	var isRightMB;
-    e = e || window.event;
-
+    var e = e || window.event;
     if ("which" in e)  // Gecko (Firefox), WebKit (Safari/Chrome) & Opera
         isRightMB = e.which == 3; 
     else if ("button" in e)  // IE, Opera 
