@@ -239,7 +239,7 @@ $("#clear-focus").click(function(event) {
 		point1[y] = -10;
 		point2[x] = 5;
 		point2[y] = 10;
-		$.post("/changeFocus", {noFocus: pause, focusPoints: tempClients}, function(responseJSON) {
+		$.post("/changeFocus", {noFocus: pause, focusPoints: tempClients}, function(responseJSON) {});
 	}
 });
 
@@ -581,15 +581,55 @@ function play(song) {
 	player.play(0);
 }
 
+/* define function used to skip to next song */
+$("#skip").on('click', function(event){
+	nextSong();
+});
+
 /* function used to get to the next song in the queue */
 function nextSong() {
 	// if something is being streamed
 	if (audio_stream) {
-		if (song_ids.length > 1) {
+		// remove current song from queue
+		delete song_queue[current_song_id];
+		var index = song_ids.indexOf(current_song_id);
+		
+		if (index > -1) {
+			array.splice(index, 1);
+		}
+
+		if (song_ids.length > 0) {
+			var next_id = song_ids[index];
+			var next_song = song_queue[next_id];
+			current_song_id = next_id;
 			
+			// stop source and reset it to next song
+			source.stop();
+			source = context.createBufferSource();
+			source.buffer = next_song;
+			source.start();
+
+			//source.connect(context.destination);
+			var remote = context.createMediaStreamDestination();
+			source.connect(remote);
+
+			// keep hold of stream in case a connection comes part way through song
+			audio_stream = remote.stream;
+
+			// pass the stream to the peer
+			streamToPeers(remote.stream);
+		} else {
+			source.stop();
+			source = null;
+			audio_stream = null;
 		}
 	}
 }
+
+/* define what happens when user pauses */
+$("#pause-play").on('click', function(event){
+	alert('pause-play');
+});
 
 
 /* stuff for choosing song and music directory */
