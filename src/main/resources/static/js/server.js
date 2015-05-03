@@ -18,6 +18,9 @@ var current_dir = "src/main/resources/static/testdirectory";
 var songsdiv = $("<div></div>");
 var API_KEY = "0d73a4465bd208188cc852a95b011b22";
 
+// variable needed for queueing the stream
+var stream_started = false;
+
 
 var address;
 var localAddress;
@@ -441,7 +444,6 @@ function setupSocketConnection(url, port) {
 	socket.on('data', function(data) {
 		var response = JSON.parse(data);
 		var song_bytes = response.song;
-		peer_client_ids = response.client_ids;
 
 		stream(song_bytes);
 	});
@@ -450,6 +452,7 @@ function setupSocketConnection(url, port) {
 		console.log("Peer Created");
 		peer_key = data;
 		createPeer();
+		createSelfPeer();
 	});
 }
 
@@ -463,6 +466,7 @@ function stream(bytes) {
 	}
 	
 	context.decodeAudioData(array_buffer, function(buffer) {
+		stream_started = true;
 		var source = context.createBufferSource();
 		source.buffer = buffer;
 		source.start();
@@ -494,6 +498,14 @@ function createPeer() {
 	peer.on('connection', function(conn) {
 		// peer connections not really working right now
 		peer_connections[conn.peer] = conn;
+
+		if (!(peer_client_ids.indexOf(conn.peer) > -1)) {
+			peer_client_ids.push(conn.peer);
+
+			if (stream_started) {
+				peer.call(conn.peer, audio_stream);
+			}
+		}
 	});
 }
 
@@ -525,6 +537,47 @@ function updateVolumeOfPeers() {
 	}
 }
 
+/* stuff needed to play song on server as if it were a client */
+function createSelfPeer() {
+	setupPlayer();
+
+	self_peer = new Peer({
+		key: peer_key, 
+		config: {'iceServers': [
+    		{url: "stun:stun.l.google.com:19302"},
+			{url:"turn:numb.viagenie.ca", credential: "password123"}]}
+    });
+
+    self_peer.on('open', function(id) {
+		socket.emit("client_id", id);
+
+		// connect to peer, but wait for split second
+		setTimeout(function() {
+ 			self_peer.connect(peer_id);
+ 		}, 1000);
+		
+	});
+
+	self_peer.on('call', function(call) {
+		call.answer();
+
+		call.on('stream', function(stream) {
+			play(stream);
+		});
+	});
+}
+
+function setupPlayer() {
+	player = new Audio();
+}
+
+/* function used to play the song */
+function play(song) {
+	player.src = URL.createObjectURL(song);
+	player.play(0);
+}
+
+/* stuff for choosing song and music directory */
 $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 	songsdiv.remove();
 	songsdiv = $("<div id='songs-div' style='margin-top: 10px;'></div>");
