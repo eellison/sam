@@ -16,12 +16,11 @@ var peer_connections = {};
 var muted = false;
 var current_dir = "src/main/resources/static/testdirectory";
 var songsdiv = $("<div></div>");
+var queuediv = $("<div></div>");
 var API_KEY = "0d73a4465bd208188cc852a95b011b22";
 
-// variables needed for queueing the stream
+// variable needed for queueing the stream
 var stream_started = false;
-var source = null;
-var audio_stream = null;
 
 // variable used to represent the song queue
 var song_queue = {};
@@ -97,7 +96,6 @@ $("#clients-canvas").on('mousedown', function(event){
 
 	var isRightMB;
     var e = e || window.event;
-
     if ("which" in e)  // Gecko (Firefox), WebKit (Safari/Chrome) & Opera
         isRightMB = e.which == 3; 
     else if ("button" in e)  // IE, Opera 
@@ -172,12 +170,17 @@ function addFocusPoint(event) {
 	time = .01;
 }
 
+
+
+
 function updateServerPosition(event) {
 	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
 	$.post("http://" + server_url + "/updatePosition", {id : 0, x : xPos, y : yPos}, function(responseJSON) {
 	});
 }
+
+
 
 
 var pulseTime = 3000;
@@ -193,6 +196,7 @@ function pulse() {
 	console.log("pause: " + paused);
 	console.log("focus_x: " + focus_x);
 	console.log("focus_y: " + focus_x);
+
 
 	if (focusDec && !paused) {
 		if (down) {
@@ -225,7 +229,6 @@ function pulse() {
 		}
 	}
 }
-
 $("#clear-focus").click(function(event) {
 	if (running) {
 		nowPause = true;
@@ -449,7 +452,7 @@ function setupSocketConnection(url, port) {
 	});
 }
 
-/* function usecd to stream the song to the peer connections */
+/* function used to stream the song to the peer connections */
 function stream(bytes, song_id) {
 	var array_buffer = new ArrayBuffer(bytes.length);
 	var buffered = new Uint8Array(array_buffer);
@@ -462,12 +465,11 @@ function stream(bytes, song_id) {
 		song_ids.push(song_id);
 		song_queue[song_id] = buffer;
 
-		if (!source) {
-			// keep the current song id and remember that the stream has started
-			stream_started = true;
+		if (!audio_stream) {
 			current_song_id = song_id;
-
-			source = context.createBufferSource();
+			stream_started = true;
+			
+			var source = context.createBufferSource();
 			source.buffer = buffer;
 			source.start();
 
@@ -564,7 +566,6 @@ function createSelfPeer() {
 	});
 
 	self_peer.on('call', function(call) {
-		console.log("call received");
 		call.answer();
 
 		call.on('stream', function(stream) {
@@ -663,7 +664,6 @@ $("#pause-play").on('click', function(event){
 	alert('pause-play');
 });
 
-
 /* stuff for choosing song and music directory */
 $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 	songsdiv.remove();
@@ -733,6 +733,76 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 	});
 
 	$("#songs-bound-div-2").append(songsdiv);
+});
+
+$.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
+	queuediv.remove();
+	queuediv = $("<div id='songs-div' style='margin-top: 10px;'></div>");
+
+	var songs = JSON.parse(responseJSON);
+	songs.forEach(function(elem) {
+		var _path = elem.filePath;
+		var _title = elem.title;
+		var _album = elem.album;
+		var _artist = elem.artist;
+
+		$.get("http://ws.audioscrobbler.com/2.0/", {method : "album.getinfo", artist : _artist, album : _album, api_key : API_KEY, format : "json"})
+	    .done(function(responseJSONSong) {
+	    	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
+
+	    	if (typeof responseJSONSong.error == 'undefined') {
+				var albumart = responseJSONSong.album.image[1]["#text"];
+				var albumarthighres = responseJSONSong.album.image[3]["#text"];
+				
+				if (typeof albumart != "undefined") {
+					song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
+				} else {
+					if (typeof _title == 'undefined') {
+						song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown </p></div>");
+					} else {
+						song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
+					}
+				}
+			}
+
+			if (typeof _title == 'undefined' || typeof _album == 'undefined' || typeof _artist == 'undefined') {
+				song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div>");
+			}
+
+			song.on('click', function(e) {
+				alert("Playing " + _title + " by " + _artist + ".");
+				if (typeof albumarthighres != "undefined") {
+				 	$("#current-song").css("background-image", "url('" + albumarthighres + "')");
+				 } else {
+				 	$("#current-song").css("background-image", "url('../images/placeholder.png')");
+				 }
+				$.post("/playSong", {songPath : _path}, function(responseJSON) {
+				
+				});
+			});
+
+			queuediv.append(song);
+		})
+	    .fail(function(xhr, textStatus, errorThrown) {
+	    	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
+			
+			if (typeof _title == 'undefined' || typeof _album == 'undefined' || typeof _artist == 'undefined') {
+				song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div>");
+			}
+
+			song.on('click', function(e) {
+				alert("Playing " + _title + " by " + _artist + ".");
+				
+				$.post("/playSong", {songPath : _path}, function(responseJSON) {
+				
+				});
+			});
+
+			queuediv.append(song);
+	    });
+	});
+
+	$("#songs-bound-div-3").append(queuediv);
 });
 
 $("#search-clear").click(function(){
