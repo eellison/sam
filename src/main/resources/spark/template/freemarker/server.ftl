@@ -20,7 +20,7 @@
 		<div id="queue-wrapper">
 			<label>Queue</label></br>
 			<div id="songs-bound-div-3">
-			
+				<div id='queue-div' style='margin-top: 10px;'></div>
 			</div>
 		</div>
 		<div id="server-canvas">

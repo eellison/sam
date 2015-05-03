@@ -390,3 +390,7 @@ h4.title {
     margin-top: 22px;
     color: rgba(165, 208, 254, 0.8);
 }
+
+*:focus {
+    outline: none;
+}
