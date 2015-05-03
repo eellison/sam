@@ -20,7 +20,9 @@ var queuediv = $("<div></div>");
 var API_KEY = "0d73a4465bd208188cc852a95b011b22";
 
 // variable needed for queueing the stream
+var audio_stream = null;
 var stream_started = false;
+var source = null;
 
 // variable used to represent the song queue
 var song_queue = {};
@@ -469,7 +471,7 @@ function stream(bytes, song_id) {
 			current_song_id = song_id;
 			stream_started = true;
 			
-			var source = context.createBufferSource();
+			source = context.createBufferSource();
 			source.buffer = buffer;
 			source.start();
 
