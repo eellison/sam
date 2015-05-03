@@ -22,6 +22,10 @@ var API_KEY = "0d73a4465bd208188cc852a95b011b22";
 // variable needed for queueing the stream
 var stream_started = false;
 
+// variable used to represent the song queue
+var song_queue = {};
+var song_ids = [];
+var queue = [];
 
 var address;
 var localAddress;
@@ -435,8 +439,9 @@ function setupSocketConnection(url, port) {
 	socket.on('data', function(data) {
 		var response = JSON.parse(data);
 		var song_bytes = response.song;
+		var song_id = response.track_id;
 
-		stream(song_bytes);
+		stream(song_bytes, song_id);
 	});
 
 	socket.on("peer_key", function(data) {
@@ -448,7 +453,7 @@ function setupSocketConnection(url, port) {
 }
 
 /* function used to stream the song to the peer connections */
-function stream(bytes) {
+function stream(bytes, song_id) {
 	var array_buffer = new ArrayBuffer(bytes.length);
 	var buffered = new Uint8Array(array_buffer);
 
@@ -457,17 +462,28 @@ function stream(bytes) {
 	}
 	
 	context.decodeAudioData(array_buffer, function(buffer) {
-		stream_started = true;
-		var source = context.createBufferSource();
-		source.buffer = buffer;
-		source.start();
+		song_ids.push(song_id);
+		song_queue[song_id] = buffer;
 
-		//source.connect(context.destination);
-		var remote = context.createMediaStreamDestination();
-		source.connect(remote);
+		if (!audio_stream) {
+			current_song_id = song_id;
+			stream_started = true;
+			
+			var source = context.createBufferSource();
+			source.buffer = buffer;
+			source.start();
 
-		// pass the stream to the peer
-		streamToPeers(remote.stream);	
+			//source.connect(context.destination);
+			var remote = context.createMediaStreamDestination();
+			source.connect(remote);
+
+			// keep hold of stream in case a connection comes part way through song
+			audio_stream = remote.stream;
+
+			nowPlaying(queue[current_song_id]);
+			// pass the stream to the peer
+			streamToPeers(remote.stream);
+		}
 	});
 }
 
@@ -580,9 +596,10 @@ function nextSong() {
 		// remove current song from queue
 		delete song_queue[current_song_id];
 		var index = song_ids.indexOf(current_song_id);
-		
+		removeFromGUIQueue(current_song_id);
+
 		if (index > -1) {
-			array.splice(index, 1);
+			song_ids.splice(index, 1);
 		}
 
 		if (song_ids.length > 0) {
@@ -603,6 +620,8 @@ function nextSong() {
 			// keep hold of stream in case a connection comes part way through song
 			audio_stream = remote.stream;
 
+			nowPlaying(queue[current_song_id]);
+
 			// pass the stream to the peer
 			streamToPeers(remote.stream);
 		} else {
@@ -610,7 +629,34 @@ function nextSong() {
 			source = null;
 			audio_stream = null;
 		}
+	} else {
+		alert('NO SONG PLAYING');
 	}
+}
+
+/* enqueue this song */
+function enqueue(song_ele) {
+	var id = song_ele.id;
+	var path = song_ele.path;
+
+	queue[id] = song_ele;
+
+	$.post("/playSong", {songPath : path}, function(responseJSON) {});
+}
+
+/* get the next id for the song*/
+function nextId() {
+	var index = song_ids.indexOf(current_song_id);
+	return song_ids[index];
+}
+
+/* remove a song_element from the queue */
+function removeFromGUIQueue(id) {
+	//Remove song from queue gui
+}
+
+function nowPlaying(song_ele) {
+	//update album artwork
 }
 
 /* define what happens when user pauses */
