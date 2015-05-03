@@ -165,16 +165,14 @@ function addFocusPoint(event) {
 
 
 
-/*
+
 function updateServerPosition(event) {
 	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-	$.post("http://" + server_url + "/updatePosition", {id : client_id, x : xPos, y : yPos}, function(responseJSON) {
-		$.post("/changeFocus", {x : focus_x, y : focus_y, noFocus:pause}, function(responseJSON) {
-		});
+	$.post("http://" + server_url + "/updatePosition", {id : 0, x : xPos, y : yPos}, function(responseJSON) {
 	});
 }
-*/
+
 
 
 
@@ -238,11 +236,9 @@ $("#clear-focus").click(function(event) {
 		point1[y] = -10;
 		point2[x] = 5;
 		point2[y] = 10;
+		$.post("/changeFocus", {noFocus: pause, focusPoints: tempClients}, function(responseJSON) {
 
-
-
-
-		$.post("/changeFocus", {})
+		});
 
 	}
 });
@@ -259,11 +255,6 @@ $("#mute").click(function(event) {
 		});
 	}
 });
-
-
-
-
-
 
 var focus;
 var focusDec = false;
@@ -365,7 +356,10 @@ function draw(clients) {
 		textLabels = text
             .attr("x", function(d) { return d.x-10; })
             .attr("y", function(d) { return d.y-10; })
-            .text( function (d) { return d.id; })
+            .text( function (d) { 
+            	if (d.id === "1")
+            		return "Host";
+            	return d.id; })
             .attr("font-family", "sans-serif")
             .attr("font-size", "20px")
             .attr("fill", "black")
