@@ -26,7 +26,7 @@ public class MusicServer extends Server {
   private static final String PEER_KEY = "ve090qsyoiil766r";
   private String serverId = "";
   private List<String> clientIds = new ArrayList<String>();
-  private int trackId = 0;
+  private int trackId = -1;
 
   public MusicServer(String address) {
     super(address);
@@ -60,6 +60,10 @@ public class MusicServer extends Server {
     });
   }
 
+  public int getCurrentSongId() {
+    return trackId;
+  }
+
   @Override
   public void broadcast() {
   	if (data == null) {
@@ -76,8 +80,7 @@ public class MusicServer extends Server {
       while (stream.read(b, 0, length) != -1) {
         Map<String, Object> variables = new ImmutableMap.Builder<String, Object>()
             .put("song", b).put("track_id", trackId).build();
-        
-        trackId++;
+
         String json = GSON.toJson(variables);
         br.sendEvent("data", json);
       }
@@ -101,6 +104,7 @@ public class MusicServer extends Server {
   		this.setData(bytes);
   	}
 
+  	trackId++;
   	this.setData(bytes);
   }
 }

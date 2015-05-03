@@ -29,6 +29,12 @@ var song_queue = {};
 var song_ids = [];
 var queue = [];
 
+// variable used to represent location in song (in time)
+var current_song_time = 0;
+var current_song_total_time = 0;
+var song_timer = null;
+var paused_stream = false;
+
 var address;
 var localAddress;
 var value;
@@ -42,7 +48,6 @@ function getIP() {
 			if (ipResponse.success) {
 				address = ipResponse.address;
 				value = window.location.host + window.location.pathname;
-				console.log()
 
 				var search = /(server)/i;
 				value = value.replace(search, "client");
@@ -193,11 +198,11 @@ function pulse() {
 	if (paused) {
 		return;
 	}
-	console.log("nowPause: " + nowPause);
-	console.log("focusDec: " + focusDec);
-	console.log("pause: " + paused);
-	console.log("focus_x: " + focus_x);
-	console.log("focus_y: " + focus_x);
+	// console.log("nowPause: " + nowPause);
+	// console.log("focusDec: " + focusDec);
+	// console.log("pause: " + paused);
+	// console.log("focus_x: " + focus_x);
+	// console.log("focus_y: " + focus_x);
 
 
 	if (focusDec && !paused) {
@@ -469,26 +474,105 @@ function stream(bytes, song_id) {
 
 		if (!audio_stream) {
 			current_song_id = song_id;
-			stream_started = true;
 			
-			source = context.createBufferSource();
-			source.buffer = buffer;
-			source.start();
-
-			//source.connect(context.destination);
-			var remote = context.createMediaStreamDestination();
-			source.connect(remote);
-
-			// keep hold of stream in case a connection comes part way through song
-			audio_stream = remote.stream;
-
-			nowPlaying(queue[current_song_id]);
-			// pass the stream to the peer
-			streamToPeers(remote.stream);
+			// enabled play and next buttons
+			$("#pause-play").prop('disabled', false);
+			$("#skip").prop('disabled', false);
 		}
 	});
 }
 
+/* function used to play the stream to peers who are listening */
+function playStream() {
+	paused_stream = false;
+
+	if (!audio_stream) { // create a new audio_stream to play
+		stream_started = true;
+
+		source = context.createBufferSource();
+		source.buffer = song_queue[current_song_id];
+
+		current_song_total_time = song_queue[current_song_id].duration;
+
+		current_song_time = 0;
+		source.start(0);
+		song_timer = setInterval(count_song_time, 1000);
+
+		source.onended = nextSong;
+
+		var remote = context.createMediaStreamDestination();
+		source.connect(remote);
+
+		// keep hold of stream in case a connection comes part way through song
+		audio_stream = remote.stream;
+
+		nowPlaying(queue[current_song_id]);
+		removeFromGUIQueue(current_song_id);
+
+		// pass the stream to the peer
+		streamToPeers(remote.stream);
+	} else { // play stream after being paused
+		source = context.createBufferSource();
+		source.buffer = song_queue[current_song_id];
+
+		source.start(0, current_song_time);
+		song_timer = setInterval(count_song_time, 1000);
+
+		source.onended = nextSong;
+
+		var remote = context.createMediaStreamDestination();
+		source.connect(remote);
+
+		// keep hold of stream in case a connection comes part way through song
+		audio_stream = remote.stream;
+
+		// pass the stream to the peer
+		streamToPeers(remote.stream);
+	}
+}
+
+/* function used to count the time the song has been playing */
+function count_song_time() {
+	if (current_song_time == 0) {
+		update_total_time();
+	}
+	update_current_time();
+	current_song_time++;
+}
+
+/* functions used to update the time shown on gui */
+function update_total_time() {
+	var total_time = get_mins_from_seconds(current_song_total_time);
+
+
+}
+
+function update_current_time() {
+	var current_time = get_mins_from_seconds(current_song_time);
+
+	
+}
+
+/* function used to convert from seconds to mins/seconds */
+function get_mins_from_seconds(seconds) {
+	var m = Math.floor(seconds / 60);
+	var s = seconds - 60 * m;
+
+	var time = {
+		min: m,
+		sec: s
+	};
+
+	return time;
+}
+
+function pauseStream() {
+	if (audio_stream) {
+		clearInterval(song_timer);
+		paused_stream = true;
+		source.stop();
+	}
+}
 
 /* create a peer connection using peerjs api */
 function createPeer() {
@@ -548,8 +632,6 @@ function updateVolumeOfPeers() {
 
 /* stuff needed to play song on server as if it were a client */
 function createSelfPeer() {
-	setupPlayer();
-
 	self_peer = new Peer({
 		key: peer_key, 
 		config: {'iceServers': [
@@ -576,15 +658,8 @@ function createSelfPeer() {
 	});
 }
 
-function setupPlayer() {
-	player = new Audio();
-}
-
-/* function used to play the song */
-function play(song) {
-	player.src = URL.createObjectURL(song);
-	player.play(0);
-}
+// begin skip button as disabled
+$("#skip").prop('disabled', true);
 
 /* define function used to skip to next song */
 $("#skip").on('click', function(event){
@@ -593,8 +668,8 @@ $("#skip").on('click', function(event){
 
 /* function used to get to the next song in the queue */
 function nextSong() {
-	// if something is being streamed
-	if (audio_stream) {
+	// if something is being streamed and its not currently paused
+	if ((audio_stream) && (!paused_stream)) {
 		// remove current song from queue
 		delete song_queue[current_song_id];
 		var index = song_ids.indexOf(current_song_id);
@@ -623,27 +698,34 @@ function nextSong() {
 			audio_stream = remote.stream;
 
 			nowPlaying(queue[current_song_id]);
+			removeFromGUIQueue(current_song_id);
 
 			// pass the stream to the peer
 			streamToPeers(remote.stream);
-		} else {
+		} else { // no more songs in the queue
 			source.stop();
 			source = null;
 			audio_stream = null;
+
+			// disable play and next buttons
+			$("#pause-play").prop('disabled', true);
+			$("#skip").prop('disabled', true);
+
+			// make sure the play button is shown and that it is paused
+			song_is_paused = true;
+			//$("#pause-play").css("background", "url('../images/play.png'')");
 		}
-	} else {
-		alert('NO SONG PLAYING');
 	}
 }
 
 /* enqueue this song */
 function enqueue(song_ele) {
-	var id = song_ele.id;
-	var path = song_ele.path;
-
-	queue[id] = song_ele;
-
-	$.post("/playSong", {songPath : path}, function(responseJSON) {});
+	var path = song_ele.filePath;
+	$.post("/playSong", {songPath : path}, function(responseJSON) {
+		var responseObject = JSON.parse(responseJSON);
+		var id = responseObject.song_id;
+		queue[id] = song_ele;
+	});
 }
 
 /* get the next id for the song*/
@@ -655,6 +737,10 @@ function nextId() {
 /* remove a song_element from the queue */
 function removeFromGUIQueue(id) {
 	//Remove song from queue gui
+
+
+	// remove it from list of song_elements
+	queue[id] = null;
 }
 
 function nowPlaying(song_ele) {
@@ -667,10 +753,39 @@ function nowPlaying(song_ele) {
 	}
 }
 
+// variable used to define if the song is paused or not
+// on start-up: assume it is paused and the button is disabled
+var song_is_paused = true;
+$("#pause-play").prop('disabled', true);
+
 /* define what happens when user pauses */
 $("#pause-play").on('click', function(event){
-	alert('pause-play');
+	if (!empty_song_queue()) {
+		if (song_is_paused) {
+			// show pause button
+			//$("#pause-play").css("background", "url(../images/pause.png'')");
+			console.log("PLAYING");
+
+			playStream();
+			song_is_paused = false;
+		} else {
+			// show play button
+			//$("#pause-play").css("background", "url('../images/play.png'')");
+			console.log("PAUSED");
+
+			pauseStream();
+			song_is_paused = true;
+		}
+	}
 });
+
+/* returns whether there is an empty song queue */
+function empty_song_queue() {
+	if (song_ids.length <= 0) {
+		return true;
+	}
+	return false;
+}
 
 $("#song-search").on("change", function(event) {
 $.post("/search", {line : $("song-search").val()}, function(responseJSON) {
@@ -755,7 +870,7 @@ function addSongToGUIQueue(song_element) {
 	}
 
 	queuediv.append(song);
-	//enqueue(song);
+	enqueue(song_element);
 }
 
 $("#search-clear").click(function(){

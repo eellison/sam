@@ -706,10 +706,11 @@ public class SamGui extends SparkGui {
       // now that we have the song play it
       server.setMusicFile(song);
       server.broadcast();
+      int songId = server.getCurrentSongId();
 
       Map<String, Object> variables =
               new ImmutableMap.Builder<String, Object>()
-              .build();
+              .put("song_id", songId).build();
 
       return GSON.toJson(variables);
     }
