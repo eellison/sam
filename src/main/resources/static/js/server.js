@@ -764,14 +764,12 @@ $("#pause-play").on('click', function(event){
 		if (song_is_paused) {
 			// show pause button
 			//$("#pause-play").css("background", "url(../images/pause.png'')");
-			console.log("PLAYING");
 
 			playStream();
 			song_is_paused = false;
 		} else {
 			// show play button
 			//$("#pause-play").css("background", "url('../images/play.png'')");
-			console.log("PAUSED");
 
 			pauseStream();
 			song_is_paused = true;
