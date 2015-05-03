@@ -6,9 +6,9 @@
 				window.twttr=(function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],t=window.twttr||{};if(d.getElementById(id))return;js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);t._e=[];t.ready=function(f){t._e.push(f);};return t;}(document,"script","twitter-wjs"));
 			</script>
 		</div></br>
-		<h2 id="server-title" class="title" style="margin-top:-10px;">Server</h2>
+		<h4 id="server-title" class="title" style="margin-top:-10px;">Server</h2>
 		<div id='songs-wrapper'>
-			<label>Songs</label></br>
+			<label>Click to add songs to the queue</label></br>
 			<div class="btn-group" style="width: 100%;">
 				<input type="search" id="song-search" class="form-control" placeholder="Search by song, album, or artist"></input>
 				<span id="search-clear" class="glyphicon glyphicon-remove-circle"></span>
@@ -20,7 +20,7 @@
 		<div id="queue-wrapper">
 			<label>Queue</label></br>
 			<div id="songs-bound-div-3">
-				<div id='queue-div' style='margin-top: 10px;'></div>
+				<div id='queue-div'></div>
 			</div>
 		</div>
 		<div id="server-canvas">

@@ -790,7 +790,7 @@ function empty_song_queue() {
 $("#song-search").on("change", function(event) {
 $.post("/search", {line : $("song-search").val()}, function(responseJSON) {
 	songsdiv.remove();
-	songsdiv = $("<div id='songs-div' style='margin-top: 10px;'></div>");
+	songsdiv = $("<div id='songs-div'></div>");
 
 	var songs = JSON.parse(responseJSON);
 	songs.forEach(function(elem) {
@@ -859,7 +859,7 @@ function addSongToGUIQueue(song_element) {
 	var albumart = song_element.albumart;
 	var _title = song_element.title;
 	var _artist = song_element.artist;
-	
+
 	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown </p></div>");
 	if (typeof albumart != "undefined") {
 		song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
@@ -868,6 +868,10 @@ function addSongToGUIQueue(song_element) {
 			song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
 		}
 	}
+
+	song.on('click', function(e) {
+		addSongToGUIQueue(elem);
+	});
 
 	queuediv.append(song);
 	enqueue(song_element);
@@ -879,7 +883,7 @@ $("#search-clear").click(function(){
 
 $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 	songsdiv.remove();
-	songsdiv = $("<div id='songs-div' style='margin-top: 10px;'></div>");
+	songsdiv = $("<div id='songs-div'></div>");
 
 	var songs = JSON.parse(responseJSON);
 	songs.forEach(function(elem) {
