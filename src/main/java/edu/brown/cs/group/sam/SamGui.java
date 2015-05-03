@@ -10,8 +10,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -448,14 +451,27 @@ public class SamGui extends SparkGui {
     public Object handle(Request request, Response response) {
       QueryParamsMap map = request.queryMap();
 
-      String x1 = map.value("x");
-      String y1 = map.value("y");
+   
       Boolean noFocusB = Boolean.parseBoolean(map.value("pause"));
       noFocus.set(noFocusB);
+      Map<String, String[]> points = request.queryMap("focusPoints").toMap();
+      Set<Coordinate> pointSet = new HashSet<Coordinate>();
+      for (String[] point: points.values()) {
+    	  for (String s: point)
+    		  System.out.println(s);
+      }
+      
+      if (pointSet.size()>1) {
+    	  return null;
+      }
+     
+      String x1 = map.value("x");
+      String y1 = map.value("y");
       Double x = Double.parseDouble(x1);
       Double y = Double.parseDouble(y1);
       Coordinate c1 = new Coordinate(x, y);
-      ap.calcluteVolume(c1);
+      pointSet.add(c1);
+      ap.calcluteVolume(pointSet);
       String message = "Success";
       List<HashMap<String, Object>> clientInfo =
               new ArrayList<HashMap<String, Object>>();

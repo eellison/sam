@@ -18,6 +18,9 @@ var current_dir = "src/main/resources/static/testdirectory";
 var songsdiv = $("<div></div>");
 var API_KEY = "0d73a4465bd208188cc852a95b011b22";
 
+// variable needed for queueing the stream
+var stream_started = false;
+
 
 var address;
 var localAddress;
@@ -76,6 +79,7 @@ var circleGroup;
 var running = false;
 var focus_x = -1;
 var focus_y = -1;
+var foci = [];
 var nowPause = true;
 var saved_clients = null;
 var paused = false;
@@ -84,6 +88,23 @@ var xPos = 0;
 var yPos = 0;
 var quick = false;
 $("#clients-canvas").on('mousedown', function(event){
+
+	var isRightMB;
+    var e = e || window.event;
+    if ("which" in e)  // Gecko (Firefox), WebKit (Safari/Chrome) & Opera
+        isRightMB = e.which == 3; 
+    else if ("button" in e)  // IE, Opera 
+        isRightMB = e.button == 2; 
+
+   	if (isRightMB) {
+   		updateServerPosition(event);
+   		return;
+   	}
+
+   	if (event.shiftKey) {
+   		addFocusPoint(event);
+   		return;
+   	}
 	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
 
@@ -127,6 +148,36 @@ $("#clients-canvas").on('mousedown', function(event){
 		}
 	});
 });
+
+
+function addFocusPoint(event) {
+	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
+	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
+
+	focus = focusGroup.append("circle")
+ 		.attr("cx", focus_x)
+		.attr("cy", focus_y)
+		.attr("r", 10)
+		.attr("stroke-width", 1)
+		.attr("stroke", "black")
+		.attr("fill", "none");
+	focusDec = true;
+	time = .01;
+}
+
+
+
+
+function updateServerPosition(event) {
+	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
+	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
+	$.post("http://" + server_url + "/updatePosition", {id : 0, x : xPos, y : yPos}, function(responseJSON) {
+	});
+}
+
+
+
+
 var pulseTime = 3000;
 var timer;
 var down = false;
@@ -180,6 +231,17 @@ $("#clear-focus").click(function(event) {
 		draw(saved_clients);
 		$.post("/changeFocus", {x : focus_x, y : focus_y, noFocus:pause}, function(responseJSON) {
 		});
+		var tempClients = [];
+		point1 = [];
+		point2 = [];
+		point1[x] = -5;
+		point1[y] = -10;
+		point2[x] = 5;
+		point2[y] = 10;
+		$.post("/changeFocus", {noFocus: pause, focusPoints: tempClients}, function(responseJSON) {
+
+		});
+
 	}
 });
 
@@ -224,7 +286,6 @@ function draw(clients) {
  			.attr("r", 0);
 
  	} else if (!focusDec) {
- 		console.log("else if");
  		timer = setInterval(pulse, pulseTime/2);
  		focus = focusGroup.append("circle")
  			.attr("cx", focus_x)
@@ -232,11 +293,10 @@ function draw(clients) {
 			.attr("r", 10)
 			.attr("stroke-width", 1)
 			.attr("stroke", "black")
-			.attr("fill", "none")
+			.attr("fill", "none");
 		focusDec = true;
 		time = .01;
  	} else {
- 		console.log("else");
  		time = Math.sqrt(Math.pow((focus.attr("cx") - focus_x), 2) + 
  			Math.pow((focus.attr("cy")-focus_y), 2));
  		time = time * 3;
@@ -298,7 +358,10 @@ function draw(clients) {
 		textLabels = text
             .attr("x", function(d) { return d.x-10; })
             .attr("y", function(d) { return d.y-10; })
-            .text( function (d) { return d.id; })
+            .text( function (d) { 
+            	if (d.id === "1")
+            		return "Host";
+            	return d.id; })
             .attr("font-family", "sans-serif")
             .attr("font-size", "20px")
             .attr("fill", "black")
@@ -374,7 +437,6 @@ function setupSocketConnection(url, port) {
 	socket.on('data', function(data) {
 		var response = JSON.parse(data);
 		var song_bytes = response.song;
-		peer_client_ids = response.client_ids;
 
 		stream(song_bytes);
 	});
@@ -383,6 +445,7 @@ function setupSocketConnection(url, port) {
 		console.log("Peer Created");
 		peer_key = data;
 		createPeer();
+		createSelfPeer();
 	});
 }
 
@@ -396,6 +459,7 @@ function stream(bytes) {
 	}
 	
 	context.decodeAudioData(array_buffer, function(buffer) {
+		stream_started = true;
 		var source = context.createBufferSource();
 		source.buffer = buffer;
 		source.start();
@@ -427,6 +491,14 @@ function createPeer() {
 	peer.on('connection', function(conn) {
 		// peer connections not really working right now
 		peer_connections[conn.peer] = conn;
+
+		if (!(peer_client_ids.indexOf(conn.peer) > -1)) {
+			peer_client_ids.push(conn.peer);
+
+			if (stream_started) {
+				peer.call(conn.peer, audio_stream);
+			}
+		}
 	});
 }
 
@@ -458,6 +530,47 @@ function updateVolumeOfPeers() {
 	}
 }
 
+/* stuff needed to play song on server as if it were a client */
+function createSelfPeer() {
+	setupPlayer();
+
+	self_peer = new Peer({
+		key: peer_key, 
+		config: {'iceServers': [
+    		{url: "stun:stun.l.google.com:19302"},
+			{url:"turn:numb.viagenie.ca", credential: "password123"}]}
+    });
+
+    self_peer.on('open', function(id) {
+		socket.emit("client_id", id);
+
+		// connect to peer, but wait for split second
+		setTimeout(function() {
+ 			self_peer.connect(peer_id);
+ 		}, 1000);
+		
+	});
+
+	self_peer.on('call', function(call) {
+		call.answer();
+
+		call.on('stream', function(stream) {
+			play(stream);
+		});
+	});
+}
+
+function setupPlayer() {
+	player = new Audio();
+}
+
+/* function used to play the song */
+function play(song) {
+	player.src = URL.createObjectURL(song);
+	player.play(0);
+}
+
+/* stuff for choosing song and music directory */
 $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 	songsdiv.remove();
 	songsdiv = $("<div id='songs-div' style='margin-top: 10px;'></div>");

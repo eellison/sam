@@ -18,7 +18,7 @@ public class AmplitudePanner {
   private double rolloff;
   private static double distanceExp;
   private Map<String, ClientPoint> clients;
-  private Coordinate currentPoint;
+  private Set<Coordinate> currentPoint;
   private Map<String, Double> currentWeighting;
 
   /**
@@ -116,7 +116,7 @@ public class AmplitudePanner {
         + Math.pow(blur, 2));
   }
 
-  public Map<String, Double> calcluteVolume(Coordinate c1) {
+  public Map<String, Double> calcluteVolume(Set<Coordinate> c1) {
 
     if (c1 != null) {
       currentPoint = c1;
@@ -133,34 +133,36 @@ public class AmplitudePanner {
     }
 
     currentPoint = c1;
-    Coordinate[] coord = new Coordinate[1];
-    coord[0] = new Coordinate(c1.x, c1.y);
-    CoordinateSequence seq = new CoordinateArraySequence(coord);
-    Point p1 = new Point(seq, new GeometryFactory());
-
-    double dist = 0;
-    double fade = 1;
-    if (convexHull!=null && 
-        !convexHull.getConvexHull().contains(p1)) {
-      Coordinate cnew = placeWithinHull(p1, dist);
-      double newDist = totalDistAway(cnew);
-
-      double oldDist = totalDistAway(c1);
-
-      fade = newDist / oldDist;
-      c1 = cnew;
-    }
     Map<String, Double> vol = new HashMap<String, Double>();
 
     for (String s : clients.keySet()) {
-      vol.put(s, getWeighting(clients.get(s).getPoint(), c1, dist) * fade);
+    	double volC = 0;
+    	for (Coordinate cPoint: currentPoint) {
+    		volC = Math.max(volC, getWeighting(clients.get(s).getPoint(), cPoint));
+    	}
+      vol.put(s, volC);
     }
     currentWeighting = vol;
     return vol;
   }
 
-  public double getWeighting(Point p1, Coordinate vs, double dist) {
+  public double getWeighting(Point p1, Coordinate vs) {
+	  
+	Coordinate[] coord = new Coordinate[1];
+	coord[0] = new Coordinate(vs.x, vs.y);
+	CoordinateSequence seq = new CoordinateArraySequence(coord);
 
+	double dist = 0;
+	double fade = 1;
+    if (convexHull!=null && 
+        !convexHull.getConvexHull().contains(p1)) {
+      Coordinate cnew = placeWithinHull(p1, dist);
+      double newDist = totalDistAway(cnew);
+
+      double oldDist = totalDistAway(vs);
+      fade = newDist / oldDist;
+      vs = cnew;
+    }
     double weight = 0;
 
     double distPoint = cartesianDist(p1.getCoordinate(), vs, 0);
@@ -175,7 +177,7 @@ public class AmplitudePanner {
     if (weight == 0) {
     	weight = 1;
     }
-    return (1 / weight);
+    return ((1 / weight)*fade);
   }
 
   public double totalDistAway(Coordinate coord) {
@@ -257,7 +259,7 @@ public class AmplitudePanner {
     return currentWeighting.get(id);
   }
 
-  public Coordinate getCoordinate() {
+  public Set<Coordinate> getCoordinate() {
     return currentPoint;
   }
 
