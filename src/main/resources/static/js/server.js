@@ -665,7 +665,7 @@ $("#pause-play").on('click', function(event){
 });
 
 $("#song-search").on("change", function(event) {
-$.post("/search", {line : ""}, function(responseJSON) {
+$.post("/search", {line : $("song-search").val()}, function(responseJSON) {
 	songsdiv.remove();
 	songsdiv = $("<div id='songs-div' style='margin-top: 10px;'></div>");
 
@@ -732,6 +732,73 @@ $.post("/search", {line : ""}, function(responseJSON) {
 });
 });
 
+function addSongToQueue(song) {
+
+	enqueue(song);
+}
+
 $("#search-clear").click(function(){
     $("#song-search").val('');
+});
+
+$.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
+	songsdiv.remove();
+	songsdiv = $("<div id='songs-div'></div>");
+
+	var songs = JSON.parse(responseJSON);
+	songs.forEach(function(elem) {
+		var _path = elem.filePath;
+		var _title = elem.title;
+		var _album = elem.album;
+		var _artist = elem.artist;
+
+		$.get("http://ws.audioscrobbler.com/2.0/", {method : "album.getinfo", artist : _artist, album : _album, api_key : API_KEY, format : "json"})
+	    .done(function(responseJSONSong) {
+	    	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
+
+	    	if (typeof responseJSONSong.error == 'undefined') {
+				var albumart = responseJSONSong.album.image[1]["#text"];
+				
+				if (typeof albumart != "undefined") {
+					song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
+				} else {
+					if (typeof _title == 'undefined') {
+						song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown </p></div>");
+					} else {
+						song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
+					}
+				}
+			}
+
+			if (typeof _title == 'undefined' || typeof _album == 'undefined' || typeof _artist == 'undefined') {
+				song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div>");
+			}
+
+			song.on('click', function(e) {
+				$.post("/playSong", {songPath : _path}, function(responseJSON) {
+					alert("Playing " + _title + " by " + _artist + ".");
+				});
+			});
+
+			songsdiv.append(song);
+		})
+	    .fail(function(xhr, textStatus, errorThrown) {
+	    	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
+			
+			if (typeof _title == 'undefined' || typeof _album == 'undefined' || typeof _artist == 'undefined') {
+				song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div>");
+			}
+
+			song.on('click', function(e) {
+				alert("Playing " + _title + " by " + _artist + ".");
+				$.post("/playSong", {songPath : _path}, function(responseJSON) {
+					
+				});
+			});
+
+			songsdiv.append(song);
+	    });
+	});
+
+	$("#songs-bound-div-2").append(songsdiv);
 });
