@@ -36,11 +36,14 @@
 		</div>
 	</div>
 	</br>
-	<div style="clear: both; position: absolute; top: 500px;">
+	<div style="clear: both; position: fixed; min-width: 1100px; width: 80%; bottom: 0; left: 10%; float: left;">
 		<div id="song-controls">
 			<div id='current-song' style='float:left;width:70px;height:70px;'></div>
 			<button id="pause-play"></button>
-			<progress id='p'></progress>
+			<div id="progressbar">
+  				<div></div>
+			</div>
+			<button id="skip"></button>
 		</div>
 	</div>
 </div>
