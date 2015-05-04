@@ -1,5 +1,6 @@
 //$("#pause-play").css("opacity", "0.3");
 //$("#pause-play").css("opacity", "1.0");
+
 // Drawing
 var CANVAS_SIZE = 400;
 
@@ -545,16 +546,14 @@ function count_song_time() {
 /* functions used to update the time shown on gui */
 function update_total_time() {
 	var total_time = get_mins_from_seconds(current_song_total_time);
-
-	// Show total time of song here:
-
+	var stringTime = total_time.min + ":" + total_time.sec;
+	$("#song-time").text(stringTime);
 }
 
 function update_current_time() {
 	var current_time = get_mins_from_seconds(current_song_time);
-
-	// Show current time of song here:
-	
+	var stringTime = current_time.min + ":" + current_time.sec;
+	$("#current-time").text(stringTime);
 }
 
 function update_progress(percentage) {
