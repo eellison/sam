@@ -78,134 +78,163 @@ svg.append("rect")
     .attr("fill-opacity", .5)
     .attr("style", "outline: thin solid black;")
 
-var focusGroup = svg.append("svg:g");
-var focus = focusGroup.select("circle").append("circle");
+ svg.selectAll("rect").on("contextmenu", function (d, i) {
+            d3.event.preventDefault();
+           // react on right-clicking
+});
 
+var focusGroup = svg.append("svg:g");
 var circleGroupH = svg.append("svg:g");
 var circleGroup; 
 var running = false;
-var focus_x = -1;
-var focus_y = -1;
 var foci = [];
-var nowPause = true;
+var nowPause = false;
 var saved_clients = null;
 var paused = false;
 
-var xPos = 0;
-var yPos = 0;
+var xPos = CANVAS_SIZE/2;
+var yPos = CANVAS_SIZE/2;
 var quick = false;
-$("#clients-canvas").on('mousedown', function(event){
 
+function inCircle(pX, pY, cX, cY, r) {
+	var distancesquared = (pX - cX) * (pX - cX) + (pY - cY) * (pY - cY);
+  	return distancesquared <= r * r;
+}
+var deciSeconds = new Date().getTime() / 100;
+
+var selectedFocus;
+$("#clients-canvas").on('mousedown', function(event){
 	var isRightMB;
     var e = e || window.event;
     if ("which" in e)  // Gecko (Firefox), WebKit (Safari/Chrome) & Opera
         isRightMB = e.which == 3; 
     else if ("button" in e)  // IE, Opera 
         isRightMB = e.button == 2; 
+    var shiftDown = event.shiftKey;
+    var altDown = event.altKey;
 
+    if (shiftDown && !altDown) {
+    	addFocusPoint(event);
+    	return;
+    }
    	if (isRightMB) {
+   		event.stopPropagation();
    		updateServerPosition(event);
    		return;
    	}
 
-   	if (event.shiftKey) {
-   		addFocusPoint(event);
-   		return;
-   	}
+
 	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-
-	focus_x = xPos;
-	focus_y = yPos;
+	var clicked = false;
+	var i = fociArray.length-1;
+	while(clicked==false & i >= 0) {
+		var focusI = fociArray[i];
+		clicked = inCircle(xPos, yPos, focusI.attr("cx"), focusI.attr("cy"), focusI.attr("r"));
+		i--;
+	}
+	if (!clicked) {
+		return;
+	}
+	if (altDown) {
+		deleteFoc(focusI);
+	}
 	draw(saved_clients);
 	quick = false;
-	$.post("/changeFocus", {x : xPos, y : yPos, quick:quick, pause:paused}, function(responseJSON) {
-		var responseObject = JSON.parse(responseJSON);
-		var clients = responseObject.clients;
-		saved_clients = clients;
-		updateVolumeOfPeers();
-	});
 
+	focusI.attr("fill", "gray")
+	    .attr("fill-opacity", .5);
+
+	$("clients-canvas").on('keydown', deleteFoc(event));
+	selectedFocus = focusI;
 	$("#clients-canvas").on('mouseup mousemove', function handler(event) {
 		if (event.type == 'mousemove') {
 			var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 			var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-
-			focus_x = xPos;
-			focus_y = yPos;
+			focusI.attr("cx", xPos)
+				.attr("cy", yPos)
 			quick = false;
 			draw(saved_clients);
-			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick, pause:paused}, function(responseJSON) {
-			});
+			var newdeciSeconds = new Date().getTime() / 100;
+			if ((newdeciSeconds - deciSeconds) > 1) {
+				updateVariablesPost();
+			}
+			deciSeconds = newdeciSeconds;
 		} else {
 			var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 			var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-			
-			focus_x = xPos;
-			focus_y = yPos;
+			focusI.attr("fill", "none");
 			quick = false;
 			draw(saved_clients);
+			selectedFocus = false;
 			$("#clients-canvas").off('mouseup mousemove', handler);
-			$.post("/changeFocus", {x : xPos, y : yPos, quick:quick, pause:paused}, function(responseJSON) {
-				var responseObject = JSON.parse(responseJSON);
-				var clients = responseObject.clients;
-				saved_clients = clients;
-				updateVolumeOfPeers();
-			});
+			$("clients-canvas").off('keydown', deleteFoc(event));
+
+			updateVariablesPost();
 		}
 	});
 });
+
+fociArray = new Array();
+
+function deleteFoc(focusP) {
+	var index = fociArray.indexOf(focusP);
+	if (index != -1) {
+		fociArray.splice(index, 1);
+		focusP
+ 			.transition()
+ 			.transition()
+ 			.duration(200)
+ 			.attr("r", 0);
+	}
+}
+
+
 
 
 function addFocusPoint(event) {
 	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
 
-	focus = focusGroup.append("circle")
- 		.attr("cx", focus_x)
-		.attr("cy", focus_y)
+	if (saved_clients === null || saved_clients == undefined) {
+		if (fociArray.length > 1) {
+			// return; //will be 
+		}
+	} else {
+		if (fociArray.length >= saved_clients.length) {
+			// return; will return
+		}
+	}
+	var newF = focusGroup.append("circle").attr("cx", xPos)
+		.attr("cy", yPos)
 		.attr("r", 10)
 		.attr("stroke-width", 1)
 		.attr("stroke", "black")
 		.attr("fill", "none");
-	focusDec = true;
 	time = .01;
+	fociArray.push(newF);
+	updateVariablesPost();
 }
-
-
-
 
 function updateServerPosition(event) {
 	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-	$.post("http://" + server_url + "/updatePosition", {id : 0, x : xPos, y : yPos}, function(responseJSON) {
-	});
+	updateVariablesPost();
 }
 
-
-
-
 var pulseTime = 3000;
-var timer;
 var down = false;
-
 function pulse() {
-	if (paused) {
+	if (muted) {
 		return;
 	}
-	console.log("nowPause: " + nowPause);
-	console.log("focusDec: " + focusDec);
-	console.log("pause: " + paused);
-	console.log("focus_x: " + focus_x);
-	console.log("focus_y: " + focus_x);
-
-
-	if (focusDec && !paused) {
+	down = !down;
+	for (var i = 0; i < fociArray.length; i++) {
+		var focusI = fociArray[i];
 		if (down) {
-			down = false;
-			focus
+			focusI
 				.transition()
-				.duration(pulseTime/2*(focus.attr("r")-7)/6)
+				.duration(pulseTime/2*(focusI.attr("r")-7)/6)
 				.attr("stroke-width", 1.5)
 				.attr("r", 7)
 				.ease('sine')
@@ -214,12 +243,10 @@ function pulse() {
 				.attr('stroke-width', 0.5)
 				.attr("r", 13)
 				.ease('sine')
-		}
-		else {
-			down = true;
-			focus
+		} 	else {
+			focusI
 				.transition()
-				.duration(pulseTime/2*(13-focus.attr("r"))/6)
+				.duration(pulseTime/2*(13-focusI.attr("r"))/6)
 				.attr('stroke-width', 0.5)
 				.attr("r", 13)
 				.ease('sine')
@@ -236,19 +263,31 @@ $("#clear-focus").click(function(event) {
 		nowPause = true;
 		paused = false;
 		draw(saved_clients);
-		$.post("/changeFocus", {x : focus_x, y : focus_y, noFocus:pause}, function(responseJSON) {
-		});
-		var tempClients = [];
-		point1 = [];
-		point2 = [];
-		point1[x] = -5;
-		point1[y] = -10;
-		point2[x] = 5;
-		point2[y] = 10;
-		$.post("/changeFocus", {noFocus: pause, focusPoints: tempClients}, function(responseJSON) {});
+		updateVariablesPost();
 	}
 });
 
+function updateVariablesPost() {
+
+	var tempFociArray = [];
+	for (var i = 0; i < fociArray.length; i++) {
+		var focusI = fociArray[i];
+		var foc = [];
+		var xfoc = focusI.attr("cx");
+		var yfoc = focusI.attr("cy");
+		foc['x'] = xfoc;
+		foc['y'] = yfoc;
+		tempFociArray[i] = foc;
+	}
+	//updates the host position as part of changeFocus
+	$.post("/changeFocus", {id: "0", x : xPos, y : yPos, quick: quick, pause: paused, focusPoints: tempFociArray}, function(responseJSON) {
+	var responseObject = JSON.parse(responseJSON);
+	var clients = responseObject.clients;
+	saved_clients = clients;
+	updateVolumeOfPeers();
+	draw(saved_clients);
+	});		
+}
 $("#mute").click(function(event) {
 	if (running) {
 		$.post("/mute", {}, function(responseJSON) {
@@ -262,60 +301,61 @@ $("#mute").click(function(event) {
 	}
 });
 
-var focus;
-var focusDec = false;
+
 running = true;
 var text;
 var textLabels;
-function draw(clients) {
+var timer = setInterval(pulse, pulseTime/2);
+function draw(clients, event) {
 	if (!running) {
 		alert("Server not created!");
 		return;
 	}
-
-	if (paused) {
-		focus.attr("r", 10);
-		timer = setInterval(pulse, pulseTime/2);
-	}
-
  	var time = 0;
+ 	//pause button clicked
  	if (nowPause && !paused) {
  		paused = true;
  		nowPause = false;
- 		clearInterval(timer);
- 		focus
- 			.transition()
- 			.transition()
- 			.duration(200)
- 			.attr("r", 0);
-
- 	} else if (!focusDec) {
- 		timer = setInterval(pulse, pulseTime/2);
- 		focus = focusGroup.append("circle")
- 			.attr("cx", focus_x)
-			.attr("cy", focus_y)
-			.attr("r", 10)
-			.attr("stroke-width", 1)
-			.attr("stroke", "black")
-			.attr("fill", "none");
-		focusDec = true;
-		time = .01;
+ 		for (var i = 0; i < fociArray.length; i++) {
+			var focusI = fociArray[i];
+			focusI
+	 			.transition()
+	 			.transition()
+	 			.duration(200)
+	 			.attr("r", 0);
+	 	} 
+	 	fociArray = [];
+ 	// } else if (!focusDec) { //focus not yet instantiated
+ 	// 	timer = setInterval(pulse, pulseTime/2);
+ 	// 	focus = focusGroup.append("circle")
+ 	// 		.attr("cx", focus_x)
+		// 	.attr("cy", focus_y)
+		// 	.attr("r", 10)
+		// 	.attr("stroke-width", 1)
+		// 	.attr("stroke", "black")
+		// 	.attr("fill", "none");
+		// focusDec = true;
+		// time = .01;
  	} else {
- 		time = Math.sqrt(Math.pow((focus.attr("cx") - focus_x), 2) + 
- 			Math.pow((focus.attr("cy")-focus_y), 2));
- 		time = time * 3;
- 		time = Math.pow(time, .9);
- 		if (quick) {
- 			time = 0;
- 		}
- 		if (paused) {
- 			time = .01;
- 			paused = false;
- 		}
- 		focus.transition()
- 		.duration(time)
- 		.attr("cx", focus_x)
-		.attr("cy", focus_y);
+ 	// 	if (event != null) {
+ 	// 		 		time = Math.sqrt(Math.pow((focus.attr("cx") - focus_x), 2) + 
+ 	// 		Math.pow((focus.attr("cy")-focus_y), 2));
+ 	// 	time = time * 3;
+ 	// 	time = Math.pow(time, .9);
+ 	// 	if (quick) {
+ 	// 		time = 0;
+ 	// 	}
+ 	// 	if (paused) {
+ 	// 		time = .01;
+ 	// 		paused = false;
+ 	// 	}
+ 	// 	focus.transition()
+ 	// 	.duration(time)
+ 	// 	.attr("cx", focus_x)
+		// .attr("cy", focus_y);
+
+
+ 	// 	}
  	}
  	
  	if (saved_clients != null ){
@@ -360,11 +400,19 @@ function draw(clients) {
 
 		//Add SVG Text Element Attributes
 		textLabels = text
-            .attr("x", function(d) { return d.x-10; })
+            .attr("x", function(d) { 
+            	if (d.id === "0") {
+            		return d.x-20;
+            	}
+            	return d.x-10;})
             .attr("y", function(d) { return d.y-10; })
             .text( function (d) { 
-            	if (d.id === "1")
+            	if (d.id === "0") {
             		return "Host";
+            	}
+            	if (!(d.name === undefined || d.name === null)) {
+            		return d.name;
+            	}
             	return d.id; })
             .attr("font-family", "sans-serif")
             .attr("font-size", "20px")
@@ -390,6 +438,8 @@ function updateClientPositions() {
 	});
 }
 
+
+
 /* create server on click of create */
 function setUpServer() {
 	if (!socket) {
@@ -413,14 +463,17 @@ function setUpServer() {
 				socket_port = responseObject.socket_port;
 
 				// set up the socket io connection
-				setupSocketConnection(socket_url, socket_port);
+				// setupSocketConnection(socket_url, socket_port);
 			
-				var updateClientPositionsTimer = setInterval(updateClientPositions, 3000);
+				// var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
 			}
 		});
 	}
 
 }
+// svg.oncontextmenu = function() {
+//     return false;
+// }
 
 /* everything below is used for playing music as it is streamed from the server*/
 function setupSocketConnection(url, port) {
