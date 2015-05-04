@@ -3,6 +3,12 @@ body {
     background-image: url("../images/background-2.png");
     background-size: fill;
     background-repeat: no-repeat;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 #client-gui {
@@ -323,7 +329,7 @@ h4.title {
     margin-left: 5%;
     height: 40px;
     border: 1px solid rgba(0, 0, 0, 0.1);
-    background-color: rgba(190, 190, 190, 0.1);
+    background-color: rgba(230, 230, 230, 0.1);
     margin-top: 5px;
     margin-bottom: 5px;
     float: left;
@@ -432,8 +438,9 @@ h4.title {
    width: 0%; /* Adjust with JavaScript */
    height: 4px;
    border-radius: 1px;
-   margin-top: -2px;
+   margin-top: -1px;
    float: left;
+   margin-left: -1px;
 }
 
 #song-controls > p {
