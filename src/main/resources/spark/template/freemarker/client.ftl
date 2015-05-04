@@ -13,7 +13,7 @@
 		<div class="form-group">
     		<label for="maxvolume">Max Volume</label>
 			<div class="well">
-			    <input type="range" id="client-volume" min="0" max="10" value="7"></input>
+			    <input type="range" id="client-volume" min="0" max="10" value="10"></input>
 		    </div>
 		</div>
 		<button class="btn btn-default btn-block btn-primary" id="client-connect">Connect</button>
