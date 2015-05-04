@@ -10,8 +10,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -58,7 +61,8 @@ public class SamGui extends SparkGui {
   private String serverAddress;
   private static MusicServer server;
   private AmplitudePanner ap;
-  private AtomicBoolean mute, noFocus;
+  private AtomicBoolean mute, noFocus, quickUpdate;
+;
   private AtomicInteger clientId;
   private MetadataQuery mq;
   private ConcurrentHashMap<String, Long> timeoutMap;
@@ -70,6 +74,7 @@ public class SamGui extends SparkGui {
     ap = new AmplitudePanner();
     mute = new AtomicBoolean(false);
     noFocus = new AtomicBoolean(true);
+    quickUpdate = new AtomicBoolean(false);
     clientId = new AtomicInteger();
     mq = new MetadataQuery(db);
     timeoutMap = new ConcurrentHashMap<String, Long>();
@@ -92,7 +97,6 @@ public class SamGui extends SparkGui {
     Spark.get("/songs", new SongsHandler(), super.getEngine());
     // set up post handlers for interactions with gui
     Spark.post("/startServer", new StartServerHandler());
-    AtomicBoolean quickUpdate = new AtomicBoolean();
     Spark.get("/volume", new VolumeHandler(ap, quickUpdate, mute, noFocus, timeoutMap));
     Spark.post("/connectClient", new ConnectClientHandler(clientId, timeoutMap));
     Spark.get("/clients", new ClientPosHandler(ap));
@@ -100,7 +104,7 @@ public class SamGui extends SparkGui {
     Spark.post("/mute", new MuteHandler(mute));
     Spark.post("/mp3encode", new Mp3EncodeHandler());
     Spark.post("/chooseMusicDirectory", new MusicDirectoryHandler(mq));
-    Spark.post("/changeFocus", new FocusHandler(ap, mute, timeoutMap, noFocus));
+    Spark.post("/changeFocus", new FocusHandler(ap, timeoutMap, noFocus));
     Spark.post("/queryFilesystem", new FilesystemHandler());
     Spark.post("/playSong", new PlaySongHandler());
     Spark.post("/editMetadata", new MetadataHandler(mq));
@@ -348,7 +352,6 @@ public class SamGui extends SparkGui {
       String message = "Successful";
 
       timeoutMap.put(String.valueOf(clientNumber),  (System.currentTimeMillis() / 1000L));
-      System.out.println(System.currentTimeMillis() / 1000L);
       Map<String, Object> variables =
               new ImmutableMap.Builder<String, Object>()
               .put("message", message).put("id", clientNumber)
@@ -359,6 +362,40 @@ public class SamGui extends SparkGui {
     }
   }
 
+  public Object updatePosition(Request request) {
+	  
+	  
+      QueryParamsMap map = request.queryMap();
+
+      String x1 = map.value("x");
+      String y1 = map.value("y");
+      String id = map.value("id");
+      Boolean quick =
+              Boolean.parseBoolean(request.queryMap().value("quick"));
+      quickUpdate.set(quick);
+      String name = request.queryMap().value("name");
+      Double x = Double.parseDouble(x1);
+      Double y = Double.parseDouble(y1);
+      double[] pos = { x, y };
+      ClientPoint client = ap.getClients().get(id);
+      if (client != null) {
+        ap.removeClient(client);
+      }
+      client = new ClientPoint(pos, id, 1);
+      ap.addClient(client);
+      String message = "Success";
+      if (id.equals("0")) {
+    	  return currentInfo();
+      }   
+      Map<String, Object> variables =
+              ImmutableMap.of("message", message, "success", 0);
+      return GSON.toJson(variables);
+
+	  
+	  
+	  
+  }
+  
   /**
    * Class to handle updating of position
    *
@@ -381,28 +418,8 @@ public class SamGui extends SparkGui {
 
     @Override
     public Object handle(Request request, Response response) {
-      QueryParamsMap map = request.queryMap();
-
-      String x1 = map.value("x");
-      String y1 = map.value("y");
-      String id = map.value("id");
-      Boolean quick =
-              Boolean.parseBoolean(request.queryMap().value("quick"));
-      quickUpdate.set(quick);
-      String name = request.queryMap().value("name");
-      Double x = Double.parseDouble(x1);
-      Double y = Double.parseDouble(y1);
-      double[] pos = { x, y };
-      ClientPoint client = ap.getClients().get(id);
-      if (client != null) {
-        ap.removeClient(client);
-      }
-      client = new ClientPoint(pos, id, 1);
-      ap.addClient(client);
-      String message = "Success";
-      Map<String, Object> variables =
-              ImmutableMap.of("message", message, "success", 0);
-      return GSON.toJson(variables);
+    	
+      return updatePosition(request);
     }
   }
   private class MuteHandler implements Route {
@@ -426,59 +443,21 @@ public class SamGui extends SparkGui {
    * @author eselliso
    *
    */
-  private class FocusHandler implements Route {
-    AmplitudePanner ap;
-    AtomicBoolean mute, noFocus;
-    Map<String, Long> timeoutMap;
-
-    /**
-     * Instantiated withh reference to the Amplitude Panner
-     *
-     * @param ap
-     * @param noFocus 
-     */
-    public FocusHandler(AmplitudePanner ap, AtomicBoolean mute, Map<String, Long> timeoutMap, AtomicBoolean noFocus) {
-      this.ap = ap;
-      this.mute = mute;
-      this.timeoutMap = timeoutMap;
-      this.noFocus = noFocus;
-    }
-
-    @Override
-    public Object handle(Request request, Response response) {
-      QueryParamsMap map = request.queryMap();
-
-      String x1 = map.value("x");
-      String y1 = map.value("y");
-      Boolean noFocusB = Boolean.parseBoolean(map.value("pause"));
-      noFocus.set(noFocusB);
-      Double x = Double.parseDouble(x1);
-      Double y = Double.parseDouble(y1);
-      Coordinate c1 = new Coordinate(x, y);
-      ap.calcluteVolume(c1);
-      String message = "Success";
+  
+  public Object currentInfo() {
+    String message = "Success";
       List<HashMap<String, Object>> clientInfo =
               new ArrayList<HashMap<String, Object>>();
-      for (String s: timeoutMap.keySet()) {
-    	  if (((System.currentTimeMillis() / 1000L) - timeoutMap.get(s)) > TIMEOUT) {
-    		  System.out.println(s);
-    		  System.out.println(timeoutMap.get(s));
-    		  timeoutMap.remove(s);
-    		  ap.removeClient(s);
-    	  }
-      }      
       Map<String, ClientPoint> allClients = ap.getClients();
       for (ClientPoint c : allClients.values()) {
     	
-        Integer idInt = Integer.parseInt(c.getId());
-
         HashMap<String, Object> client = new HashMap<String, Object>();
         Double xc = c.getPoint().getCoordinate().x;
         if (xc == null) {
           xc = -50.;
         }
         Double yc = c.getPoint().getCoordinate().y;
-        if (xc == null) {
+        if (yc == null) {
           yc = -50.;
         }
         client.put("x", xc);
@@ -498,12 +477,62 @@ public class SamGui extends SparkGui {
           volume = 0.;
         }
         client.put("volume", volume);
+        client.put("name", c.getName());
         clientInfo.add(client);
       }
 
       Map<String, Object> variables =
               ImmutableMap.of("message", message, "success", 0, "clients", clientInfo);
       return GSON.toJson(variables);
+
+  }
+  
+  private class FocusHandler implements Route {
+    AmplitudePanner ap;
+    AtomicBoolean noFocus;
+    Map<String, Long> timeoutMap;
+
+    /**
+     * Instantiated with reference to the Amplitude Panner
+     *
+     * @param ap
+     * @param noFocus 
+     */
+    public FocusHandler(AmplitudePanner ap, Map<String, Long> timeoutMap, AtomicBoolean noFocus) {
+      this.ap = ap;
+      this.timeoutMap = timeoutMap;
+      this.noFocus = noFocus;
+    }
+
+    @Override
+    public Object handle(Request request, Response response) {
+    	QueryParamsMap map = request.queryMap();
+
+      updatePosition(request);
+      Boolean noFocusB = Boolean.parseBoolean(map.value("pause"));
+      noFocus.set(noFocusB);
+      String fociString = map.value("focusPoints");
+      Set<Coordinate> pointSet = new HashSet<Coordinate>();
+      if (fociString.lastIndexOf(",") != -1) {
+          fociString = fociString.substring(0, fociString.lastIndexOf(","));
+          String[] pointA = fociString.split(",");
+          for (int i=0; i<=pointA.length-1; i+=2) {
+        	  int x = Integer.parseInt(pointA[i].trim());
+        	  int y = Integer.parseInt(pointA[i+1].trim());
+        	  Coordinate newC = new Coordinate(x, y);
+        	  pointSet.add(newC);
+          }
+      }
+      ap.calcluteVolume(pointSet);      
+      for (String s: timeoutMap.keySet()) {
+    	  if (((System.currentTimeMillis() / 1000L) - timeoutMap.get(s)) > TIMEOUT) {
+    		  System.out.println(s);
+    		  System.out.println(timeoutMap.get(s));
+    		  timeoutMap.remove(s);
+    		  ap.removeClient(s);
+    	  }
+      }    
+      return currentInfo();
     }
   }
 
@@ -687,27 +716,14 @@ public class SamGui extends SparkGui {
         fileType = fileNameArr[1];
       }
 
-      //      if (!fileType.equals("mp3")) {
-      //        song = new File(fileNameArr[0] + ".mp3");
-      //        if (!song.exists()) {
-      //          try {
-      //            song = Mp3Encoder.encode(song); // this should
-      //            // effectively be doing nothing
-      //            /* Do something here to add in metadata */
-      //          } catch (IllegalArgumentException | EncoderException e) {
-      //            // TODO Auto-generated catch block
-      //            e.printStackTrace();
-      //          }
-      //        }
-      //      }
-
       // now that we have the song play it
       server.setMusicFile(song);
       server.broadcast();
+      int songId = server.getCurrentSongId();
 
       Map<String, Object> variables =
               new ImmutableMap.Builder<String, Object>()
-              .build();
+              .put("song_id", songId).build();
 
       return GSON.toJson(variables);
     }
