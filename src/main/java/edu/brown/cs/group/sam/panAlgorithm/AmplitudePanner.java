@@ -122,7 +122,7 @@ public class AmplitudePanner {
       currentPoint = c1;
     }
 
-    if (currentPoint == null || clients.size() <= 1) {
+    if (currentPoint == null || clients.size() <= 1 || c1.size() == 0) {
       Set<String> keys = clients.keySet();
       Map<String, Double> temp = new HashMap<String, Double>();
       for (String s : keys) {

@@ -19,7 +19,7 @@ public abstract class Server {
     config.setHostname(address);
 
     boolean exit = true;
-    for (int port = 3333; port < 5000; port++) {
+    for (int port = 7777; port < 7785; port++) {
       try {
         config.setPort(port);
         this.server = new SocketIOServer(config);
