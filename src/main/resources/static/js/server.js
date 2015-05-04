@@ -552,7 +552,7 @@ function update_current_time() {
 	var current_time = get_mins_from_seconds(current_song_time);
 
 	// Show current time of song here:
-		
+
 }
 
 /* function used to convert from seconds to mins/seconds */
@@ -765,13 +765,13 @@ $("#pause-play").on('click', function(event){
 	if (!empty_song_queue()) {
 		if (song_is_paused) {
 			// show pause button
-			//$("#pause-play").css("background", "url(../images/pause.png'')");
+			$("#pause-play").css("background", "url('../images/pause.png')");
 
 			playStream();
 			song_is_paused = false;
 		} else {
 			// show play button
-			//$("#pause-play").css("background", "url('../images/play.png'')");
+			$("#pause-play").css("background", "url('../images/play.png')");
 
 			pauseStream();
 			song_is_paused = true;
