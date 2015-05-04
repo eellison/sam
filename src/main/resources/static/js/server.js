@@ -1,3 +1,5 @@
+//$("#pause-play").css("opacity", "0.3");
+//$("#pause-play").css("opacity", "1.0");
 // Drawing
 var CANVAS_SIZE = 400;
 
