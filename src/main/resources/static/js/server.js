@@ -1,6 +1,3 @@
-//$("#pause-play").css("opacity", "0.3");
-//$("#pause-play").css("opacity", "1.0");
-
 // Drawing
 var CANVAS_SIZE = 400;
 
@@ -189,9 +186,6 @@ function updateServerPosition(event) {
 	$.post("http://" + server_url + "/updatePosition", {id : 0, x : xPos, y : yPos}, function(responseJSON) {
 	});
 }
-
-
-
 
 var pulseTime = 3000;
 var timer;
@@ -480,7 +474,9 @@ function stream(bytes, song_id) {
 			
 			// enabled play and next buttons
 			$("#pause-play").prop('disabled', false);
+			$("#pause-play").css("opacity", "1.0");
 			$("#skip").prop('disabled', false);
+			$("#skip").css("opacity", "1.0");
 		}
 	});
 }
@@ -558,7 +554,7 @@ function update_current_time() {
 
 function update_progress(percentage) {
 	//update the gui progress bar
-	
+
 }
 
 /* function used to convert from seconds to mins/seconds */
@@ -668,6 +664,7 @@ function createSelfPeer() {
 
 // begin skip button as disabled
 $("#skip").prop('disabled', true);
+$("#skip").css("opacity", "0.3");
 
 /* define function used to skip to next song */
 $("#skip").on('click', function(event){
@@ -717,7 +714,9 @@ function nextSong() {
 
 			// disable play and next buttons
 			$("#pause-play").prop('disabled', true);
+			$("#pause-play").css("opacity", "0.3");
 			$("#skip").prop('disabled', true);
+			$("#skip").css("opacity", "0.3");
 
 			// make sure the play button is shown and that it is paused
 			song_is_paused = true;
@@ -769,6 +768,7 @@ function nowPlaying(song_ele) {
 // on start-up: assume it is paused and the button is disabled
 var song_is_paused = true;
 $("#pause-play").prop('disabled', true);
+$("#pause-play").css("opacity", "0.3");
 
 /* define what happens when user pauses */
 $("#pause-play").on('click', function(event){
