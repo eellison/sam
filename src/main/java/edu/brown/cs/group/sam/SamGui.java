@@ -352,7 +352,6 @@ public class SamGui extends SparkGui {
       String message = "Successful";
 
       timeoutMap.put(String.valueOf(clientNumber),  (System.currentTimeMillis() / 1000L));
-      System.out.println(System.currentTimeMillis() / 1000L);
       Map<String, Object> variables =
               new ImmutableMap.Builder<String, Object>()
               .put("message", message).put("id", clientNumber)
@@ -494,7 +493,7 @@ public class SamGui extends SparkGui {
     Map<String, Long> timeoutMap;
 
     /**
-     * Instantiated withh reference to the Amplitude Panner
+     * Instantiated with reference to the Amplitude Panner
      *
      * @param ap
      * @param noFocus 
@@ -512,21 +511,19 @@ public class SamGui extends SparkGui {
       updatePosition(request);
       Boolean noFocusB = Boolean.parseBoolean(map.value("pause"));
       noFocus.set(noFocusB);
-      Map<String, String[]> points = request.queryMap("focusPoints").toMap();
+      String fociString = map.value("focusPoints");
       Set<Coordinate> pointSet = new HashSet<Coordinate>();
-      for (String[] point: points.values()) {
-    	  for (String s: point)
-    		  System.out.println(s);
+      if (fociString.lastIndexOf(",") != -1) {
+          fociString = fociString.substring(0, fociString.lastIndexOf(","));
+          String[] pointA = fociString.split(",");
+          for (int i=0; i<=pointA.length-1; i+=2) {
+        	  int x = Integer.parseInt(pointA[i].trim());
+        	  int y = Integer.parseInt(pointA[i+1].trim());
+        	  Coordinate newC = new Coordinate(x, y);
+        	  pointSet.add(newC);
+          }
       }
-      //temporary 
-//      if (pointSet.size()>1) {
-//    	  return null;
-//      }
-      Double x = Double.parseDouble(map.value("x"));
-      Double y = Double.parseDouble(map.value("y"));
-      Coordinate c1 = new Coordinate(x, y);
-      pointSet.add(c1);
-      ap.calcluteVolume(pointSet);
+      ap.calcluteVolume(pointSet);      
       for (String s: timeoutMap.keySet()) {
     	  if (((System.currentTimeMillis() / 1000L) - timeoutMap.get(s)) > TIMEOUT) {
     		  System.out.println(s);

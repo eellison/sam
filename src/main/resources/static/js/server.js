@@ -91,10 +91,19 @@ svg.append("rect")
 var focusGroup = svg.append("svg:g");
 var circleGroupH = svg.append("svg:g");
 var circleGroup; 
-var running = false;
 var foci = [];
 var nowPause = false;
-var saved_clients = null;
+var saved_clients = [];
+
+var initialHost =[];
+initialHost["id"] = "0";
+initialHost["name"] =  "";
+initialHost["volume"] = 1;
+initialHost["x"] = CANVAS_SIZE/2;
+initialHost["y"] = CANVAS_SIZE/2;
+
+saved_clients.push(initialHost);
+
 var paused = false;
 
 var xPos = CANVAS_SIZE/2;
@@ -222,8 +231,8 @@ function addFocusPoint(event) {
 }
 
 function updateServerPosition(event) {
-	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
-	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
+	xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
+	yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
 	updateVariablesPost();
 }
 
@@ -275,17 +284,17 @@ $("#clear-focus").click(function(event) {
 function updateVariablesPost() {
 
 	var tempFociArray = [];
+	var fociString = "";
+
 	for (var i = 0; i < fociArray.length; i++) {
 		var focusI = fociArray[i];
-		var foc = [];
 		var xfoc = focusI.attr("cx");
+		fociString = fociString + xfoc + " , ";
 		var yfoc = focusI.attr("cy");
-		foc['x'] = xfoc;
-		foc['y'] = yfoc;
-		tempFociArray[i] = foc;
+		fociString = fociString + yfoc +  " , ";
 	}
 	//updates the host position as part of changeFocus
-	$.post("/changeFocus", {id: "0", x : xPos, y : yPos, quick: quick, pause: paused, focusPoints: tempFociArray}, function(responseJSON) {
+	$.post("/changeFocus", {id: "0", x : xPos, y : yPos, quick: quick, pause: paused, focusPoints: fociString}, function(responseJSON) {
 	var responseObject = JSON.parse(responseJSON);
 	var clients = responseObject.clients;
 	saved_clients = clients;
@@ -311,6 +320,7 @@ running = true;
 var text;
 var textLabels;
 var timer = setInterval(pulse, pulseTime/2);
+draw(saved_clients);
 function draw(clients, event) {
 	if (!running) {
 		alert("Server not created!");
