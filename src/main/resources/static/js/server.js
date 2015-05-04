@@ -728,6 +728,7 @@ function nextSong() {
 
 /* enqueue this song */
 function enqueue(song_ele) {
+	var song_id = song_ele.id;
 	var path = song_ele.filePath;
 	$.post("/playSong", {songPath : path}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
