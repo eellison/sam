@@ -909,7 +909,7 @@ function empty_song_queue() {
 	return false;
 }
 
-$("#song-search").on("change", function(event) {
+$("#song-search").on("input", function(event) {
 $.post("/search", {line : $("song-search").val()}, function(responseJSON) {
 	songsdiv.remove();
 	songsdiv = $("<div id='songs-div'></div>");
