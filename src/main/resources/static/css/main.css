@@ -416,7 +416,7 @@ h4.title {
 
 #progressbar > div {
    background-color: rgba(165, 208, 254, 0.8);
-   width: 40%; /* Adjust with JavaScript */
+   width: 0%; /* Adjust with JavaScript */
    height: 4px;
    border-radius: 1px;
    margin-top: -2px;

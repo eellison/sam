@@ -303,15 +303,12 @@ function updateVariablesPost() {
 	});		
 }
 $("#mute").click(function(event) {
-	if (running) {
-		$.post("/mute", {}, function(responseJSON) {
-			muted = !muted;
-			if (muted) {
-				$("#mute").text("Unmute");
-			} else {
-				$("#mute").text("Mute");
-			}
-		});
+	if (stream_started && !paused_stream) {
+		if (muted) {
+			$("#mute").text("Unmute");
+		} else {
+			$("#mute").text("Mute");
+		}
 	}
 });
 
@@ -478,9 +475,9 @@ function setUpServer() {
 				socket_port = responseObject.socket_port;
 
 				// set up the socket io connection
-				// setupSocketConnection(socket_url, socket_port);
+				setupSocketConnection(socket_url, socket_port);
 			
-				// var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
+				var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
 			}
 		});
 	}
@@ -572,7 +569,7 @@ function playStream() {
 		audio_stream = remote.stream;
 
 		nowPlaying(queue[current_song_id]);
-		removeFromGUIQueue(current_song_id);
+		removeFirstFromGUIQueue();
 
 		// pass the stream to the peer
 		streamToPeers(remote.stream);
@@ -603,24 +600,53 @@ function count_song_time() {
 	}
 	update_current_time();
 	current_song_time++;
+
+	var progress = current_song_time / current_song_total_time;
+	update_progress(progress);
 }
 
 /* functions used to update the time shown on gui */
 function update_total_time() {
 	var total_time = get_mins_from_seconds(current_song_total_time);
-	var stringTime = total_time.min + ":" + total_time.sec;
+
+	var seconds = total_time.sec;
+
+	if (seconds < 10) {
+		seconds = "0" + seconds;
+	}
+
+	var stringTime = total_time.min + ":" + seconds;
 	$("#song-time").text(stringTime);
 }
 
 function update_current_time() {
 	var current_time = get_mins_from_seconds(current_song_time);
-	var stringTime = current_time.min + ":" + current_time.sec;
+	var seconds = current_time.sec;
+
+	if (seconds < 10) {
+		seconds = "0" + seconds;
+	}
+
+	var stringTime = current_time.min + ":" + seconds;
 	$("#current-time").text(stringTime);
 }
 
 function update_progress(percentage) {
 	//update the gui progress bar
+	var pixel_width = $("#progressbar").css("width");
+	var full_width = pixel_width.substring(0, pixel_width.length - 2);
+	var width = full_width * percentage;
 
+	$("#progressbar > div").css("width", width + "px");
+}
+
+function resetTimeAndProgress() {
+	clearInterval(song_timer);
+	current_song_time = 0;
+	current_song_total_time = 0;
+	update_current_time();
+	update_total_time();
+	update_progress(0);
 }
 
 /* function used to convert from seconds to mins/seconds */
@@ -629,8 +655,8 @@ function get_mins_from_seconds(seconds) {
 	var s = seconds - 60 * m;
 
 	var time = {
-		min: m,
-		sec: s
+		min: Math.floor(m),
+		sec: Math.floor(s)
 	};
 
 	return time;
@@ -732,10 +758,19 @@ function createSelfPeer() {
 $("#skip").prop('disabled', true);
 $("#skip").css("opacity", "0.3");
 
+// set hovering to change opacity
+$("#skip").on('mouseenter', function(event) {
+	$("#skip").css("opacity", "0.7");
+});
+$("#skip").on('mouseleave', function(event) {
+	$("#skip").css("opacity", "1");
+});
+
 /* define function used to skip to next song */
 $("#skip").on('click', function(event){
 	nextSong();
 });
+
 
 /* function used to get to the next song in the queue */
 function nextSong() {
@@ -744,7 +779,7 @@ function nextSong() {
 		// remove current song from queue
 		delete song_queue[current_song_id];
 		var index = song_ids.indexOf(current_song_id);
-		removeFromGUIQueue(current_song_id);
+		removeFirstFromGUIQueue();
 
 		if (index > -1) {
 			song_ids.splice(index, 1);
@@ -769,7 +804,7 @@ function nextSong() {
 			audio_stream = remote.stream;
 
 			nowPlaying(queue[current_song_id]);
-			removeFromGUIQueue(current_song_id);
+			removeFirstFromGUIQueue();
 
 			// pass the stream to the peer
 			streamToPeers(remote.stream);
@@ -777,6 +812,8 @@ function nextSong() {
 			source.stop();
 			source = null;
 			audio_stream = null;
+
+			resetTimeAndProgress();
 
 			// disable play and next buttons
 			$("#pause-play").prop('disabled', true);
@@ -811,8 +848,8 @@ function nextId() {
 /* remove a song_element from the queue */
 function removeFromQueue(id) {
 	//Called by GUI
-
 	// remove it from list of song_elements
+	queue.splice(id, 1);
 }
 
 function removeFirstFromGUIQueue() {
@@ -835,6 +872,15 @@ function nowPlaying(song_ele) {
 var song_is_paused = true;
 $("#pause-play").prop('disabled', true);
 $("#pause-play").css("opacity", "0.3");
+
+// set hovering to change opacity
+$("#pause-play").on('mouseenter', function(event) {
+	$("#pause-play").css("opacity", "0.7");
+});
+$("#pause-play").on('mouseleave', function(event) {
+	$("#pause-play").css("opacity", "1");
+});
+
 
 /* define what happens when user pauses */
 $("#pause-play").on('click', function(event){
