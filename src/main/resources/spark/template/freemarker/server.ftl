@@ -29,9 +29,9 @@
 			</div>
 			</br>
 			<div class="btn-group" role="btn-group-justified">
-				<button class="btn btn-default btn-primary" id="clear-focus">Clear Focus</button>
-				<button class="btn btn-default btn-primary" id="mute">Mute</button>
-				<a class="btn btn-default btn-primary" href="/songs" role="button" target="_blank">Select Directory</a>
+				<button class="btn btn-default" id="clear-focus">Clear Focus</button>
+				<button class="btn btn-default" id="mute">Mute</button>
+				<a class="btn btn-default" href="/songs" role="button" target="_blank">Select Directory</a>
 			</div>
 		</div>
 	</div>

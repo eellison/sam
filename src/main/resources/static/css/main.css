@@ -100,7 +100,7 @@ p.song {
     width: 180px;
     height: 70%;
     margin-left: 10px;
-    margin-top: 10px;
+    margin-top: 8px;
     line-height: 12px;
     text-align: center;
     vertical-align: middle;
@@ -430,7 +430,7 @@ h4.title {
   padding: 2px;
   float: left;
   width: 74%;
-  height: 5px;
+  height: 6px;
   margin-top: 30px;
 }
 
@@ -463,4 +463,12 @@ h4.title {
 
 button:hover {
     opacity: 0.5;
+}
+
+.file-button:hover {
+    opacity: 1.0 !important;
+}
+
+.folder-button:hover {
+    opacity: 1.0 !important;
 }

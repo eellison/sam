@@ -841,14 +841,16 @@ function enqueue(song_ele) {
 
 /* get the next id for the song*/
 function nextId() {
-	var index = song_ids.indexOf(current_song_id);
-	return song_ids[index];
+	//var index = song_ids.indexOf(current_song_id);
+	//eturn song_ids[index];
+	return 1;
 }
 
 /* remove a song_element from the queue */
 function removeFromQueue(id) {
 	//Called by GUI
 	// remove it from list of song_elements
+	
 	queue.splice(id, 1);
 }
 
@@ -981,6 +983,7 @@ function addSongToGUIQueue(song_element) {
 	var albumart = song_element.albumart;
 	var _title = song_element.title;
 	var _artist = song_element.artist;
+	var id = nextId();
 
 	var song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div></div>");
 	if (typeof albumart != "undefined") {
@@ -993,7 +996,8 @@ function addSongToGUIQueue(song_element) {
 
 	var removeButton = $("<button id='remove-button'></button>");
 	removeButton.on("click", function(e) {
-
+		removeFromQueue(id);
+		song.remove();
 	});
 
 	song.append(removeButton);
@@ -1015,6 +1019,7 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 		var _title = elem.title;
 		var _album = elem.album;
 		var _artist = elem.artist;
+		
 		var playbutton = $("<button id='queue-button'></button>");
 		playbutton.on("click", function(e) {
 			addSongToGUIQueue(elem);
