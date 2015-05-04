@@ -861,9 +861,9 @@ function nowPlaying(song_ele) {
 	//update album artwork
 	var albumarthighres = song_ele.albumarthighres;
 	if (typeof albumarthighres != "undefined") {
-		$("current-song").css("background", "url('" + albumarthighres + "')");
+		$("#current-song").css("background-image", "url('" + albumarthighres + "')");
 	} else {
-		$("current-song").css("background", "url('../images/placeholder.png')");
+		$("#current-song").css("background-image", "url('../images/placeholder.png')");
 	}
 }
 
