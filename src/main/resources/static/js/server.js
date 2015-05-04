@@ -559,6 +559,7 @@ function update_current_time() {
 
 function update_progress(percentage) {
 	//update the gui progress bar
+	
 }
 
 /* function used to convert from seconds to mins/seconds */
