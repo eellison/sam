@@ -372,7 +372,8 @@ h4.title {
     width: 50px;
     margin: 10px 10px 10px 10px;
     float: left;
-    background: url("../images/play.png");
+    background-color: transparent;
+    background-image: url("../images/play.png");
     background-repeat: no-repeat;
     background-size: contain;
     border: 0px;

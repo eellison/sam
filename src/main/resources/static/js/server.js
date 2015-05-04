@@ -1,3 +1,5 @@
+//$("#pause-play").css("opacity", "0.3");
+//$("#pause-play").css("opacity", "1.0");
 // Drawing
 var CANVAS_SIZE = 400;
 
@@ -552,7 +554,12 @@ function update_current_time() {
 	var current_time = get_mins_from_seconds(current_song_time);
 
 	// Show current time of song here:
+	
+}
 
+function update_progress(percentage) {
+	//update the gui progress bar
+	
 }
 
 /* function used to convert from seconds to mins/seconds */
@@ -715,7 +722,7 @@ function nextSong() {
 
 			// make sure the play button is shown and that it is paused
 			song_is_paused = true;
-			//$("#pause-play").css("background", "url('../images/play.png'')");
+			$("#pause-play").css("background-image", "url('../images/play.png')");
 		}
 	}
 }
@@ -737,21 +744,24 @@ function nextId() {
 }
 
 /* remove a song_element from the queue */
-function removeFromGUIQueue(id) {
-	//Remove song from queue gui
-
+function removeFromQueue(id) {
+	//Called by GUI
 
 	// remove it from list of song_elements
-	queue[id] = null;
+}
+
+function removeFirstFromGUIQueue() {
+	//removeFromGUI
+	//Called by queue
 }
 
 function nowPlaying(song_ele) {
 	//update album artwork
 	var albumarthighres = song_ele.albumarthighres;
 	if (typeof albumarthighres != "undefined") {
-		$("current-song").css("background", "url('" + albumarthighres + "'')");
+		$("current-song").css("background", "url('" + albumarthighres + "')");
 	} else {
-		$("current-song").css("background", "url('../images/placeholder.png'')");
+		$("current-song").css("background", "url('../images/placeholder.png')");
 	}
 }
 
@@ -765,13 +775,13 @@ $("#pause-play").on('click', function(event){
 	if (!empty_song_queue()) {
 		if (song_is_paused) {
 			// show pause button
-			$("#pause-play").css("background", "url('../images/pause.png')");
+			$("#pause-play").css("background-image", "url('../images/pause.png')");
 
 			playStream();
 			song_is_paused = false;
 		} else {
 			// show play button
-			$("#pause-play").css("background", "url('../images/play.png')");
+			$("#pause-play").css("background-image", "url('../images/play.png')");
 
 			pauseStream();
 			song_is_paused = true;
