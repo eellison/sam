@@ -112,6 +112,19 @@ p.song {
     margin-right: 5px;
 }
 
+#remove-button {
+    width: 40px;
+    height: 40px;
+    float: right;
+    border-radius: 5px;
+    background: url("../images/remove.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+    border: 0px;
+    margin-top: 5px;
+    margin-right: 5px;
+}
+
 h2.title {
     text-align: center;
 }
@@ -310,7 +323,7 @@ h4.title {
     margin-left: 5%;
     height: 40px;
     border: 1px solid rgba(0, 0, 0, 0.1);
-    background-color: rgba(100, 100, 100, 0.1);
+    background-color: rgba(190, 190, 190, 0.1);
     margin-top: 5px;
     margin-bottom: 5px;
     float: left;

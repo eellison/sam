@@ -870,19 +870,21 @@ function addSongToGUIQueue(song_element) {
 	var _title = song_element.title;
 	var _artist = song_element.artist;
 
-	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div>");
+	var song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div></div>");
 	if (typeof albumart != "undefined") {
-		song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
+		song = $("<div><div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div></div>");
 	} else {
 		if (typeof _title != 'undefined' && typeof _artist != 'undefined') {
-			song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
+			song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div></div>");
 		}
 	}
 
-	song.on('click', function(e) {
-		addSongToGUIQueue(elem);
+	var removeButton = $("<button id='remove-button'></button>");
+	removeButton.on("click", function(e) {
+
 	});
 
+	song.append(removeButton);
 	queuediv.append(song);
 	enqueue(song_element);
 }
@@ -901,6 +903,10 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 		var _title = elem.title;
 		var _album = elem.album;
 		var _artist = elem.artist;
+		var playbutton = $("<button id='queue-button'></button>");
+		playbutton.on("click", function(e) {
+			addSongToGUIQueue(elem);
+		});
 
 		$.get("http://ws.audioscrobbler.com/2.0/", {method : "album.getinfo", artist : _artist, album : _album, api_key : API_KEY, format : "json"})
 	    .done(function(responseJSONSong) {
@@ -948,11 +954,6 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 			song.append(playbutton);
 			songsdiv.append(song);
 	    });
-
-	    var playbutton = $("<button id='queue-button'></button>");
-		playbutton.on("click", function(e) {
-			addSongToGUIQueue(elem);
-		});
 	});
 
 	$("#songs-bound-div-2").append(songsdiv);
