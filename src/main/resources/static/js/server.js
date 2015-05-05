@@ -1082,6 +1082,9 @@ $('#song-search').keydown(function(e){
 });
 
 function addSongToGUIQueue(song_element) {
+	// disable the add to queue buttons
+	songsdiv.find("#queue-button").css("opacity", 0.0);
+
 	// add it to gui queue witha album art and name/artist
 	var albumart = song_element.albumart;
 	var _title = song_element.title;
