@@ -27,7 +27,7 @@ var source = null;
 // variable used to represent the song queue
 var song_queue = {};
 var song_ids = [];
-var queue = [];
+var queue = {};
 
 // variable used to represent location in song (in time)
 var current_song_time = 0;
@@ -529,7 +529,7 @@ function playStream() {
 		source.start(0);
 		song_timer = setInterval(count_song_time, 1000);
 
-		//source.onended = nextSong;
+		source.onended = nextSong;
 
 		var remote = context.createMediaStreamDestination();
 		source.connect(remote);
@@ -549,7 +549,7 @@ function playStream() {
 		source.start(0, current_song_time);
 		song_timer = setInterval(count_song_time, 1000);
 
-		//source.onended = nextSong;
+		source.onended = nextSong;
 
 		var remote = context.createMediaStreamDestination();
 		source.connect(remote);
@@ -753,13 +753,13 @@ $("#skip").css("opacity", "0.3");
 $("#skip").on('mouseenter', function() {
 	$("#skip").css("opacity", "0.7");
 });
-$("#pause-play").on('mouseleave', function() {
+$("#skip").on('mouseleave', function() {
 	$("#skip").css("opacity", "1.0");
 });
 
 /* define function used to skip to next song */
 $("#skip").on('click', function(event){
-	nextSong();
+	source.stop();
 });
 
 /* function used to get to the next song in the queue */
@@ -782,6 +782,7 @@ function nextSong() {
 
 			source = context.createBufferSource();
 			source.buffer = next_song;
+			source.onended = nextSong;
 			source.start();
 
 			//source.connect(context.destination);
@@ -1060,14 +1061,20 @@ function addSongToGUIQueue(song_element) {
 	removeButton.prop("disabled", true);
 	removeButton.css("opacity", "0.3");
 
+	$("#skip").prop("disabled", true);
+	$("#skip").css("opacity", "0.3");
+
 	song.append(removeButton);
 
 	var path = song_element.filePath;
+
+	current_post_going = true;
 	$.post("/playSong", {songPath: path}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 		var id = responseObject.song_id;
 		queue[id] = song_element;
 		addSongGUIHelper(song_element, id, song, removeButton);
+		current_post_going = false;
 	});
 }
 
@@ -1075,8 +1082,11 @@ function addSongGUIHelper(song_element, id, song, removeButton) {
 	removeButton.prop("disabled", false);
 	removeButton.css("opacity", "1.0");
 
+	$("#skip").prop("disabled", false);
+	$("#skip").css("opacity", "1.0");
+
+
 	removeButton.on("click", function(e) {
-		console.log("clicked");
 		removeFromQueue(id);
 		song.remove();
 	});
