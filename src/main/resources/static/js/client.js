@@ -39,7 +39,6 @@ $("#clients-canvas").click(function(event) {
 		name = $("#client-name").val();
 		var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 		var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-		alert("x:" + xPos + " y:" + yPos);
 
 		$.post("http://" + server_url + "/updatePosition", {id : client_id, x : xPos, y : yPos, name: name}, 
 			function(responseJSON) {
@@ -111,10 +110,8 @@ function draw_clients(clients) {
 
 	for (var i in clients) {
 		var client = clients[i];
-		console.log("drawing");
 		ctx.beginPath();
-		console.log(client.x);
-		console.log(client.y);
+
 		if (client.x != -1 || client.y != -1) {
 			ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
 		}
@@ -124,6 +121,7 @@ function draw_clients(clients) {
 	  	ctx.fillText(client.id, client.x - 10, client.y - 10);
 	}
 }
+
 prepareClientJoin();
 function prepareClientJoin() {
 	value = window.location.host + window.location.pathname;

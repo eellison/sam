@@ -27,7 +27,8 @@ var source = null;
 // variable used to represent the song queue
 var song_queue = {};
 var song_ids = [];
-var queue = [];
+var current_song_id = 0;
+var queue = {};
 
 // variable used to represent location in song (in time)
 var current_song_time = 0;
@@ -547,6 +548,7 @@ function stream(bytes, song_id) {
 			$("#pause-play").css("opacity", "1.0");
 			$("#skip").prop('disabled', false);
 			$("#skip").css("opacity", "1.0");
+			$("#pause-play").click();
 		}
 	});
 }
@@ -567,7 +569,7 @@ function playStream() {
 		source.start(0);
 		song_timer = setInterval(count_song_time, 1000);
 
-		source.onended = nextSong;
+		//source.onended = nextSong;
 
 		var remote = context.createMediaStreamDestination();
 		source.connect(remote);
@@ -587,7 +589,7 @@ function playStream() {
 		source.start(0, current_song_time);
 		song_timer = setInterval(count_song_time, 1000);
 
-		source.onended = nextSong;
+		//source.onended = nextSong;
 
 		var remote = context.createMediaStreamDestination();
 		source.connect(remote);
@@ -624,7 +626,17 @@ function update_current_time() {
 
 function update_progress(percentage) {
 	//update the gui progress bar
+	$("#progressbar > div").css("width", width + "px");
+}
 
+function resetTimeAndProgress() {
+	clearInterval(song_timer);
+	current_song_time = 0;
+	current_song_total_time = 0;
+	update_current_time();
+	update_total_time();
+	update_progress(0);
+	clearAlbumArt();
 }
 
 /* function used to convert from seconds to mins/seconds */
@@ -743,16 +755,13 @@ $("#skip").on('click', function(event){
 
 /* function used to get to the next song in the queue */
 function nextSong() {
+	console.log("next song called");
 	// if something is being streamed and its not currently paused
 	if ((audio_stream) && (!paused_stream)) {
 		// remove current song from queue
-		delete song_queue[current_song_id];
 		var index = song_ids.indexOf(current_song_id);
-		removeFromGUIQueue(current_song_id);
 
-		if (index > -1) {
-			song_ids.splice(index, 1);
-		}
+		removeFromQueue(current_song_id);
 
 		if (song_ids.length > 0) {
 			var next_id = song_ids[index];
@@ -761,6 +770,8 @@ function nextSong() {
 			
 			// stop source and reset it to next song
 			source.stop();
+			current_song_time = 0;
+
 			source = context.createBufferSource();
 			source.buffer = next_song;
 			source.start();
@@ -795,33 +806,20 @@ function nextSong() {
 	}
 }
 
-/* enqueue this song */
-function enqueue(song_ele) {
-	var song_id = song_ele.id;
-	var path = song_ele.filePath;
-	$.post("/playSong", {songPath : path}, function(responseJSON) {
-		var responseObject = JSON.parse(responseJSON);
-		var id = responseObject.song_id;
-		queue[id] = song_ele;
-	});
-}
-
-/* get the next id for the song*/
-function nextId() {
-	var index = song_ids.indexOf(current_song_id);
-	return song_ids[index];
-}
-
 /* remove a song_element from the queue */
 function removeFromQueue(id) {
 	//Called by GUI
-
 	// remove it from list of song_elements
+	var index = song_ids.indexOf(id); 
+	song_ids.splice(index, 1);
+	delete song_queue[id];
+	delete queue[id];
 }
 
 function removeFirstFromGUIQueue() {
 	//removeFromGUI
 	//Called by queue
+	$('#queue-div').find('div').first().remove();
 }
 
 function nowPlaying(song_ele) {
@@ -832,6 +830,10 @@ function nowPlaying(song_ele) {
 	} else {
 		$("current-song").css("background", "url('../images/placeholder.png')");
 	}
+}
+
+function clearAlbumArt() {
+	$("#current-song").css("background-image", "url('../images/placeholder.png')");
 }
 
 // variable used to define if the song is paused or not
@@ -936,6 +938,7 @@ $.post("/search", {line : $("song-search").val()}, function(responseJSON) {
 });
 
 function addSongToGUIQueue(song_element) {
+	// add it to gui queue witha album art and name/artist
 	var albumart = song_element.albumart;
 	var _title = song_element.title;
 	var _artist = song_element.artist;
@@ -949,12 +952,32 @@ function addSongToGUIQueue(song_element) {
 		}
 	}
 
-	song.on('click', function(e) {
-		addSongToGUIQueue(elem);
-	});
-
 	queuediv.append(song);
-	enqueue(song_element);
+
+	var removeButton = $("<button id='remove-button'></button>");
+	removeButton.prop('disabled', true);
+	removeButton.css("opacity", "0.3");
+
+	song.append(removeButton);
+
+	var path = song_element.filePath;
+	$.post("/playSong", {songPath: path}, function(responseJSON) {
+		var responseObject = JSON.parse(responseJSON);
+		var id = responseObject.song_id;
+		console.log(id);
+		queue[id] = song_element;
+		addSongGUIHelper(song_element, id, song, removeButton);
+	});
+}
+
+function addSongGUIHelper(song_element, id, song, removeButton) {
+	removeButton.prop('disabled', false);
+	removeButton.css("opacity", "1.0");
+
+	removeButton.on("click", function(e) {
+		removeFromQueue(id);
+		song.remove();
+	});
 }
 
 $("#search-clear").click(function(){
