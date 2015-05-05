@@ -25,6 +25,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FalseFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.tika.exception.TikaException;
+import org.eclipse.jetty.util.ajax.JSON;
 import org.xml.sax.SAXException;
 
 import spark.ModelAndView;
@@ -98,6 +99,7 @@ public class SamGui extends SparkGui {
   private AtomicInteger clientId;
   private MetadataQuery mq;
   private ConcurrentHashMap<String, Long> timeoutMap;
+  private ConcurrentHashMap<String, Boolean> muteMap;
   private SongInfo[] serverSongs;
   private Map<String, List<SongInfo>> autocorrectSongInfoHM;
   private AutocorrectLineRepl repl;
@@ -113,6 +115,7 @@ public class SamGui extends SparkGui {
     clientId = new AtomicInteger();
     mq = new MetadataQuery(db);
     timeoutMap = new ConcurrentHashMap<String, Long>();
+    muteMap = new ConcurrentHashMap<String, Boolean>();
     serverSongs = new SongInfo[0];
     initAutocorrectValues(serverSongs);
   }
@@ -514,6 +517,24 @@ public class SamGui extends SparkGui {
       }
       if (mute.get()) { 
         volume = 0.;
+      }	
+      for (String s: muteMap.keySet()) {
+    	  System.out.println(s);
+    	  System.out.println(muteMap.get(s));
+      }      
+      System.out.println("timeoutMap");
+      for (String s: timeoutMap.keySet()) {
+    	  System.out.println(s);
+      }
+      
+      System.out.println("map");
+      if (muteMap != null && c!=null && c.getId()!=null) {
+    	  System.out.println("map2");
+    	  if (muteMap.get(c.getId())!=null && muteMap.get(c.getId())) {
+    		  System.out.println("map key");
+    		  System.out.println(c.getId());
+        	  volume = 0.;
+    	  }
       }
       client.put("volume", volume);
       client.put("name", c.getName());
@@ -553,6 +574,22 @@ public class SamGui extends SparkGui {
       Boolean muted = Boolean.parseBoolean(map.value("mute"));
       mute.set(muted);
       String fociString = map.value("focusPoints");
+      System.out.println("here");
+      String muteString = map.value("muteArray");
+      System.out.println(muteString);
+      if (muteString!=null && muteString.trim().length()!=0) { 
+    	  String[] var = muteString.split("key:");
+    	  for (String s: var) {
+    		  s.trim();
+    		  String[] split = s.split(",");
+    		  if (split.length >= 2) {
+        		  String id = split[0].trim();
+        		  Boolean mutedV = Boolean.parseBoolean(split[1].trim());
+        		  muteMap.put(id, mutedV);
+    		  }
+    	  }
+      }
+      
       Set<Coordinate> pointSet = new HashSet<Coordinate>();
       if (fociString.lastIndexOf(",") != -1) {
         fociString = fociString.substring(0, fociString.lastIndexOf(","));

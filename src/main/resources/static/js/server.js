@@ -128,17 +128,20 @@ $("#clients-canvas").on('mousedown', function(event){
         isRightMB = e.button == 2; 
     var shiftDown = event.shiftKey;
     var altDown = event.altKey;
-
+    var commandDown = event.metaKey;
     if (shiftDown && !altDown) {
     	addFocusPoint(event);
     	return;
     }
+    if (commandDown) {
+   		muteClient(event);
+   	}
+
    	if (isRightMB) {
    		event.stopPropagation();
    		updateServerPosition(event);
    		return;
    	}
-
 	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
 	var clicked = false;
@@ -203,6 +206,50 @@ function deleteFoc(focusP) {
  			.attr("r", 0);
 	}
 }
+var muteArray = {};
+var muteArrayKeys = [];
+
+function muteClient(event) {
+	var clicked = false;
+	var i = saved_clients.length-1;	
+	var eventX = event.pageX - $("#clients-canvas")[0].offsetLeft;
+	var eventY = event.pageY - $("#clients-canvas")[0].offsetTop;
+
+
+	while(clicked==false & i >= 0) {
+		var clientI = saved_clients[i];
+		if (!(clientI === undefined || clientI === null)) {
+			var clientX = clientI.x;
+			var clientY = clientI.y;
+			var r = clientI.volume;
+ 			if (r === null || r === undefined || paused ===true) {
+ 				r = 10;
+ 			} else {
+ 				r = 10*r;
+ 			}
+ 			r = Math.max(r, 4);
+
+			clicked = inCircle(eventX, eventY, clientX, clientY, r)
+		}
+		i--;
+	}
+	if (clicked) {
+		var nId = (clientI.id);
+		console.log(nId);
+		console.log(clientI.id);
+		if (!(muteArray[nId])) {
+			if (muteArrayKeys.indexOf(nId)==-1) {
+				muteArrayKeys.push(nId);
+			}
+
+			muteArray[nId] = true;
+		} else {
+			muteArray[nId] = !muteArray[nId];
+		}
+
+	}
+}
+
 
 function addFocusPoint(event) {
 	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
@@ -279,20 +326,38 @@ $("#clear-focus").click(function(event) {
 	}
 });
 
+
+var secondsTimeout = new Date().getTime() / 1000;
+
 function updateVariablesPost() {
+	if ((new Date().getTime()/1000 - secondsTimeout)>5) {
+		alert("Disconnected from server");
+	}
+
 
 	var tempFociArray = [];
 	var fociString = "";
-
+	var muteMapString = "";
 	for (var i = 0; i < fociArray.length; i++) {
 		var focusI = fociArray[i];
 		var xfoc = focusI.attr("cx");
 		fociString = fociString + xfoc + " , ";
 		var yfoc = focusI.attr("cy");
 		fociString = fociString + yfoc +  " , ";
-	}
+	} 
+	for (var i=0; i<muteArrayKeys.length; i++) {
+		var key = muteArrayKeys[i];
+		if (!(muteArray[key] === null || muteArray[key] === undefined)) {
+			muteMapString += "key: ";
+			muteMapString += key + " , " + muteArray[key] + " ";
+		}
+	} 
 	//updates the host position as part of changeFocus
-	$.post("/changeFocus", {id: "0", x : xPos, y : yPos, quick: quick, mute: muted, pause: paused, focusPoints: fociString}, function(responseJSON) {
+	$.post("/changeFocus", {id: "0", x : xPos, y : yPos, quick: quick, mute: muted, pause: paused, 
+		focusPoints: fociString, muteArray: muteMapString}, function(responseJSON) {
+
+	secondsTimeout = new Date().getTime() / 1000;
+
 	var responseObject = JSON.parse(responseJSON);
 	var clients = responseObject.clients;
 	saved_clients = clients;
@@ -372,11 +437,22 @@ function draw(clients, event) {
  				return 10 ;
  			}
  			r = 10*r;
- 			r = Math.max(r, 1);
+ 			r = Math.max(r, 2);
  			return r;
  		});
  		circleEnter.style("stroke", "black");
- 		circleEnter.attr("fill", "none");
+ 		circleEnter.attr("fill", function(d) {
+ 			if (d.volume == 0) {
+ 				return "black";
+ 			}
+ 			return "none";});
+ 		circleEnter.attr("fill-opacity", function(d) {
+ 			if (muteArray[d.id]) {
+ 				return .9;
+ 			}
+ 			return 0;});
+
+ 		circleEnter
 	 	var prev = 	d3.selectAll("text");
 	 	prev.remove();
 
