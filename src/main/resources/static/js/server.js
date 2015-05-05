@@ -541,6 +541,7 @@ function stream(bytes, song_id) {
 			$("#pause-play").css("opacity", "1.0");
 			$("#skip").prop('disabled', false);
 			$("#skip").css("opacity", "1.0");
+			$("#pause-play").click();
 		}
 	});
 }
@@ -770,7 +771,7 @@ $("#skip").on('mouseleave', function(event) {
 
 /* define function used to skip to next song */
 $("#skip").on('click', function(event){
-	nextSong();
+	source.stop();
 });
 
 
@@ -778,6 +779,7 @@ $("#skip").on('click', function(event){
 function nextSong() {
 	// if something is being streamed and its not currently paused
 	if ((audio_stream) && (!paused_stream)) {
+		console.log(current_song_id);
 		// remove current song from queue
 		delete song_queue[current_song_id];
 		var index = song_ids.indexOf(current_song_id);
@@ -987,16 +989,7 @@ function enqueue(song_ele) {
 }
 
 function addSongToGUIQueue(song_element) {
-	var path = song_element.filePath;
-	$.post("/playSong", {songPath: path}, function(responseJSON) {
-		var responseObject = JSON.parse(responseJSON);
-		var id = responseObject.song_id;
-		queue[id] = song_element;
-		addSongGUIHelper(song_element, id);
-	});
-}
-
-function addSongGUIHelper(song_element, id) {
+	// add it to gui queue witha album art and name/artist
 	var albumart = song_element.albumart;
 	var _title = song_element.title;
 	var _artist = song_element.artist;
@@ -1010,17 +1003,32 @@ function addSongGUIHelper(song_element, id) {
 		}
 	}
 
+	queuediv.append(song);
+
 	var removeButton = $("<button id='remove-button'></button>");
+	removeButton.prop('disabled', true);
+	removeButton.css("opacity", "0.3");
+
+	song.append(removeButton);
+
+	var path = song_element.filePath;
+	$.post("/playSong", {songPath: path}, function(responseJSON) {
+		var responseObject = JSON.parse(responseJSON);
+		var id = responseObject.song_id;
+		queue[id] = song_element;
+		addSongGUIHelper(song_element, id, song, removeButton);
+	});
+}
+
+function addSongGUIHelper(song_element, id, song, removeButton) {
+	removeButton.prop('disabled', false);
+	removeButton.css("opacity", "1.0");
+
 	removeButton.on("click", function(e) {
 		removeFromQueue(id);
 		song.remove();
 	});
-
-	song.append(removeButton);
-	queuediv.append(song);
 }
-
-
 
 $("#search-clear").click(function(){
     $("#song-search").val('');
