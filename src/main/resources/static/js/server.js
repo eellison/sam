@@ -755,7 +755,6 @@ $("#skip").on('click', function(event){
 
 /* function used to get to the next song in the queue */
 function nextSong() {
-	console.log("next song called");
 	// if something is being streamed and its not currently paused
 	if ((audio_stream) && (!paused_stream)) {
 		// remove current song from queue
@@ -964,7 +963,6 @@ function addSongToGUIQueue(song_element) {
 	$.post("/playSong", {songPath: path}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 		var id = responseObject.song_id;
-		console.log(id);
 		queue[id] = song_element;
 		addSongGUIHelper(song_element, id, song, removeButton);
 	});
