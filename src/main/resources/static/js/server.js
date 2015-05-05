@@ -926,12 +926,12 @@ function addSongToGUIQueue(song_element) {
 	var _title = song_element.title;
 	var _artist = song_element.artist;
 
-	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div>");
+	var song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div></div>");
 	if (typeof albumart != "undefined") {
-		song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
+		song = $("<div><div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div></div>");
 	} else {
 		if (typeof _title != 'undefined' && typeof _artist != 'undefined') {
-			song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
+			song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div></div>");
 		}
 	}
 

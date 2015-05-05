@@ -32,6 +32,21 @@
 		</p>
 		</form>
 	</div>
+	</br>
+	<div style="clear: both; position: fixed; min-width: 1100px; width: 80%; bottom: 0; left: 10%; float: left;">
+		<div id="song-controls">
+			<div id='current-song' style='float:left;width:70px;height:70px;'></div>
+			<button id="pause-play"></button>
+			<p id="current-time" style="float: left;">0:00</p>
+			<div id="progressbar">
+  				<div></div>
+			</div>
+			<p id="song-time" style="float: left;">0:00</p>
+			<button id="skip"></button>
+			</br>
+			<p id="song-info" style="color: rgba(165, 208, 254, 0.8); clear: both; text-align: center; vertical-align: middle; margin-top: -27px; width: 50%; margin-left: 26%; float: left;">Nothing playing</p>
+		</div>
+	</div>
 </div>
 </#assign>
 
