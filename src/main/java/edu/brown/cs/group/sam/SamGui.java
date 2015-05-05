@@ -2,7 +2,10 @@ package edu.brown.cs.group.sam;
 
 import it.sauronsoftware.jave.EncoderException;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -13,14 +16,24 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FalseFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.tika.exception.TikaException;
 import org.xml.sax.SAXException;
+
+import spark.ModelAndView;
+import spark.QueryParamsMap;
+import spark.Request;
+import spark.Response;
+import spark.Route;
+import spark.Spark;
+import spark.TemplateViewRoute;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
@@ -35,13 +48,12 @@ import edu.brown.cs.group.sam.panAlgorithm.AmplitudePanner;
 import edu.brown.cs.group.sam.panAlgorithm.ClientPoint;
 import edu.brown.cs.group.sam.server.MusicServer;
 import edu.brown.cs.group.sam.sparkgui.SparkGui;
-import spark.ModelAndView;
-import spark.QueryParamsMap;
-import spark.Request;
-import spark.Response;
-import spark.Route;
-import spark.Spark;
-import spark.TemplateViewRoute;
+import edu.brown.cs.yk46.autocorrect.AutocorrectLineRepl;
+import edu.brown.cs.yk46.autocorrect.CorpusDataStore;
+import edu.brown.cs.yk46.autocorrect.suggestion.LevenshteinEditDistance;
+import edu.brown.cs.yk46.autocorrect.suggestion.PrefixMatching;
+import edu.brown.cs.yk46.autocorrect.suggestion.SuggestionStrategy;
+import edu.brown.cs.yk46.autocorrect.suggestion.Whitespace;
 
 /**
  * Class that extends the basic implementation of a spark graphical user
@@ -56,16 +68,39 @@ public class SamGui extends SparkGui {
   /* a GSON object for communicating with the GUI */
   private static final Gson GSON = new Gson();
   private static final int TIMEOUT = 15;
+  private static final File DEFAULT_DIR_CONFIG_PATH =
+      new File("src/main/resources/static/config/defaultdirectory.txt");
+  private static final File AUTOCORRECT_CORPUS =
+      new File("src/main/resources/static/autocorrect/songscorpus.txt");
+  private static final File DEFAULT_MUSIC_DIR =
+      new File("src/main/resources/static/testdirectory");
+  private static final List<String> AUDIO_EXTENSIONS = Arrays.asList("4xm",
+      "MTV", "RoQ", "aac", "ac3", "aiff", "alaw", "amr", "apc", "ape",
+      "asf", "au", "avi", "avs", "bethsoftvid", "c93", "daud", "dsicin",
+      "dts", "dv", "dxa", "ea", "ea_cdata", "ffm", "film_cpk", "flac",
+      "flic", "flv", "gif", "gxf", "h261", "h263", "h264", "idcin",
+      "image2", "image2pipe", "ingenient", "ipmovie", "libnut", "m4v",
+      "matroska", "mjpeg", "mm", "mmf", "mov", "mp4", "m4a", "3gp",
+      "3g2", "mj2", "mp3", "mpc", "mpc8", "mpeg", "mpegts", "mpegtsraw",
+      "mpegvideo", "mulaw", "mxf", "nsv", "nut", "nuv", "ogg", "psxstr",
+      "rawvideo", "redir", "rm", "rtsp", "s16be", "s16le", "s8", "sdp",
+      "shn", "siff", "smk", "sol", "swf", "thp", "tiertexseq", "tta",
+      "txd", "u16be", "u16le", "u8", "vc1", "vmd", "voc", "wav",
+      "wc3movie", "wsaud", "wsvqa", "wv", "yuv4mpegpipe");
+  private static final int AUTOCORRECT_LED = 2;
+
   // instance variables declared
   private int port;
   private String serverAddress;
   private static MusicServer server;
   private AmplitudePanner ap;
   private AtomicBoolean mute, noFocus, quickUpdate;
-;
   private AtomicInteger clientId;
   private MetadataQuery mq;
   private ConcurrentHashMap<String, Long> timeoutMap;
+  private SongInfo[] serverSongs;
+  private Map<String, List<SongInfo>> autocorrectSongInfoHM;
+  private AutocorrectLineRepl repl;
 
   public SamGui(int port, String address, String db)
           throws SQLException {
@@ -78,6 +113,8 @@ public class SamGui extends SparkGui {
     clientId = new AtomicInteger();
     mq = new MetadataQuery(db);
     timeoutMap = new ConcurrentHashMap<String, Long>();
+    setInitialServerSongs();
+    initAutocorrectValues(serverSongs);
   }
 
   /**
@@ -103,12 +140,13 @@ public class SamGui extends SparkGui {
     Spark.post("/updatePosition", new UpdatePosHandler(ap, quickUpdate));
     Spark.post("/mute", new MuteHandler(mute));
     Spark.post("/mp3encode", new Mp3EncodeHandler());
-    Spark.post("/chooseMusicDirectory", new MusicDirectoryHandler(mq));
+    Spark.post("/chooseMusicDirectory", new MusicDirectoryHandler());
     Spark.post("/changeFocus", new FocusHandler(ap, timeoutMap, noFocus));
     Spark.post("/queryFilesystem", new FilesystemHandler());
     Spark.post("/playSong", new PlaySongHandler());
-    Spark.post("/editMetadata", new MetadataHandler(mq));
+    Spark.post("/editMetadata", new MetadataHandler());
     Spark.post("/getIP", new IPAddressHandler());
+    Spark.post("/search", new SearchHandler());
   }
 
   /**
@@ -120,6 +158,7 @@ public class SamGui extends SparkGui {
    */
   private class HomeHandler implements TemplateViewRoute {
 
+    
     /**
      * Method that handles get requests from the home page on the front-end.
      *
@@ -222,7 +261,7 @@ public class SamGui extends SparkGui {
      * @param timeoutMap 
      */
     public VolumeHandler(AmplitudePanner ap, AtomicBoolean quickUpdate, 
-    		AtomicBoolean mute, AtomicBoolean noFocus, Map<String, Long> timeoutMap) {
+            AtomicBoolean mute, AtomicBoolean noFocus, Map<String, Long> timeoutMap) {
       this.ap = ap;
       this.quickUpdate = quickUpdate;
       this.mute = mute;
@@ -244,8 +283,8 @@ public class SamGui extends SparkGui {
       String id = map.value("id");
       long unixTime = System.currentTimeMillis() / 1000L;
       timeoutMap.put(id, unixTime);
-//      timeoutMap.put, value);
-      
+      //      timeoutMap.put, value);
+
       Map<String, ClientPoint> clients = ap.getClients();
       double weight = 1;
       if (ap.getCoordinate() == null) {
@@ -288,7 +327,6 @@ public class SamGui extends SparkGui {
       Map<String, Object> variables =
               ImmutableMap.of("success", success, "address", address);
 
-      // TODO Auto-generated method stub
       return GSON.toJson(variables);
     }	  
   }
@@ -363,39 +401,39 @@ public class SamGui extends SparkGui {
   }
 
   public Object updatePosition(Request request) {
-	  
-	  
-      QueryParamsMap map = request.queryMap();
 
-      String x1 = map.value("x");
-      String y1 = map.value("y");
-      String id = map.value("id");
-      Boolean quick =
-              Boolean.parseBoolean(request.queryMap().value("quick"));
-      quickUpdate.set(quick);
-      String name = request.queryMap().value("name");
-      Double x = Double.parseDouble(x1);
-      Double y = Double.parseDouble(y1);
-      double[] pos = { x, y };
-      ClientPoint client = ap.getClients().get(id);
-      if (client != null) {
-        ap.removeClient(client);
-      }
-      client = new ClientPoint(pos, id, 1);
-      ap.addClient(client);
-      String message = "Success";
-      if (id.equals("0")) {
-    	  return currentInfo();
-      }   
-      Map<String, Object> variables =
-              ImmutableMap.of("message", message, "success", 0);
-      return GSON.toJson(variables);
 
-	  
-	  
-	  
+    QueryParamsMap map = request.queryMap();
+
+    String x1 = map.value("x");
+    String y1 = map.value("y");
+    String id = map.value("id");
+    Boolean quick =
+            Boolean.parseBoolean(request.queryMap().value("quick"));
+    quickUpdate.set(quick);
+    String name = request.queryMap().value("name");
+    Double x = Double.parseDouble(x1);
+    Double y = Double.parseDouble(y1);
+    double[] pos = { x, y };
+    ClientPoint client = ap.getClients().get(id);
+    if (client != null) {
+      ap.removeClient(client);
+    }
+    client = new ClientPoint(pos, id, 1);
+    ap.addClient(client);
+    String message = "Success";
+    if (id.equals("0")) {
+      return currentInfo();
+    }   
+    Map<String, Object> variables =
+            ImmutableMap.of("message", message, "success", 0);
+    return GSON.toJson(variables);
+
+
+
+
   }
-  
+
   /**
    * Class to handle updating of position
    *
@@ -418,7 +456,7 @@ public class SamGui extends SparkGui {
 
     @Override
     public Object handle(Request request, Response response) {
-    	
+
       return updatePosition(request);
     }
   }
@@ -443,50 +481,50 @@ public class SamGui extends SparkGui {
    * @author eselliso
    *
    */
-  
+
   public Object currentInfo() {
     String message = "Success";
-      List<HashMap<String, Object>> clientInfo =
-              new ArrayList<HashMap<String, Object>>();
-      Map<String, ClientPoint> allClients = ap.getClients();
-      for (ClientPoint c : allClients.values()) {
-    	
-        HashMap<String, Object> client = new HashMap<String, Object>();
-        Double xc = c.getPoint().getCoordinate().x;
-        if (xc == null) {
-          xc = -50.;
-        }
-        Double yc = c.getPoint().getCoordinate().y;
-        if (yc == null) {
-          yc = -50.;
-        }
-        client.put("x", xc);
-        client.put("y", yc);
-        client.put("id", c.getId());
-        Double volume = ap.getVolume(c.getId());
-        if (volume == null) {
-          volume = 0.0;
-        }
-        if (Double.isNaN(volume)) {
-      	  volume = 1.;
-        }
-        if (noFocus.get()) {
-        	volume = 1.0;
-        }
-        if (mute.get()) { 
-          volume = 0.;
-        }
-        client.put("volume", volume);
-        client.put("name", c.getName());
-        clientInfo.add(client);
-      }
+    List<HashMap<String, Object>> clientInfo =
+            new ArrayList<HashMap<String, Object>>();
+    Map<String, ClientPoint> allClients = ap.getClients();
+    for (ClientPoint c : allClients.values()) {
 
-      Map<String, Object> variables =
-              ImmutableMap.of("message", message, "success", 0, "clients", clientInfo);
-      return GSON.toJson(variables);
+      HashMap<String, Object> client = new HashMap<String, Object>();
+      Double xc = c.getPoint().getCoordinate().x;
+      if (xc == null) {
+        xc = -50.;
+      }
+      Double yc = c.getPoint().getCoordinate().y;
+      if (yc == null) {
+        yc = -50.;
+      }
+      client.put("x", xc);
+      client.put("y", yc);
+      client.put("id", c.getId());
+      Double volume = ap.getVolume(c.getId());
+      if (volume == null) {
+        volume = 0.0;
+      }
+      if (Double.isNaN(volume)) {
+        volume = 1.;
+      }
+      if (noFocus.get()) {
+        volume = 1.0;
+      }
+      if (mute.get()) { 
+        volume = 0.;
+      }
+      client.put("volume", volume);
+      client.put("name", c.getName());
+      clientInfo.add(client);
+    }
+
+    Map<String, Object> variables =
+            ImmutableMap.of("message", message, "success", 0, "clients", clientInfo);
+    return GSON.toJson(variables);
 
   }
-  
+
   private class FocusHandler implements Route {
     AmplitudePanner ap;
     AtomicBoolean noFocus;
@@ -506,7 +544,7 @@ public class SamGui extends SparkGui {
 
     @Override
     public Object handle(Request request, Response response) {
-    	QueryParamsMap map = request.queryMap();
+      QueryParamsMap map = request.queryMap();
 
       updatePosition(request);
       Boolean noFocusB = Boolean.parseBoolean(map.value("pause"));
@@ -514,23 +552,23 @@ public class SamGui extends SparkGui {
       String fociString = map.value("focusPoints");
       Set<Coordinate> pointSet = new HashSet<Coordinate>();
       if (fociString.lastIndexOf(",") != -1) {
-          fociString = fociString.substring(0, fociString.lastIndexOf(","));
-          String[] pointA = fociString.split(",");
-          for (int i=0; i<=pointA.length-1; i+=2) {
-        	  int x = Integer.parseInt(pointA[i].trim());
-        	  int y = Integer.parseInt(pointA[i+1].trim());
-        	  Coordinate newC = new Coordinate(x, y);
-        	  pointSet.add(newC);
-          }
+        fociString = fociString.substring(0, fociString.lastIndexOf(","));
+        String[] pointA = fociString.split(",");
+        for (int i=0; i<=pointA.length-1; i+=2) {
+          int x = Integer.parseInt(pointA[i].trim());
+          int y = Integer.parseInt(pointA[i+1].trim());
+          Coordinate newC = new Coordinate(x, y);
+          pointSet.add(newC);
+        }
       }
       ap.calcluteVolume(pointSet);      
       for (String s: timeoutMap.keySet()) {
-    	  if (((System.currentTimeMillis() / 1000L) - timeoutMap.get(s)) > TIMEOUT) {
-    		  System.out.println(s);
-    		  System.out.println(timeoutMap.get(s));
-    		  timeoutMap.remove(s);
-    		  ap.removeClient(s);
-    	  }
+        if (((System.currentTimeMillis() / 1000L) - timeoutMap.get(s)) > TIMEOUT) {
+          System.out.println(s);
+          System.out.println(timeoutMap.get(s));
+          timeoutMap.remove(s);
+          ap.removeClient(s);
+        }
       }    
       return currentInfo();
     }
@@ -590,33 +628,16 @@ public class SamGui extends SparkGui {
    * @author young-raekim
    *
    */
-  private static class MusicDirectoryHandler implements Route {
-
-    private static final List<String> DECODEABLE = Arrays.asList("4xm",
-            "MTV", "RoQ", "aac", "ac3", "aiff", "alaw", "amr", "apc", "ape",
-            "asf", "au", "avi", "avs", "bethsoftvid", "c93", "daud", "dsicin",
-            "dts", "dv", "dxa", "ea", "ea_cdata", "ffm", "film_cpk", "flac",
-            "flic", "flv", "gif", "gxf", "h261", "h263", "h264", "idcin",
-            "image2", "image2pipe", "ingenient", "ipmovie", "libnut", "m4v",
-            "matroska", "mjpeg", "mm", "mmf", "mov", "mp4", "m4a", "3gp",
-            "3g2", "mj2", "mp3", "mpc", "mpc8", "mpeg", "mpegts", "mpegtsraw",
-            "mpegvideo", "mulaw", "mxf", "nsv", "nut", "nuv", "ogg", "psxstr",
-            "rawvideo", "redir", "rm", "rtsp", "s16be", "s16le", "s8", "sdp",
-            "shn", "siff", "smk", "sol", "swf", "thp", "tiertexseq", "tta",
-            "txd", "u16be", "u16le", "u8", "vc1", "vmd", "voc", "wav",
-            "wc3movie", "wsaud", "wsvqa", "wv", "yuv4mpegpipe");
-
-    private MetadataQuery mq;
-
-    public MusicDirectoryHandler(MetadataQuery mq) {
-      this.mq = mq;
-    }
+  private class MusicDirectoryHandler implements Route {
 
     @Override
     public Object handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
       String musicDirectoryPath = qm.value("dir");
       File musicDirectory = new File(musicDirectoryPath);
+
+      SamGui.emptyAndOverwriteFile(SamGui.DEFAULT_DIR_CONFIG_PATH,
+          musicDirectoryPath);
 
       if (musicDirectory.getName().equals("")) {
         musicDirectory = new File(System.getProperty("user.home"));
@@ -627,59 +648,11 @@ public class SamGui extends SparkGui {
       List<SongInfo> songs =
               getSongInfoFromFlattenedDirectory(files, new ArrayList<>());
 
-      return GSON.toJson(songs.toArray(new SongInfo[0]));
-    }
+      serverSongs = songs.toArray(new SongInfo[songs.size()]);
 
-    private List<SongInfo> getSongInfoFromFlattenedDirectory(File[] files,
-            List<SongInfo> songs) {
-      for (File f : files) {
-        if (f.isDirectory()) {
-          songs.addAll(getSongInfoFromFlattenedDirectory(f.listFiles(),
-                  new ArrayList<>()));
-        }
+      initAutocorrectValues(serverSongs);
 
-        String[] fileNameArr = f.getName().split("\\.");
-        String fileType = "";
-
-        if (fileNameArr.length > 1) {
-          fileType = fileNameArr[fileNameArr.length - 1];
-        }
-
-        if (DECODEABLE.contains(fileType)) {
-          SongInfo si;
-          try {
-            si = mq.getSongInfo(f);
-          } catch (IOException | SAXException | TikaException
-                  | SQLException e1) {
-            si = getMissingSongInfo(f);
-          }
-
-          if (si.getFilePath() == null) {
-            si = getMissingSongInfo(f);
-          }
-
-          songs.add(si);
-        }
-      }
-
-      return songs;
-    }
-
-    private SongInfo getMissingSongInfo(File f) {
-      SongInfo si;
-      try {
-        si = MetadataReader.getAudioMetadata(f);
-      } catch (IOException | SAXException | TikaException e) {
-        si = new SongInfo(f.getAbsolutePath());
-      }
-
-      try {
-        mq.insertOrReplaceSongInfo(si);
-      } catch (SQLException e) {
-        // TODO Auto-generated catch block
-      }
-
-      return si;
+      return GSON.toJson(serverSongs);
     }
 
   }
@@ -732,12 +705,6 @@ public class SamGui extends SparkGui {
 
   private class MetadataHandler implements Route {
 
-    private MetadataQuery mq;
-
-    public MetadataHandler(MetadataQuery mq) {
-      this.mq = mq;
-    }
-
     @Override
     public Object handle(Request req, Response res) {
       QueryParamsMap qm = req.queryMap();
@@ -756,6 +723,208 @@ public class SamGui extends SparkGui {
       return null;
     }
 
+  }
+
+  private class SearchHandler implements Route {
+ 
+    @Override
+    public Object handle(Request req, Response res) {
+      QueryParamsMap qm = req.queryMap();
+      String searchInput = qm.value("line");
+
+      if (searchInput == null || searchInput.equals("")) {
+        return GSON.toJson(serverSongs);
+      }
+
+      String[] autocorrectResults = repl.evaluateInput(searchInput).split("\n");
+
+      List<SongInfo> songInfos = new ArrayList<>();
+      for (String autocorrectResult : autocorrectResults) {
+        songInfos.addAll(autocorrectSongInfoHM.getOrDefault(autocorrectResult, new ArrayList<>()));
+      }
+
+      HashSet<SongInfo> songInfosSet = new HashSet<>(songInfos);
+
+      return GSON.toJson(songInfosSet.toArray(new SongInfo[songInfosSet.size()]));
+    }
+
+  }
+
+  private void setInitialServerSongs() {
+    try (BufferedReader r = new BufferedReader(
+        new FileReader(DEFAULT_DIR_CONFIG_PATH))) {
+      File defaultDir = new File(r.readLine());
+      File[] musicDir;
+
+      if (defaultDir.exists()) {
+        musicDir = defaultDir.listFiles();
+      } else {
+        File iTunesDir = new File(getITunesDirectoryPath());
+        if (!iTunesDir.getName().equals("")) { //exists
+          musicDir = iTunesDir.listFiles();
+        } else {
+          musicDir = DEFAULT_MUSIC_DIR.listFiles();
+        }
+      }
+
+      List<SongInfo> siList = getSongInfoFromFlattenedDirectory(musicDir,
+              new ArrayList<>());
+      serverSongs = siList.toArray(new SongInfo[siList.size()]);
+    } catch (IOException e) {
+      File[] musicDir;
+
+      File iTunesDir = new File(getITunesDirectoryPath());
+      if (!iTunesDir.getName().equals("")) { //exists
+        musicDir = iTunesDir.listFiles();
+      } else {
+        musicDir = DEFAULT_MUSIC_DIR.listFiles();
+      }
+
+      List<SongInfo> siList = getSongInfoFromFlattenedDirectory(musicDir,
+              new ArrayList<>());
+      serverSongs = siList.toArray(new SongInfo[siList.size()]);
+    }
+  }
+
+  private String getITunesDirectoryPath() {
+    File userDir = new File(System.getProperty("user.home"));
+    File[] userSubDirs = userDir.listFiles();
+
+    for (File subDir : userSubDirs) {
+      if (subDir.getName().contains("Music")) {
+        List<File> musicSubDirsList = (List<File>) FileUtils.listFilesAndDirs(
+            subDir, FalseFileFilter.FALSE, TrueFileFilter.TRUE);
+        for (File musicSubDir : musicSubDirsList) {
+          if (musicSubDir.getName().equalsIgnoreCase("iTunes")) {
+            return musicSubDir.getAbsolutePath();
+          }
+        }
+      }
+    }
+
+    return "";
+  }
+
+  private List<SongInfo> getSongInfoFromFlattenedDirectory(File[] files,
+      List<SongInfo> songs) {
+    for (File f : files) {
+      if (f.isDirectory()) {
+        songs.addAll(getSongInfoFromFlattenedDirectory(f.listFiles(),
+                new ArrayList<>()));
+      }
+
+      String[] fileNameArr = f.getName().split("\\.");
+      String fileType = "";
+
+      if (fileNameArr.length > 1) {
+        fileType = fileNameArr[fileNameArr.length - 1];
+      }
+
+      if (AUDIO_EXTENSIONS.contains(fileType)) {
+        SongInfo si;
+        try {
+          si = mq.getSongInfo(f);
+        } catch (IOException | SAXException | TikaException
+                | SQLException e1) {
+          si = getMissingSongInfo(f);
+        }
+
+        if (si.getFilePath() == null) {
+          si = getMissingSongInfo(f);
+        }
+
+        songs.add(si);
+      }
+    }
+
+    return songs;
+  }
+
+  private SongInfo getMissingSongInfo(File f) {
+    SongInfo si;
+    try {
+      si = MetadataReader.getAudioMetadata(f);
+    } catch (IOException | SAXException | TikaException e) {
+      si = new SongInfo(f.getAbsolutePath());
+    }
+
+    try {
+      mq.insertOrReplaceSongInfo(si);
+    } catch (SQLException e) {
+      // TODO Auto-generated catch block
+    }
+
+    return si;
+  }
+
+  private void initAutocorrectValues(SongInfo[] songs) {
+    String corpusStr = "";
+    autocorrectSongInfoHM = new HashMap<>();
+
+    for (SongInfo si : songs) {
+      String title = si.getTitle();
+      String album = si.getAlbum();
+      String artist = si.getArtist();
+      String filename = new File(si.getFilePath()).getName();
+      String[] basePhrases = {title, album, artist, filename};
+
+      corpusStr += title + " " + album + " " + artist + " " + filename + "\n";
+
+      List<String> sequenceCombinations = getSequenceCombinations(basePhrases);
+      for (String sequenceCombination: sequenceCombinations) {
+        List<SongInfo> matchedSongs = autocorrectSongInfoHM.getOrDefault(
+            sequenceCombination, new ArrayList<>());
+        matchedSongs.add(si);
+        autocorrectSongInfoHM.put(sequenceCombination, matchedSongs);
+      }
+    }
+
+    emptyAndOverwriteFile(AUTOCORRECT_CORPUS, corpusStr);
+
+    CorpusDataStore dataStore = new CorpusDataStore();
+    try {
+      dataStore.readFile(SamGui.AUTOCORRECT_CORPUS);
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+
+    List<SuggestionStrategy> strategies = new ArrayList<>();
+    strategies.add(new PrefixMatching(dataStore.getTrie()));
+    strategies.add(new LevenshteinEditDistance(dataStore.getTrie(), AUTOCORRECT_LED));
+    strategies.add(new Whitespace(dataStore.getTrie()));
+
+    repl = new AutocorrectLineRepl(strategies, dataStore.getNgramFreqMap(), false);
+  }
+
+  private static List<String> getSequenceCombinations(String[] basePhrases) {
+    List<String> sequenceCombinations = new ArrayList<>();
+
+    for (String basePhrase : basePhrases) {
+      if (basePhrase == null) {
+        continue;
+      }
+
+      String[] basePhraseArr = basePhrase.toLowerCase().split(
+          CorpusDataStore.PUNCTUATION_WHITESPACE_REGEX);
+      String sequenceCombination = basePhraseArr[0];
+      sequenceCombinations.add(sequenceCombination);
+      for (int i = 1; i < basePhraseArr.length; i++) {
+        sequenceCombination += " " + basePhraseArr[i];
+        sequenceCombinations.add(sequenceCombination);
+      }
+    }
+
+    return sequenceCombinations;
+  }
+
+  private static void emptyAndOverwriteFile(File file, String content) {
+    try (FileWriter fw = new FileWriter(file, false);) {
+      fw.write(content);
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
   }
 
   public void shutdown() {

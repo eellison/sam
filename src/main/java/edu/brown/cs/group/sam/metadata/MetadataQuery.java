@@ -42,8 +42,8 @@ public class MetadataQuery {
    * @throws IOException 
    * @throws SQLException 
    */
-  public SongInfo getSongInfo(String filePath) throws IOException,
-      SAXException, TikaException, SQLException {
+  public SongInfo getSongInfo(String filePath) throws
+      IOException, SQLException {
     if (filePathToSongInfo.containsKey(filePath)) {
       return filePathToSongInfo.get(filePath);
     }
