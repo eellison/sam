@@ -693,7 +693,7 @@ public class SamGui extends SparkGui {
       // now that we have the song play it
       server.setMusicFile(song);
       server.broadcast();
-      int songId = server.getCurrentSongId();
+      int songId = server.getCurrentSongId().get();
 
       Map<String, Object> variables =
           new ImmutableMap.Builder<String, Object>()

@@ -502,7 +502,7 @@ function stream(bytes, song_id) {
 
 		if (!audio_stream) {
 			current_song_id = song_id;
-			
+
 			// enabled play and next buttons
 			$("#pause-play").prop('disabled', false);
 			$("#pause-play").css("opacity", "1.0");
@@ -1109,13 +1109,11 @@ function addSongToGUIQueue(song_element) {
 
 	var path = song_element.filePath;
 
-	current_post_going = true;
 	$.post("/playSong", {songPath: path}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 		var id = responseObject.song_id;
 		queue[id] = song_element;
 		addSongGUIHelper(song_element, id, song, removeButton);
-		current_post_going = false;
 	});
 }
 

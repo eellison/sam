@@ -1,5 +1,1 @@
-<<<<<<< HEAD
-/Users/vcohen/Music/iTunes/iTunes Media/Music
-=======
 /Users/Peter/Music/iTunes/iTunes Music/Aerosmith
->>>>>>> be2037c63c351ebaa0c740eb2bfcf210ab8038b2
