@@ -55,7 +55,7 @@ import spark.TemplateViewRoute;
 public class SamGui extends SparkGui {
   /* a GSON object for communicating with the GUI */
   private static final Gson GSON = new Gson();
-  private static final int TIMEOUT = 15;
+  private static final int TIMEOUT = 5; //15 second timeout
   // instance variables declared
   private int port;
   private String serverAddress;
