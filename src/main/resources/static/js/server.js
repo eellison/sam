@@ -901,7 +901,7 @@ function empty_song_queue() {
 window.onfocus = function() {
   console.log("alert");
 }
-
+/*
 $.get("/currentDir", function(responseJSON) {
 	current_dir = responseJSON;
 	$.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
@@ -976,18 +976,16 @@ $.get("/currentDir", function(responseJSON) {
 		$("#songs-bound-div-2").append(songsdiv);
 	});
 });
+*/
 
-//http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
-String.prototype.hashCode = function(){
-	var hash = 0;
-	if (this.length == 0) return hash;
-	for (i = 0; i < this.length; i++) {
-		char = this.charCodeAt(i);
-		hash = ((hash<<5)-hash)+char;
-		hash = hash & hash; // Convert to 32bit integer
-	}
-	return hash;
-}
+$('#song-search').on('input', function(e) {
+	var search = $("#song-search").val();
+
+    if (search === "") {
+    	songsdiv.remove();
+    	return;
+    }
+});
 
 $('#song-search').keydown(function(e){
     if (e.keyCode === 13) {
@@ -1002,7 +1000,7 @@ $('#song-search').keydown(function(e){
 		songsdiv.remove();
 		songsdiv = $("<div id='songs-div'></div>");
 		var songs = JSON.parse(responseJSON);
-		
+		$("#search-info").remove();
 		songs.forEach(function(elem) {
 			var _path = elem.filePath;
 			var _title = elem.title;
@@ -1048,7 +1046,6 @@ $('#song-search').keydown(function(e){
 				
 				});
 
-				song.append(playbutton);
 				//songsdiv.append(song);
 			})
 		    .fail(function(xhr, textStatus, errorThrown) {
@@ -1062,7 +1059,6 @@ $('#song-search').keydown(function(e){
 				
 				});
 
-				song.append(playbutton);
 				//songsdiv.append(song);
 		    });
 		});
@@ -1075,6 +1071,7 @@ $('#song-search').keydown(function(e){
 });
 
 function addSongToGUIQueue(song_element) {
+	$("#queue-info").remove();
 	// add it to gui queue witha album art and name/artist
 	var albumart = song_element.albumart;
 	var _title = song_element.title;
@@ -1128,4 +1125,5 @@ function addSongGUIHelper(song_element, id, song, removeButton) {
 
 $("#search-clear").click(function(){
     $("#song-search").val('');
+    songsdiv.remove();
 });

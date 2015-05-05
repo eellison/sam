@@ -14,13 +14,17 @@
 				<span id="search-clear" class="glyphicon glyphicon-remove-circle"></span>
 			</div>
 			<div id="songs-bound-div-2">
-			
+				<div id="song-div">
+					<label id="search-info" style="margin-top: 10px; color: rgba(100, 100, 100, 0.5);">Search for your songs here. Click "Music Library" to change your music library.</label>
+				</div>
 			</div>
 		</div>
 		<div id="queue-wrapper">
 			<label>Queue</label></br>
 			<div id="songs-bound-div-3">
-				<div id='queue-div'></div>
+				<div id='queue-div'>
+					<label id="queue-info" style="margin-top: 10px; color: rgba(100, 100, 100, 0.5);">Search and add songs to your queue.</label>
+				</div>
 			</div>
 		</div>
 		<div id="server-canvas">
@@ -33,7 +37,7 @@
 			<div class="btn-group" role="btn-group-justified">
 				<button class="btn btn-default" id="clear-focus">Clear Focus</button>
 				<button class="btn btn-default" id="mute">Mute</button>
-				<a class="btn btn-default" href="/songs" role="button" target="_blank">Select Directory</a>
+				<a class="btn btn-default" href="/songs" role="button" target="_blank">Music Library</a>
 			</div>
 		</div>
 	</div>
