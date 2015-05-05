@@ -104,10 +104,9 @@ p.song {
     word-wrap: break-word;
     font-size: 12px;
     float: left;
-    width: 70%;
-    height: 70%;
-    margin-left: 10%;
-    margin-top: 8px;
+    width: 75%;
+    height: 12px;
+    margin-top: 4px;
     line-height: 12px;
     text-align: center;
     vertical-align: middle;
