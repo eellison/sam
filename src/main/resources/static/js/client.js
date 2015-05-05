@@ -36,11 +36,12 @@ var updateClientPositions;
 
 $("#clients-canvas").click(function(event) {
 	if (connected) {
+		name = $("#client-name").val();
 		var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 		var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-		alert("x:" + xPos + " y:" + yPos);
 
-		$.post("http://" + server_url + "/updatePosition", {id : client_id, x : xPos, y : yPos}, function(responseJSON) {
+		$.post("http://" + server_url + "/updatePosition", {id : client_id, x : xPos, y : yPos, name: name}, 
+			function(responseJSON) {
 			
 		});
 	} else {
@@ -64,9 +65,13 @@ $("#clients-canvas").click(function(event) {
 // }
 
 /* Volume */
+
 function updateVolume() {
 	var name = "";
-	name = $.("#client-name");
+	name = $("#client-name").val();
+	if (name === null || name === undefined) {
+		name = "";
+	}
 	$.get("http://" + server_url + "/volume", {id : client_id, name: name}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 		volume = responseObject.volume;
@@ -105,10 +110,8 @@ function draw_clients(clients) {
 
 	for (var i in clients) {
 		var client = clients[i];
-		console.log("drawing");
 		ctx.beginPath();
-		console.log(client.x);
-		console.log(client.y);
+
 		if (client.x != -1 || client.y != -1) {
 			ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
 		}
@@ -118,20 +121,27 @@ function draw_clients(clients) {
 	  	ctx.fillText(client.id, client.x - 10, client.y - 10);
 	}
 }
+
 prepareClientJoin();
 function prepareClientJoin() {
 	value = window.location.host + window.location.pathname;
 	var search = /(client)/i;
 	value = value.replace(search, "");
+	var slashI = value.indexOf("/")
+	value = value.substring(0, slashI) + value.substring(slashI+1, value.length);
 	url = value;
 	setupClient(url);
 	setupPlayer();
 };
 
+
+
+
+
 var updateVolumeTimer;
 function setupClient(url) {
 	if (!connected) {
-		$.post("http://" + url + "/connectClient", {name : "Name"})
+		$.post("http://" + url + "/connectClient", {name : ""})
 		.done(function(responseJSON) {
 			var responseObject = JSON.parse(responseJSON);
 

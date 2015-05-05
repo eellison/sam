@@ -243,6 +243,11 @@ public class SamGui extends SparkGui {
 
       String id = map.value("id");
       long unixTime = System.currentTimeMillis() / 1000L;
+      String name = map.value("name");
+      if (ap.getClients()!=null && ap.getClients().get(id)!=null) {
+          ap.getClients().get(id).setName(name);
+      }
+      
       timeoutMap.put(id, unixTime);
 //      timeoutMap.put, value);
       
@@ -258,7 +263,6 @@ public class SamGui extends SparkGui {
       if (Double.isNaN(weight)) {
         weight = 1;
       }
-      System.out.println(mute.get());
       if (mute.get()) {
         weight = 0;
       }
@@ -319,6 +323,8 @@ public class SamGui extends SparkGui {
         client.put("x", c.getPoint().getCoordinate().x);
         client.put("y", c.getPoint().getCoordinate().y);
         client.put("id", c.getId());
+        System.out.println("id");
+        System.out.println(c.getId());
         Double volume = ap.getVolume(c.getId());
         if (volume==null) {
           volume = 0.;
@@ -357,13 +363,11 @@ public class SamGui extends SparkGui {
               .put("message", message).put("id", clientNumber)
               .put("server_url", serverAddress)
               .put("server_port", server.getPort()).put("success", 0).build();
-
       return GSON.toJson(variables);
     }
   }
 
   public Object updatePosition(Request request) {
-	  
 	  
       QueryParamsMap map = request.queryMap();
 
@@ -382,6 +386,8 @@ public class SamGui extends SparkGui {
         ap.removeClient(client);
       }
       client = new ClientPoint(pos, id, 1);
+      client.setName(name);
+      
       ap.addClient(client);
       String message = "Success";
       if (id.equals("0")) {
@@ -390,9 +396,6 @@ public class SamGui extends SparkGui {
       Map<String, Object> variables =
               ImmutableMap.of("message", message, "success", 0);
       return GSON.toJson(variables);
-
-	  
-	  
 	  
   }
   
@@ -511,6 +514,8 @@ public class SamGui extends SparkGui {
       updatePosition(request);
       Boolean noFocusB = Boolean.parseBoolean(map.value("pause"));
       noFocus.set(noFocusB);
+      Boolean muted = Boolean.parseBoolean(map.value("mute"));
+      mute.set(muted);
       String fociString = map.value("focusPoints");
       Set<Coordinate> pointSet = new HashSet<Coordinate>();
       if (fociString.lastIndexOf(",") != -1) {
@@ -526,7 +531,6 @@ public class SamGui extends SparkGui {
       ap.calcluteVolume(pointSet);      
       for (String s: timeoutMap.keySet()) {
     	  if (((System.currentTimeMillis() / 1000L) - timeoutMap.get(s)) > TIMEOUT) {
-    		  System.out.println(s);
     		  System.out.println(timeoutMap.get(s));
     		  timeoutMap.remove(s);
     		  ap.removeClient(s);

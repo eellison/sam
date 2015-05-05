@@ -28,7 +28,7 @@ var source = null;
 var song_queue = {};
 var song_ids = [];
 var current_song_id = 0;
-var queue = [];
+var queue = {};
 
 // variable used to represent location in song (in time)
 var current_song_time = 0;
@@ -60,6 +60,7 @@ function getIP() {
 	    		var tweetBtn = $('<a></a>')
 			        .addClass('twitter-hashtag-button')
 			        .attr('data-text', "Join the Party! | " + value);
+
 			    $('#tweetBtn').append(tweetBtn);
 			    twttr.widgets;	
 				}
@@ -295,7 +296,7 @@ function updateVariablesPost() {
 		fociString = fociString + yfoc +  " , ";
 	}
 	//updates the host position as part of changeFocus
-	$.post("/changeFocus", {id: "0", x : xPos, y : yPos, quick: quick, pause: paused, focusPoints: fociString}, function(responseJSON) {
+	$.post("/changeFocus", {id: "0", x : xPos, y : yPos, quick: quick, mute: muted, pause: paused, focusPoints: fociString}, function(responseJSON) {
 	var responseObject = JSON.parse(responseJSON);
 	var clients = responseObject.clients;
 	saved_clients = clients;
@@ -304,12 +305,15 @@ function updateVariablesPost() {
 	});		
 }
 $("#mute").click(function(event) {
-	if (stream_started && !paused_stream) {
-		if (muted) {
-			$("#mute").text("Unmute");
-		} else {
-			$("#mute").text("Mute");
-		}
+	if (running) {
+		$.post("/mute", {}, function(responseJSON) {
+			muted = !muted;
+			if (muted) {
+				$("#mute").text("Unmute");
+			} else {
+				$("#mute").text("Mute");
+			}
+		});
 	}
 });
 
@@ -318,6 +322,7 @@ running = true;
 var text;
 var textLabels;
 var timer = setInterval(pulse, pulseTime/2);
+var postTimer = setInterval(updateVariablesPost, 1000);
 draw(saved_clients);
 function draw(clients, event) {
 	if (!running) {
@@ -338,39 +343,8 @@ function draw(clients, event) {
 	 			.attr("r", 0);
 	 	} 
 	 	fociArray = [];
- 	// } else if (!focusDec) { //focus not yet instantiated
- 	// 	timer = setInterval(pulse, pulseTime/2);
- 	// 	focus = focusGroup.append("circle")
- 	// 		.attr("cx", focus_x)
-		// 	.attr("cy", focus_y)
-		// 	.attr("r", 10)
-		// 	.attr("stroke-width", 1)
-		// 	.attr("stroke", "black")
-		// 	.attr("fill", "none");
-		// focusDec = true;
-		// time = .01;
- 	} else {
- 	// 	if (event != null) {
- 	// 		 		time = Math.sqrt(Math.pow((focus.attr("cx") - focus_x), 2) + 
- 	// 		Math.pow((focus.attr("cy")-focus_y), 2));
- 	// 	time = time * 3;
- 	// 	time = Math.pow(time, .9);
- 	// 	if (quick) {
- 	// 		time = 0;
- 	// 	}
- 	// 	if (paused) {
- 	// 		time = .01;
- 	// 		paused = false;
- 	// 	}
- 	// 	focus.transition()
- 	// 	.duration(time)
- 	// 	.attr("cx", focus_x)
-		// .attr("cy", focus_y);
+ 	} 
 
-
- 	// 	}
- 	}
- 	
  	if (saved_clients != null ){
  		circleGroupH.selectAll("circle").remove();
  		circleGroup = circleGroupH.selectAll("circle").data(saved_clients);
@@ -424,7 +398,9 @@ function draw(clients, event) {
             		return "Host";
             	}
             	if (!(d.name === undefined || d.name === null)) {
-            		return d.name;
+            		if (d.name.length != 0) {
+            			return d.name;
+            		}
             	}
             	return d.id; })
             .attr("font-family", "sans-serif")
@@ -451,8 +427,6 @@ function updateClientPositions() {
 	});
 }
 
-
-
 /* create server on click of create */
 function setUpServer() {
 	if (!socket) {
@@ -461,32 +435,23 @@ function setUpServer() {
 			var responseObject = JSON.parse(responseJSON);
 			if (!responseObject.error) {
 				$("#server-create").text("Server Created");
-				// $.post("/getIP", {}, function(responseJSON) {
-				// 	var ipResponse = JSON.parse(responseJSON);
-				// 	if (ipResponse.success) {
-						// var address = ipResponse.address;
+
 				//set earlier for twitter
 				if (address != null)  {
 					$("#server-title").text("Server IP: " + address);
 				}
-					// }
-				// });
+
 				// get the socket io url and port for the socket connection
 				socket_url = responseObject.socket_url;
 				socket_port = responseObject.socket_port;
 
 				// set up the socket io connection
 				setupSocketConnection(socket_url, socket_port);
-			
-				var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
 			}
 		});
 	}
 
 }
-// svg.oncontextmenu = function() {
-//     return false;
-// }
 
 /* everything below is used for playing music as it is streamed from the server*/
 function setupSocketConnection(url, port) {
@@ -541,6 +506,7 @@ function stream(bytes, song_id) {
 			$("#pause-play").css("opacity", "1.0");
 			$("#skip").prop('disabled', false);
 			$("#skip").css("opacity", "1.0");
+			$("#pause-play").click();
 		}
 	});
 }
@@ -561,7 +527,7 @@ function playStream() {
 		source.start(0);
 		song_timer = setInterval(count_song_time, 1000);
 
-		source.onended = nextSong;
+		//source.onended = nextSong;
 
 		var remote = context.createMediaStreamDestination();
 		source.connect(remote);
@@ -581,7 +547,7 @@ function playStream() {
 		source.start(0, current_song_time);
 		song_timer = setInterval(count_song_time, 1000);
 
-		source.onended = nextSong;
+		//source.onended = nextSong;
 
 		var remote = context.createMediaStreamDestination();
 		source.connect(remote);
@@ -601,9 +567,6 @@ function count_song_time() {
 	}
 	update_current_time();
 	current_song_time++;
-
-	var progress = current_song_time / current_song_total_time;
-	update_progress(progress);
 }
 
 /* functions used to update the time shown on gui */
@@ -611,7 +574,6 @@ function update_total_time() {
 	var total_time = get_mins_from_seconds(current_song_total_time);
 
 	var seconds = total_time.sec;
-
 	if (seconds < 10) {
 		seconds = "0" + seconds;
 	}
@@ -622,8 +584,8 @@ function update_total_time() {
 
 function update_current_time() {
 	var current_time = get_mins_from_seconds(current_song_time);
-	var seconds = current_time.sec;
 
+	var seconds = current_time.sec;
 	if (seconds < 10) {
 		seconds = "0" + seconds;
 	}
@@ -634,10 +596,6 @@ function update_current_time() {
 
 function update_progress(percentage) {
 	//update the gui progress bar
-	var pixel_width = $("#progressbar").css("width");
-	var full_width = pixel_width.substring(0, pixel_width.length - 2);
-	var width = full_width * percentage;
-
 	$("#progressbar > div").css("width", width + "px");
 }
 
@@ -760,12 +718,11 @@ function createSelfPeer() {
 $("#skip").prop('disabled', true);
 $("#skip").css("opacity", "0.3");
 
-// set hovering to change opacity
-$("#skip").on('mouseenter', function(event) {
+$("#skip").on('mouseenter', function() {
 	$("#skip").css("opacity", "0.7");
 });
-$("#skip").on('mouseleave', function(event) {
-	$("#skip").css("opacity", "1");
+$("#pause-play").on('mouseleave', function() {
+	$("#skip").css("opacity", "1.0");
 });
 
 /* define function used to skip to next song */
@@ -773,19 +730,14 @@ $("#skip").on('click', function(event){
 	nextSong();
 });
 
-
 /* function used to get to the next song in the queue */
 function nextSong() {
 	// if something is being streamed and its not currently paused
 	if ((audio_stream) && (!paused_stream)) {
 		// remove current song from queue
-		delete song_queue[current_song_id];
 		var index = song_ids.indexOf(current_song_id);
-		removeFirstFromGUIQueue();
 
-		if (index > -1) {
-			song_ids.splice(index, 1);
-		}
+		removeFromQueue(current_song_id);
 
 		if (song_ids.length > 0) {
 			var next_id = song_ids[index];
@@ -794,6 +746,8 @@ function nextSong() {
 			
 			// stop source and reset it to next song
 			source.stop();
+			current_song_time = 0;
+
 			source = context.createBufferSource();
 			source.buffer = next_song;
 			source.start();
@@ -815,8 +769,6 @@ function nextSong() {
 			source = null;
 			audio_stream = null;
 
-			resetTimeAndProgress();
-
 			// disable play and next buttons
 			$("#pause-play").prop('disabled', true);
 			$("#pause-play").css("opacity", "0.3");
@@ -830,19 +782,14 @@ function nextSong() {
 	}
 }
 
-/* get the next id for the song*/
-function nextId() {
-	//var index = song_ids.indexOf(current_song_id);
-	//eturn song_ids[index];
-	return 1;
-}
-
 /* remove a song_element from the queue */
 function removeFromQueue(id) {
 	//Called by GUI
 	// remove it from list of song_elements
-	
-	queue.splice(id, 1);
+	var index = song_ids.indexOf(id); 
+	song_ids.splice(index, 1);
+	delete song_queue[id];
+	delete queue[id];
 }
 
 function removeFirstFromGUIQueue() {
@@ -871,14 +818,12 @@ var song_is_paused = true;
 $("#pause-play").prop('disabled', true);
 $("#pause-play").css("opacity", "0.3");
 
-// set hovering to change opacity
-$("#pause-play").on('mouseenter', function(event) {
+$("#pause-play").on('mouseenter', function() {
 	$("#pause-play").css("opacity", "0.7");
 });
-$("#pause-play").on('mouseleave', function(event) {
-	$("#pause-play").css("opacity", "1");
+$("#pause-play").on('mouseleave', function() {
+	$("#pause-play").css("opacity", "1.0");
 });
-
 
 /* define what happens when user pauses */
 $("#pause-play").on('click', function(event){
@@ -907,7 +852,7 @@ function empty_song_queue() {
 	return false;
 }
 
-$("#song-search").on("input", function(event) {
+$("#song-search").on("change", function(event) {
 $.post("/search", {line : $("song-search").val()}, function(responseJSON) {
 	songsdiv.remove();
 	songsdiv = $("<div id='songs-div'></div>");
@@ -975,52 +920,47 @@ $.post("/search", {line : $("song-search").val()}, function(responseJSON) {
 });
 });
 
-/* enqueue this song */
-function enqueue(song_ele) {
-	var path = song_ele.filePath;
-	$.post("/playSong", {songPath : path}, function(responseJSON) {
-		var responseObject = JSON.parse(responseJSON);
-		var id = responseObject.song_id;
-		queue[id] = song_ele;
-
-	});
-}
-
 function addSongToGUIQueue(song_element) {
+	// add it to gui queue witha album art and name/artist
+	var albumart = song_element.albumart;
+	var _title = song_element.title;
+	var _artist = song_element.artist;
+
+	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div>");
+	if (typeof albumart != "undefined") {
+		song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
+	} else {
+		if (typeof _title != 'undefined' && typeof _artist != 'undefined') {
+			song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
+		}
+	}
+
+	queuediv.append(song);
+
+	var removeButton = $("<button id='remove-button'></button>");
+	removeButton.prop('disabled', true);
+	removeButton.css("opacity", "0.3");
+
+	song.append(removeButton);
+
 	var path = song_element.filePath;
 	$.post("/playSong", {songPath: path}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 		var id = responseObject.song_id;
 		queue[id] = song_element;
-		addSongGUIHelper(song_element, id);
+		addSongGUIHelper(song_element, id, song, removeButton);
 	});
 }
 
-function addSongGUIHelper(song_element, id) {
-	var albumart = song_element.albumart;
-	var _title = song_element.title;
-	var _artist = song_element.artist;
+function addSongGUIHelper(song_element, id, song, removeButton) {
+	removeButton.prop('disabled', false);
+	removeButton.css("opacity", "1.0");
 
-	var song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div></div>");
-	if (typeof albumart != "undefined") {
-		song = $("<div><div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div></div>");
-	} else {
-		if (typeof _title != 'undefined' && typeof _artist != 'undefined') {
-			song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div></div>");
-		}
-	}
-
-	var removeButton = $("<button id='remove-button'></button>");
 	removeButton.on("click", function(e) {
 		removeFromQueue(id);
 		song.remove();
 	});
-
-	song.append(removeButton);
-	queuediv.append(song);
 }
-
-
 
 $("#search-clear").click(function(){
     $("#song-search").val('');
@@ -1036,11 +976,6 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 		var _title = elem.title;
 		var _album = elem.album;
 		var _artist = elem.artist;
-		
-		var playbutton = $("<button id='queue-button'></button>");
-		playbutton.on("click", function(e) {
-			addSongToGUIQueue(elem);
-		});
 
 		$.get("http://ws.audioscrobbler.com/2.0/", {method : "album.getinfo", artist : _artist, album : _album, api_key : API_KEY, format : "json"})
 	    .done(function(responseJSONSong) {
@@ -1088,6 +1023,11 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 			song.append(playbutton);
 			songsdiv.append(song);
 	    });
+
+	    var playbutton = $("<button id='queue-button'></button>");
+		playbutton.on("click", function(e) {
+			addSongToGUIQueue(elem);
+		});
 	});
 
 	$("#songs-bound-div-2").append(songsdiv);
