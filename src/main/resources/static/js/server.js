@@ -585,6 +585,9 @@ function update_total_time() {
 function update_current_time() {
 	var current_time = get_mins_from_seconds(current_song_time);
 
+	var percentage = current_song_time / current_song_total_time;
+	update_progress(percentage);
+
 	var seconds = current_time.sec;
 	if (seconds < 10) {
 		seconds = "0" + seconds;
@@ -596,6 +599,9 @@ function update_current_time() {
 
 function update_progress(percentage) {
 	//update the gui progress bar
+	var total_width = $("#progressbar").css("width");
+	var total = total_width.slice(0, total_width.length - 2);
+	var width = total * percentage;
 	$("#progressbar > div").css("width", width + "px");
 }
 
@@ -768,6 +774,7 @@ function nextSong() {
 			source.stop();
 			source = null;
 			audio_stream = null;
+			resetTimeAndProgress();
 
 			// disable play and next buttons
 			$("#pause-play").prop('disabled', true);
