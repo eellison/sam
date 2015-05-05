@@ -343,39 +343,8 @@ function draw(clients, event) {
 	 			.attr("r", 0);
 	 	} 
 	 	fociArray = [];
- 	// } else if (!focusDec) { //focus not yet instantiated
- 	// 	timer = setInterval(pulse, pulseTime/2);
- 	// 	focus = focusGroup.append("circle")
- 	// 		.attr("cx", focus_x)
-		// 	.attr("cy", focus_y)
-		// 	.attr("r", 10)
-		// 	.attr("stroke-width", 1)
-		// 	.attr("stroke", "black")
-		// 	.attr("fill", "none");
-		// focusDec = true;
-		// time = .01;
- 	} else {
- 	// 	if (event != null) {
- 	// 		 		time = Math.sqrt(Math.pow((focus.attr("cx") - focus_x), 2) + 
- 	// 		Math.pow((focus.attr("cy")-focus_y), 2));
- 	// 	time = time * 3;
- 	// 	time = Math.pow(time, .9);
- 	// 	if (quick) {
- 	// 		time = 0;
- 	// 	}
- 	// 	if (paused) {
- 	// 		time = .01;
- 	// 		paused = false;
- 	// 	}
- 	// 	focus.transition()
- 	// 	.duration(time)
- 	// 	.attr("cx", focus_x)
-		// .attr("cy", focus_y);
+ 	} 
 
-
- 	// 	}
- 	}
- 	
  	if (saved_clients != null ){
  		circleGroupH.selectAll("circle").remove();
  		circleGroup = circleGroupH.selectAll("circle").data(saved_clients);
@@ -474,8 +443,6 @@ function updateClientPositions() {
 	});
 }
 
-
-
 /* create server on click of create */
 function setUpServer() {
 	if (!socket) {
@@ -484,32 +451,23 @@ function setUpServer() {
 			var responseObject = JSON.parse(responseJSON);
 			if (!responseObject.error) {
 				$("#server-create").text("Server Created");
-				// $.post("/getIP", {}, function(responseJSON) {
-				// 	var ipResponse = JSON.parse(responseJSON);
-				// 	if (ipResponse.success) {
-						// var address = ipResponse.address;
+
 				//set earlier for twitter
 				if (address != null)  {
 					$("#server-title").text("Server IP: " + address);
 				}
-					// }
-				// });
+
 				// get the socket io url and port for the socket connection
 				socket_url = responseObject.socket_url;
 				socket_port = responseObject.socket_port;
 
 				// set up the socket io connection
-				// setupSocketConnection(socket_url, socket_port);
-			
-				// var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
+				setupSocketConnection(socket_url, socket_port);
 			}
 		});
 	}
 
 }
-// svg.oncontextmenu = function() {
-//     return false;
-// }
 
 /* everything below is used for playing music as it is streamed from the server*/
 function setupSocketConnection(url, port) {
@@ -594,7 +552,7 @@ function playStream() {
 		audio_stream = remote.stream;
 
 		nowPlaying(queue[current_song_id]);
-		removeFromGUIQueue(current_song_id);
+		removeFirstFromGUIQueue();
 
 		// pass the stream to the peer
 		streamToPeers(remote.stream);
@@ -630,13 +588,25 @@ function count_song_time() {
 /* functions used to update the time shown on gui */
 function update_total_time() {
 	var total_time = get_mins_from_seconds(current_song_total_time);
-	var stringTime = total_time.min + ":" + total_time.sec;
+
+	var seconds = total_time.sec;
+	if (seconds < 10) {
+		seconds = "0" + seconds;
+	}
+
+	var stringTime = total_time.min + ":" + seconds;
 	$("#song-time").text(stringTime);
 }
 
 function update_current_time() {
 	var current_time = get_mins_from_seconds(current_song_time);
-	var stringTime = current_time.min + ":" + current_time.sec;
+
+	var seconds = current_time.sec;
+	if (seconds < 10) {
+		seconds = "0" + seconds;
+	}
+
+	var stringTime = current_time.min + ":" + seconds;
 	$("#current-time").text(stringTime);
 }
 
@@ -661,8 +631,8 @@ function get_mins_from_seconds(seconds) {
 	var s = seconds - 60 * m;
 
 	var time = {
-		min: m,
-		sec: s
+		min: Math.floor(m),
+		sec: Math.floor(s)
 	};
 
 	return time;
@@ -764,6 +734,13 @@ function createSelfPeer() {
 $("#skip").prop('disabled', true);
 $("#skip").css("opacity", "0.3");
 
+$("#skip").on('mouseenter', function() {
+	$("#skip").css("opacity", "0.7");
+});
+$("#pause-play").on('mouseleave', function() {
+	$("#skip").css("opacity", "1.0");
+});
+
 /* define function used to skip to next song */
 $("#skip").on('click', function(event){
 	nextSong();
@@ -799,7 +776,7 @@ function nextSong() {
 			audio_stream = remote.stream;
 
 			nowPlaying(queue[current_song_id]);
-			removeFromGUIQueue(current_song_id);
+			removeFirstFromGUIQueue();
 
 			// pass the stream to the peer
 			streamToPeers(remote.stream);
@@ -841,9 +818,9 @@ function nowPlaying(song_ele) {
 	//update album artwork
 	var albumarthighres = song_ele.albumarthighres;
 	if (typeof albumarthighres != "undefined") {
-		$("current-song").css("background", "url('" + albumarthighres + "')");
+		$("#current-song").css("background-image", "url('" + albumarthighres + "')");
 	} else {
-		$("current-song").css("background", "url('../images/placeholder.png')");
+		$("#current-song").css("background-image", "url('../images/placeholder.png')");
 	}
 }
 
@@ -856,6 +833,13 @@ function clearAlbumArt() {
 var song_is_paused = true;
 $("#pause-play").prop('disabled', true);
 $("#pause-play").css("opacity", "0.3");
+
+$("#pause-play").on('mouseenter', function() {
+	$("#pause-play").css("opacity", "0.7");
+});
+$("#pause-play").on('mouseleave', function() {
+	$("#pause-play").css("opacity", "1.0");
+});
 
 /* define what happens when user pauses */
 $("#pause-play").on('click', function(event){
@@ -958,12 +942,12 @@ function addSongToGUIQueue(song_element) {
 	var _title = song_element.title;
 	var _artist = song_element.artist;
 
-	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div>");
+	var song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div></div>");
 	if (typeof albumart != "undefined") {
-		song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
+		song = $("<div><div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div></div>");
 	} else {
 		if (typeof _title != 'undefined' && typeof _artist != 'undefined') {
-			song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
+			song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div></div>");
 		}
 	}
 
