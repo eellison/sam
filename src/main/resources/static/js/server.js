@@ -85,9 +85,9 @@ svg.append("rect")
     .attr("height", "100%")
     .attr("fill", "white")
     .attr("fill-opacity", .5)
-    .attr("style", "outline: thin solid black;")
+    .attr("style", "outline: thin solid black;");
 
- svg.selectAll("rect").on("contextmenu", function (d, i) {
+svg.selectAll("rect").on("contextmenu", function (d, i) {
             d3.event.preventDefault();
            // react on right-clicking
 });
@@ -298,6 +298,11 @@ function updateVariablesPost() {
 	var responseObject = JSON.parse(responseJSON);
 	var clients = responseObject.clients;
 	saved_clients = clients;
+	for (var i = 0; i < saved_clients.length; i++) {
+		if (saved_clients[i].id === "0") {
+			changeVolumeLevel(saved_clients[i].volume);
+		}
+	}
 	updateVolumeOfPeers();
 	draw(saved_clients);
 	});		
@@ -341,38 +346,7 @@ function draw(clients, event) {
 	 			.attr("r", 0);
 	 	} 
 	 	fociArray = [];
- 	// } else if (!focusDec) { //focus not yet instantiated
- 	// 	timer = setInterval(pulse, pulseTime/2);
- 	// 	focus = focusGroup.append("circle")
- 	// 		.attr("cx", focus_x)
-		// 	.attr("cy", focus_y)
-		// 	.attr("r", 10)
-		// 	.attr("stroke-width", 1)
-		// 	.attr("stroke", "black")
-		// 	.attr("fill", "none");
-		// focusDec = true;
-		// time = .01;
- 	} else {
- 	// 	if (event != null) {
- 	// 		 		time = Math.sqrt(Math.pow((focus.attr("cx") - focus_x), 2) + 
- 	// 		Math.pow((focus.attr("cy")-focus_y), 2));
- 	// 	time = time * 3;
- 	// 	time = Math.pow(time, .9);
- 	// 	if (quick) {
- 	// 		time = 0;
- 	// 	}
- 	// 	if (paused) {
- 	// 		time = .01;
- 	// 		paused = false;
- 	// 	}
- 	// 	focus.transition()
- 	// 	.duration(time)
- 	// 	.attr("cx", focus_x)
-		// .attr("cy", focus_y);
-
-
- 	// 	}
- 	}
+ 	} 
  	
  	if (saved_clients != null ){
  		circleGroupH.selectAll("circle").remove();
@@ -418,7 +392,6 @@ function draw(clients, event) {
 		textLabels = text
             .attr("x", function(d) { 
             	if (d.id === "0") {
-            		changeVolumeLevel(d.volume);
             		return d.x-20;
             	}
             	return d.x-10;})
@@ -731,7 +704,9 @@ function play(song) {
 }
 
 function changeVolumeLevel(vol) {
-	player.volume = vol;
+	if (!(player === null || player === undefined)) {
+		player.volume = vol;
+	}
 }
 
 /* function used to update the volume of all of the clients */

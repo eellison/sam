@@ -95,7 +95,6 @@ public class AmplitudePanner {
 
   public void generateHull() {
 	
-    System.out.println(clients.size());
     Coordinate[] coordinates = new Coordinate[clients.size()];
     Set<String> keys = clients.keySet();
     int i = 0;
@@ -132,7 +131,6 @@ public class AmplitudePanner {
       currentWeighting = temp;
       return temp;
     }
-    System.out.println(clients.size());
     currentPoint = c1;
     Map<String, Double> vol = new HashMap<String, Double>();
 

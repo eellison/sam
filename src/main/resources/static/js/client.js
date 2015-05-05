@@ -34,6 +34,38 @@ var updateSongTitleTimer;
 var updateVolumeTimer;
 var updateClientPositions;
 
+var svg = d3.select("#clients-canvas")
+   .append("svg:svg")
+   .attr("width", CANVAS_SIZE)
+   .attr("height", CANVAS_SIZE);
+
+svg.append("rect")
+    .attr("width", "100%")
+    .attr("height", "100%")
+    .attr("fill", "white")
+    .attr("fill-opacity", .5)
+    .attr("style", "outline: thin solid black;");
+
+var circleGroupH = svg.append("svg:g");
+var circleGroup; 
+
+
+
+$("#clients-canvas").on('mousedown', function(event){
+	if (connected) {
+		var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
+		var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
+
+		$.post("http://" + server_url + "/updatePosition", {id : client_id, x : xPos, y : yPos, name: name}, 
+			function(responseJSON) {
+			
+		});
+	}
+});
+
+
+
+/* Old canvas
 $("#clients-canvas").click(function(event) {
 	if (connected) {
 		name = $("#client-name").val();
@@ -48,7 +80,7 @@ $("#clients-canvas").click(function(event) {
 		alert("Not connected to server");
 	}
 });
-
+*/
 
 /* Song Info */
 // function updateSongTime() {
@@ -99,6 +131,7 @@ function updateClientPositions() {
 	});
 }
 
+/* old draw_clients
 function draw_clients(clients) {
 	// Get the canvas
 	var canvas = $("#clients-canvas")[0];
@@ -121,7 +154,77 @@ function draw_clients(clients) {
 		ctx.font = "18px serif";
 	  	ctx.fillText(client.id, client.x - 10, client.y - 10);
 	}
+} */
+
+function draw_clients(saved_clients) {
+ 	var time = 0;
+ 	//pause button clicked
+ 	
+ 	if (saved_clients != null ){
+ 		circleGroupH.selectAll("circle").remove();
+ 		circleGroup = circleGroupH.selectAll("circle").data(saved_clients);
+		var circleEnter = circleGroup.enter().append("circle");
+		circleEnter.attr("cx", function(client) { 
+ 			if (client.x == -1) {
+ 				return -50;
+ 			}
+ 			
+ 			return client.x;
+ 		});
+ 	
+ 		circleEnter.attr("cy", function(client) { 
+ 			if (client.y == -1) {
+ 				return -50;
+ 			}
+ 			
+ 			return client.y;
+ 		});
+ 		
+ 		circleEnter.attr("r", function(d) {	
+ 			var r = d.volume;
+ 			if (r === null || r === undefined) {
+ 				return 10 ;
+ 			}
+ 			r = 10*r;
+ 			r = Math.max(r, 1);
+ 			return r;
+ 		});
+ 		circleEnter.style("stroke", "black");
+ 		circleEnter.attr("fill", "black");
+	 	var prev = 	d3.selectAll("text");
+	 	prev.remove();
+
+ 		text = svg.selectAll("text")
+                       .data(saved_clients)
+                        .enter()
+                        .append("text");
+
+
+		//Add SVG Text Element Attributes
+		textLabels = text
+            .attr("x", function(d) { 
+            	if (d.id === "0") {
+            		return d.x-20;
+            	}
+            	return d.x-10;})
+            .attr("y", function(d) { return d.y-10; })
+            .text( function (d) { 
+            	if (d.id === "0") {
+            		return "Host";
+            	}
+            	if (!(d.name === undefined || d.name === null)) {
+            		if (d.name.length != 0) {
+            			return d.name;
+            		}
+            	}
+            	return d.id; })
+            .attr("font-family", "sans-serif")
+            .attr("font-size", "20px")
+            .attr("fill", "black")
+            .attr("fill-opacity", .7);
+ 	}
 }
+
 
 prepareClientJoin();
 function prepareClientJoin() {
