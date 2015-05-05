@@ -18,7 +18,7 @@ public class AmplitudePanner {
   // rolloff = rolloff in sound per doubling of distance
   private double rolloff;
   private static double distanceExp;
-  private Map<String, ClientPoint> clients;
+  private ConcurrentHashMap<String, ClientPoint> clients;
   private Set<Coordinate> currentPoint;
   private ConcurrentHashMap<String, Double> currentWeighting;
 
@@ -29,7 +29,7 @@ public class AmplitudePanner {
     rolloff = 6.0;	// 6.0 assumes a free field - sound not bounced back (louder
     // this way)
     calculateDEXP();
-    clients = new HashMap<String, ClientPoint>();
+    clients = new ConcurrentHashMap<String, ClientPoint>();
   }
 
   /**
@@ -44,7 +44,7 @@ public class AmplitudePanner {
       System.out.println("ERROR: rolloff value must bet between 0 and 6");
       rolloff = 6.0;
     }
-    clients = new HashMap<String, ClientPoint>();
+    clients = new ConcurrentHashMap<String, ClientPoint>();
     currentWeighting = new ConcurrentHashMap<String, Double>();
     this.rolloff = rolloff;
     calculateDEXP();

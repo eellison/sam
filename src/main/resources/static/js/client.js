@@ -49,7 +49,7 @@ svg.append("rect")
 var circleGroupH = svg.append("svg:g");
 var circleGroup; 
 
-
+var secondsTimeout = new Date().getTime() / 1000;
 
 $("#clients-canvas").on('mousedown', function(event){
 	if (connected) {
@@ -58,7 +58,6 @@ $("#clients-canvas").on('mousedown', function(event){
 
 		$.post("http://" + server_url + "/updatePosition", {id : client_id, x : xPos, y : yPos, name: name}, 
 			function(responseJSON) {
-			
 		});
 	}
 });
@@ -84,6 +83,10 @@ $("#clients-canvas").on('mousedown', function(event){
 /* Volume */
 
 function updateVolume() {
+
+	if ((new Date().getTime()/1000 - secondsTimeout)>10) {
+		alert("Disconnected from server");
+	}
 	var name = "";
 	name = $("#client-name").val();
 	if (name === null || name === undefined) {
@@ -94,6 +97,7 @@ function updateVolume() {
 		volume = responseObject.volume;
 		changeVolumeLevel(volume);
 		quick = responseObject.quick;
+		secondsTimeout = new Date().getTime() / 1000;
 		if (quick) {
 			clearInterval(updateVolumeTimer);
 			updateVolumeTimer = setInterval(updateVolume, 100);
@@ -144,7 +148,7 @@ function draw_clients(saved_clients) {
  				return 10 ;
  			}
  			r = 10*r;
- 			r = Math.max(r, 1);
+ 			r = Math.max(r, 2);
  			return r;
  		});
  		circleEnter.style("stroke", "black");
