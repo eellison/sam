@@ -468,24 +468,18 @@ function setUpServer() {
 			var responseObject = JSON.parse(responseJSON);
 			if (!responseObject.error) {
 				$("#server-create").text("Server Created");
-				// $.post("/getIP", {}, function(responseJSON) {
-				// 	var ipResponse = JSON.parse(responseJSON);
-				// 	if (ipResponse.success) {
-						// var address = ipResponse.address;
+
 				//set earlier for twitter
 				if (address != null)  {
 					$("#server-title").text("Server IP: " + address);
 				}
-					// }
-				// });
+
 				// get the socket io url and port for the socket connection
 				socket_url = responseObject.socket_url;
 				socket_port = responseObject.socket_port;
 
 				// set up the socket io connection
-				// setupSocketConnection(socket_url, socket_port);
-			
-				// var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
+				setupSocketConnection(socket_url, socket_port);
 			}
 		});
 	}
@@ -578,7 +572,7 @@ function playStream() {
 		audio_stream = remote.stream;
 
 		nowPlaying(queue[current_song_id]);
-		removeFromGUIQueue(current_song_id);
+		removeFirstFromGUIQueue();
 
 		// pass the stream to the peer
 		streamToPeers(remote.stream);
@@ -783,7 +777,7 @@ function nextSong() {
 			audio_stream = remote.stream;
 
 			nowPlaying(queue[current_song_id]);
-			removeFromGUIQueue(current_song_id);
+			removeFirstFromGUIQueue();
 
 			// pass the stream to the peer
 			streamToPeers(remote.stream);
