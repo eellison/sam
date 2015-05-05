@@ -852,6 +852,10 @@ function empty_song_queue() {
 	return false;
 }
 
+window.onfocus =function() {
+  console.log("alert");
+}
+
 $("#song-search").on("change", function(event) {
 $.post("/search", {line : $("song-search").val()}, function(responseJSON) {
 	songsdiv.remove();
