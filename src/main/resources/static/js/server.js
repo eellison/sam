@@ -1065,7 +1065,7 @@ $('#song-search').on('input', function(e) {
 	var search = $("#song-search").val();
 
     if (search === "") {
-    	$("search-info").show();
+    	$("#search-info").show();
     	songsdiv.remove();
     	return;
     }
@@ -1077,7 +1077,7 @@ $('#song-search').keydown(function(e){
     var search = $("#song-search").val();
 
     if (search === "") {
-    	$("search-info").show();
+    	$("#search-info").show();
     	return;
     }
 
@@ -1085,7 +1085,7 @@ $('#song-search').keydown(function(e){
 		songsdiv.remove();
 		songsdiv = $("<div id='songs-div'></div>");
 		var songs = JSON.parse(responseJSON);
-		$("#search-info").remove();
+		$("#search-info").hide();
 		songs.forEach(function(elem) {
 			var _path = elem.filePath;
 			var _title = elem.title;
@@ -1208,6 +1208,6 @@ function addSongGUIHelper(song_element, id, song, removeButton) {
 
 $("#search-clear").click(function(){
     $("#song-search").val('');
-    $("search-info").show();
+    $("#search-info").show();
     songsdiv.remove();
 });
