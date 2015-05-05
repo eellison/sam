@@ -904,7 +904,8 @@ window.onfocus = function() {
 }
 
 $("#song-search").on("change", function(event) {
-$.post("/search", {line : $("song-search").val()}, function(responseJSON) {
+	console.log($("#song-search").val());
+$.post("/search", {line : $("#song-search").val()}, function(responseJSON) {
 	songsdiv.remove();
 	songsdiv = $("<div id='songs-div'></div>");
 
