@@ -27,8 +27,7 @@ var source = null;
 // variable used to represent the song queue
 var song_queue = {};
 var song_ids = [];
-var current_song_id = 0;
-var queue = {};
+var queue = [];
 
 // variable used to represent location in song (in time)
 var current_song_time = 0;
@@ -139,7 +138,6 @@ $("#clients-canvas").on('mousedown', function(event){
    		return;
    	}
 
-
 	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
 	var clicked = false;
@@ -205,20 +203,17 @@ function deleteFoc(focusP) {
 	}
 }
 
-
-
-
 function addFocusPoint(event) {
 	var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 	var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
 
 	if (saved_clients === null || saved_clients == undefined) {
 		if (fociArray.length > 1) {
-			// return; //will be 
+			return; //will be 
 		}
 	} else {
 		if (fociArray.length >= saved_clients.length) {
-			// return; will return
+			return; 
 		}
 	}
 	var newF = focusGroup.append("circle").attr("cx", xPos)
@@ -343,8 +338,39 @@ function draw(clients, event) {
 	 			.attr("r", 0);
 	 	} 
 	 	fociArray = [];
- 	} 
+ 	// } else if (!focusDec) { //focus not yet instantiated
+ 	// 	timer = setInterval(pulse, pulseTime/2);
+ 	// 	focus = focusGroup.append("circle")
+ 	// 		.attr("cx", focus_x)
+		// 	.attr("cy", focus_y)
+		// 	.attr("r", 10)
+		// 	.attr("stroke-width", 1)
+		// 	.attr("stroke", "black")
+		// 	.attr("fill", "none");
+		// focusDec = true;
+		// time = .01;
+ 	} else {
+ 	// 	if (event != null) {
+ 	// 		 		time = Math.sqrt(Math.pow((focus.attr("cx") - focus_x), 2) + 
+ 	// 		Math.pow((focus.attr("cy")-focus_y), 2));
+ 	// 	time = time * 3;
+ 	// 	time = Math.pow(time, .9);
+ 	// 	if (quick) {
+ 	// 		time = 0;
+ 	// 	}
+ 	// 	if (paused) {
+ 	// 		time = .01;
+ 	// 		paused = false;
+ 	// 	}
+ 	// 	focus.transition()
+ 	// 	.duration(time)
+ 	// 	.attr("cx", focus_x)
+		// .attr("cy", focus_y);
 
+
+ 	// 	}
+ 	}
+ 	
  	if (saved_clients != null ){
  		circleGroupH.selectAll("circle").remove();
  		circleGroup = circleGroupH.selectAll("circle").data(saved_clients);
@@ -374,26 +400,8 @@ function draw(clients, event) {
  			r = Math.max(r, 1);
  			return r;
  		});
-
  		circleEnter.style("stroke", "black");
  		circleEnter.attr("fill", "none");
- 		// function(d) {
- 		// 	var volume = d.volume;
- 		// 	if (r === null || r === undefined || paused ===true) {
- 		// 		volume =1;
- 		// 	}
- 		// 	var R = (255 * volume);
-			// var	G = (255 * (1 - volume));
-			// var B = 0;
- 		//  	return d3.rgb(R, G, b)
-
- 		// });
-
- 	// 	var R = (255 * volume);
-		// var	G = (255 * (1 - volume));
-		// var B = 0;
-
-
 	 	var prev = 	d3.selectAll("text");
 	 	prev.remove();
 
@@ -444,6 +452,7 @@ function updateClientPositions() {
 		updateVolumeOfPeers();
 	});
 }
+
 
 /* create server on click of create */
 function setUpServer() {

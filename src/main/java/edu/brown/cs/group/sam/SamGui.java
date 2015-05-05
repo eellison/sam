@@ -323,8 +323,6 @@ public class SamGui extends SparkGui {
         client.put("x", c.getPoint().getCoordinate().x);
         client.put("y", c.getPoint().getCoordinate().y);
         client.put("id", c.getId());
-        System.out.println("id");
-        System.out.println(c.getId());
         Double volume = ap.getVolume(c.getId());
         if (volume==null) {
           volume = 0.;

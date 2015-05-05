@@ -94,7 +94,8 @@ public class AmplitudePanner {
   }
 
   public void generateHull() {
-
+	
+    System.out.println(clients.size());
     Coordinate[] coordinates = new Coordinate[clients.size()];
     Set<String> keys = clients.keySet();
     int i = 0;
