@@ -1,4 +1,8 @@
 <#assign content>
+<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+<script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+
 <div id="server-gui">
 	<div>
 		<div id="tweetBtn" style='float:left; margin-top:5px;'>
@@ -25,13 +29,21 @@
 		</div>
 		<div id="server-canvas">
 			<label for="clientpositions">Client Positions</label></br>
+			<div data-role="main" class="ui-content" style="float: right; width: 100px; height: 100px;">
+				<a href="#myPopup" data-rel="popup" class="ui-btn ui-btn-inline ui-corner-all">Show Popup</a>
+
+				<div data-role="popup" id="myPopup" class="ui-content">
+					<h3>Welcome!</h3>
+					<p>The "ui-content" class is especially useful when you have a popup with <span style="font-size:55px;">styled text</span>, and want the edges and corners to look extra clean and sleek. <strong>Note:</strong> The text will wrap to multiple lines if needed.</p>
+				</div>
+			</div>
 			<div id="clients-canvas">
 			</div>
 			</br>
 			<div class="btn-group" role="btn-group-justified">
 				<button class="btn btn-default" id="clear-focus">Clear Focus</button>
 				<button class="btn btn-default" id="mute">Mute</button>
-				<a class="btn btn-default" href="/songs" role="button" target="_blank">Select Directory</a>
+				<a class="btn btn-default" href="/songs" role="button" target="_blank">Change Directory</a>
 			</div>
 		</div>
 	</div>
