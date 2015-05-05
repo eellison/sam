@@ -938,7 +938,7 @@ function addSongToGUIQueue(song_element) {
 	queuediv.append(song);
 
 	var removeButton = $("<button id='remove-button'></button>");
-	removeButton.prop('disabled', true);
+	removeButton.prop("disabled", true);
 	removeButton.css("opacity", "0.3");
 
 	song.append(removeButton);
@@ -953,10 +953,11 @@ function addSongToGUIQueue(song_element) {
 }
 
 function addSongGUIHelper(song_element, id, song, removeButton) {
-	removeButton.prop('disabled', false);
+	removeButton.prop("disabled", false);
 	removeButton.css("opacity", "1.0");
 
 	removeButton.on("click", function(e) {
+		console.log("clicked");
 		removeFromQueue(id);
 		song.remove();
 	});
