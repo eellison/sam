@@ -1,1 +1,5 @@
-/Users/Peter/Music/iTunes/iTunes Music/Aerosmith
+<<<<<<< HEAD
+/Users/vcohen/Music/iTunes/iTunes Media/Music
+=======
+/Users/steveellison/Music/iTunes
+>>>>>>> ec7d61305d83cbdec7424cdbca305584fa62f37a
