@@ -28,7 +28,7 @@ var source = null;
 var song_queue = {};
 var song_ids = [];
 var current_song_id = 0;
-var queue = [];
+var queue = {};
 
 // variable used to represent location in song (in time)
 var current_song_time = 0;
@@ -562,7 +562,7 @@ function playStream() {
 		source.start(0);
 		song_timer = setInterval(count_song_time, 1000);
 
-		source.onended = nextSong;
+		//source.onended = nextSong;
 
 		var remote = context.createMediaStreamDestination();
 		source.connect(remote);
@@ -582,7 +582,7 @@ function playStream() {
 		source.start(0, current_song_time);
 		song_timer = setInterval(count_song_time, 1000);
 
-		source.onended = nextSong;
+		//source.onended = nextSong;
 
 		var remote = context.createMediaStreamDestination();
 		source.connect(remote);
@@ -771,23 +771,22 @@ $("#skip").on('mouseleave', function(event) {
 
 /* define function used to skip to next song */
 $("#skip").on('click', function(event){
-	source.stop();
+	nextSong();
 });
 
 
+setInterval(function() {
+	console.log(JSON.stringify(queue));
+}, 1000);
+
 /* function used to get to the next song in the queue */
 function nextSong() {
+	console.log("next song called");
 	// if something is being streamed and its not currently paused
 	if ((audio_stream) && (!paused_stream)) {
-		console.log(current_song_id);
 		// remove current song from queue
-		delete song_queue[current_song_id];
 		var index = song_ids.indexOf(current_song_id);
-		removeFirstFromGUIQueue();
-
-		if (index > -1) {
-			song_ids.splice(index, 1);
-		}
+		removeFromQueue(current_song_id);
 
 		if (song_ids.length > 0) {
 			var next_id = song_ids[index];
@@ -796,6 +795,8 @@ function nextSong() {
 			
 			// stop source and reset it to next song
 			source.stop();
+			current_song_time = 0;
+
 			source = context.createBufferSource();
 			source.buffer = next_song;
 			source.start();
@@ -832,19 +833,15 @@ function nextSong() {
 	}
 }
 
-/* get the next id for the song*/
-function nextId() {
-	//var index = song_ids.indexOf(current_song_id);
-	//eturn song_ids[index];
-	return 1;
-}
-
 /* remove a song_element from the queue */
 function removeFromQueue(id) {
+	console.log(id);
 	//Called by GUI
 	// remove it from list of song_elements
-	
-	queue.splice(id, 1);
+	var index = song_ids.indexOf(id); 
+	song_ids.splice(index, 1);
+	delete song_queue[id];
+	delete queue[id];
 }
 
 function removeFirstFromGUIQueue() {
@@ -977,17 +974,6 @@ $.post("/search", {line : $("song-search").val()}, function(responseJSON) {
 });
 });
 
-/* enqueue this song */
-function enqueue(song_ele) {
-	var path = song_ele.filePath;
-	$.post("/playSong", {songPath : path}, function(responseJSON) {
-		var responseObject = JSON.parse(responseJSON);
-		var id = responseObject.song_id;
-		queue[id] = song_ele;
-
-	});
-}
-
 function addSongToGUIQueue(song_element) {
 	// add it to gui queue witha album art and name/artist
 	var albumart = song_element.albumart;
@@ -1015,6 +1001,7 @@ function addSongToGUIQueue(song_element) {
 	$.post("/playSong", {songPath: path}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 		var id = responseObject.song_id;
+		console.log(id);
 		queue[id] = song_element;
 		addSongGUIHelper(song_element, id, song, removeButton);
 	});
