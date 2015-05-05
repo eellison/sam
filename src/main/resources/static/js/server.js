@@ -877,12 +877,19 @@ $("#pause-play").on('click', function(event){
 		if (song_is_paused) {
 			// show pause button
 			$("#pause-play").css("background-image", "url('../images/pause.png')");
+			
+			$("#skip").prop("disabled", false);
+			$("#skip").css("opacity", "1.0");
+
 
 			playStream();
 			song_is_paused = false;
 		} else {
 			// show play button
 			$("#pause-play").css("background-image", "url('../images/play.png')");
+
+			$("#skip").prop("disabled", true);
+			$("#skip").css("opacity", "0.3");
 
 			pauseStream();
 			song_is_paused = true;
