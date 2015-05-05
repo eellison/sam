@@ -374,22 +374,24 @@ function draw(clients, event) {
  			r = Math.max(r, 1);
  			return r;
  		});
+
  		circleEnter.style("stroke", "black");
- 		circleEnter.attr("fill", function(d) {
- 			var volume = d.volume;
- 			if (r === null || r === undefined || paused ===true) {
- 				volume =1;
- 			}
- 			var R = (255 * volume);
-			var	G = (255 * (1 - volume));
-			var B = 0;
- 		 	return d3.rgb(R, G, b)
+ 		circleEnter.attr("fill", "none");
+ 		// function(d) {
+ 		// 	var volume = d.volume;
+ 		// 	if (r === null || r === undefined || paused ===true) {
+ 		// 		volume =1;
+ 		// 	}
+ 		// 	var R = (255 * volume);
+			// var	G = (255 * (1 - volume));
+			// var B = 0;
+ 		//  	return d3.rgb(R, G, b)
 
- 		});
+ 		// });
 
- 		var R = (255 * volume);
-		var	G = (255 * (1 - volume));
-		var B = 0;
+ 	// 	var R = (255 * volume);
+		// var	G = (255 * (1 - volume));
+		// var B = 0;
 
 
 	 	var prev = 	d3.selectAll("text");
