@@ -115,7 +115,7 @@ p.song {
     text-overflow: ellipsis;
 }
 
-#queue-button {
+.queue-button {
     width: 40px;
     height: 40px;
     float: right;
