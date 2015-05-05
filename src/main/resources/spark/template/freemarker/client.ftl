@@ -2,7 +2,7 @@
 <div id="client-gui">
 	<input id="client-name" type="text" style="font-size: 18px; margin-top: 25px; text-align: center; border: none; background: transparent;" placeholder="Enter client name..."></input>
 	<div id="client-gui">
-		<label for="=clientpositions" style="margin-left: auto; margin-right: auto;">Click and drag your sound source</label></br>
+		<label for="=clientpositions" style="margin-left: auto; margin-right: auto;">Position your sound source</label></br>
 		<div id="clients-canvas">
 		</div>
 	</div>

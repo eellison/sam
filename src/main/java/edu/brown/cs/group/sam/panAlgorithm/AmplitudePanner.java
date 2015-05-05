@@ -3,6 +3,7 @@ package edu.brown.cs.group.sam.panAlgorithm;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.vividsolutions.jts.algorithm.ConvexHull;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -19,7 +20,7 @@ public class AmplitudePanner {
   private static double distanceExp;
   private Map<String, ClientPoint> clients;
   private Set<Coordinate> currentPoint;
-  private Map<String, Double> currentWeighting;
+  private ConcurrentHashMap<String, Double> currentWeighting;
 
   /**
    * @param ms - MusicServer to request data from;
@@ -44,7 +45,7 @@ public class AmplitudePanner {
       rolloff = 6.0;
     }
     clients = new HashMap<String, ClientPoint>();
-    currentWeighting = new HashMap<String, Double>();
+    currentWeighting = new ConcurrentHashMap<String, Double>();
     this.rolloff = rolloff;
     calculateDEXP();
   }
@@ -124,7 +125,7 @@ public class AmplitudePanner {
 
     if (currentPoint == null || clients.size() <= 1 || c1.size() == 0) {
       Set<String> keys = clients.keySet();
-      Map<String, Double> temp = new HashMap<String, Double>();
+      ConcurrentHashMap<String, Double> temp = new ConcurrentHashMap<String, Double>();
       for (String s : keys) {
         temp.put(s, 1.0);
       }
@@ -132,7 +133,7 @@ public class AmplitudePanner {
       return temp;
     }
     currentPoint = c1;
-    Map<String, Double> vol = new HashMap<String, Double>();
+    ConcurrentHashMap<String, Double> vol = new ConcurrentHashMap<String, Double>();
 
     for (String s : clients.keySet()) {
     	double volC = 0;

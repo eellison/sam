@@ -170,13 +170,16 @@ function draw_clients(saved_clients) {
             	if (d.id === "0") {
             		return "Host";
             	}
+            	if (d.id === client_id.toString()) {
+            		if ($("#client-name").val().length!=0) {
+            			return $("#client-name").val();
+            		}
+            		return d.id;
+            	}
             	if (!(d.name === undefined || d.name === null)) {
             		if (d.name.length != 0) {
             			return d.name;
             		}
-            	}
-            	if (d.id === client_id) {
-            		return $("#client-name").val();
             	}
             	return d.id; })
             .attr("font-family", "sans-serif")
