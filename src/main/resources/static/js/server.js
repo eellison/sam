@@ -722,11 +722,16 @@ function streamToPeers(stream) {
 	}
 }
 
+var player = null;
 /* function used to play song locally */
 function play(song) {
-	var player = new Audio();
+	player = new Audio();
 	player.src = URL.createObjectURL(song);
 	player.play();
+}
+
+function changeVolumeLevel(vol) {
+	player.volume = vol;
 }
 
 /* function used to update the volume of all of the clients */
