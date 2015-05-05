@@ -42,7 +42,7 @@
 			</div>
 			<p id="song-time" style="float: left;">0:00</p>
 			</br>
-			<p id="song-info" style="color: rgba(165, 208, 254, 0.8); clear: both; text-align: center; vertical-align: middle; margin-top: -27px; width: 50%; margin-left: 26%; float: left;">Nothing playing</p>
+			<p id="song-info" style="color: rgba(165, 208, 254, 0.8); clear: both; text-align: center; vertical-align: middle; margin-top: -27px; width: 50%; margin-left: 26%; float: left;">No Song Playing</p>
 		</div>
 	</div>
 </div>

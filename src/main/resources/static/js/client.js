@@ -198,6 +198,76 @@ function setupSocketConnection(url, port) {
 	socket.on("server_id", function(data) {
 		connectPeer(data);
 	});
+
+	socket.on("song_info", function(data) {
+		var songPackage = JSON.parse(data);
+
+		updateCurrentTime(songPackage.current_time);
+		updateTotalTime(songPackage.total_time);
+		updateProgress(songPackage.progress);
+		updateAlbumArt(songPackage.album_art);
+		updateSongInfo(songPackage.info);
+	});
+}
+
+/* functions used to update the gui for song playing */
+function updateCurrentTime(time) {
+	var current_time = get_mins_from_seconds(time);
+
+	var seconds = current_time.sec;
+
+	if (seconds < 10) {
+		seconds = "0" + seconds;
+	}
+
+	var stringTime = current_time.min + ":" + seconds;
+	$("#current-time").text(stringTime);
+}
+
+function updateTotalTime(time) {
+	var total_time = get_mins_from_seconds(time);
+
+	var seconds = total_time.sec;
+
+	if (seconds < 10) {
+		seconds = "0" + seconds;
+	}
+
+	var stringTime = total_time.min + ":" + seconds;
+	$("#song-time").text(stringTime);
+}
+
+/* function used to convert from seconds to mins/seconds */
+function get_mins_from_seconds(seconds) {
+	var m = Math.floor(seconds / 60);
+	var s = seconds - 60 * m;
+
+	var time = {
+		min: Math.floor(m),
+		sec: Math.floor(s)
+	};
+
+	return time;
+}
+
+function updateProgress(percentage) {
+	//update the gui progress bar
+	var total_width = $("#progressbar").css("width");
+	var total = total_width.slice(0, total_width.length - 2);
+	var width = total * percentage;
+	$("#progressbar > div").css("width", width + "px");
+}
+
+function updateAlbumArt(art_url) {
+	if (typeof art_url != "undefined") {
+		$("#current-song").css("background-image", "url('" + art_url + "')");
+	} else {
+		$("#current-song").css("background-image", "url('../images/placeholder.png')");
+	}
+}
+
+function updateSongInfo(song_info) {
+	$("#song-info").text(song_info);
 }
 
 /* create a peer connection using peerjs api */
