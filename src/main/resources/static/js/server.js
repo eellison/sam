@@ -27,6 +27,7 @@ var source = null;
 // variable used to represent the song queue
 var song_queue = {};
 var song_ids = [];
+var current_song_id = 0;
 var queue = [];
 
 // variable used to represent location in song (in time)
@@ -647,6 +648,7 @@ function resetTimeAndProgress() {
 	update_current_time();
 	update_total_time();
 	update_progress(0);
+	clearAlbumArt();
 }
 
 /* function used to convert from seconds to mins/seconds */
@@ -828,17 +830,6 @@ function nextSong() {
 	}
 }
 
-/* enqueue this song */
-function enqueue(song_ele) {
-	var song_id = song_ele.id;
-	var path = song_ele.filePath;
-	$.post("/playSong", {songPath : path}, function(responseJSON) {
-		var responseObject = JSON.parse(responseJSON);
-		var id = responseObject.song_id;
-		queue[id] = song_ele;
-	});
-}
-
 /* get the next id for the song*/
 function nextId() {
 	//var index = song_ids.indexOf(current_song_id);
@@ -868,6 +859,10 @@ function nowPlaying(song_ele) {
 	} else {
 		$("#current-song").css("background-image", "url('../images/placeholder.png')");
 	}
+}
+
+function clearAlbumArt() {
+	$("#current-song").css("background-image", "url('../images/placeholder.png')");
 }
 
 // variable used to define if the song is paused or not
@@ -980,11 +975,31 @@ $.post("/search", {line : $("song-search").val()}, function(responseJSON) {
 });
 });
 
+/* enqueue this song */
+function enqueue(song_ele) {
+	var path = song_ele.filePath;
+	$.post("/playSong", {songPath : path}, function(responseJSON) {
+		var responseObject = JSON.parse(responseJSON);
+		var id = responseObject.song_id;
+		queue[id] = song_ele;
+
+	});
+}
+
 function addSongToGUIQueue(song_element) {
+	var path = song_element.filePath;
+	$.post("/playSong", {songPath: path}, function(responseJSON) {
+		var responseObject = JSON.parse(responseJSON);
+		var id = responseObject.song_id;
+		queue[id] = song_element;
+		addSongGUIHelper(song_element, id);
+	});
+}
+
+function addSongGUIHelper(song_element, id) {
 	var albumart = song_element.albumart;
 	var _title = song_element.title;
 	var _artist = song_element.artist;
-	var id = nextId();
 
 	var song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div></div>");
 	if (typeof albumart != "undefined") {
@@ -1003,8 +1018,9 @@ function addSongToGUIQueue(song_element) {
 
 	song.append(removeButton);
 	queuediv.append(song);
-	enqueue(song_element);
 }
+
+
 
 $("#search-clear").click(function(){
     $("#song-search").val('');
