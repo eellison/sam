@@ -69,24 +69,24 @@ public class SamGui extends SparkGui {
   private static final Gson GSON = new Gson();
   private static final int TIMEOUT = 5; //15 second timeout
   private static final File DEFAULT_DIR_CONFIG_PATH =
-          new File("src/main/resources/static/config/defaultdirectory.txt");
+      new File("src/main/resources/static/config/defaultdirconfig.txt");
   private static final File AUTOCORRECT_CORPUS =
-          new File("src/main/resources/static/autocorrect/songscorpus.txt");
+      new File("src/main/resources/static/autocorrect/songscorpus.txt");
   private static final File DEFAULT_MUSIC_DIR =
-          new File("src/main/resources/static/testdirectory");
+      new File("src/main/resources/static/testdirectory");
   private static final List<String> AUDIO_EXTENSIONS = Arrays.asList("4xm",
-          "MTV", "RoQ", "aac", "ac3", "aiff", "alaw", "amr", "apc", "ape",
-          "asf", "au", "avi", "avs", "bethsoftvid", "c93", "daud", "dsicin",
-          "dts", "dv", "dxa", "ea", "ea_cdata", "ffm", "film_cpk", "flac",
-          "flic", "flv", "gif", "gxf", "h261", "h263", "h264", "idcin",
-          "image2", "image2pipe", "ingenient", "ipmovie", "libnut", "m4v",
-          "matroska", "mjpeg", "mm", "mmf", "mov", "mp4", "m4a", "3gp",
-          "3g2", "mj2", "mp3", "mpc", "mpc8", "mpeg", "mpegts", "mpegtsraw",
-          "mpegvideo", "mulaw", "mxf", "nsv", "nut", "nuv", "ogg", "psxstr",
-          "rawvideo", "redir", "rm", "rtsp", "s16be", "s16le", "s8", "sdp",
-          "shn", "siff", "smk", "sol", "swf", "thp", "tiertexseq", "tta",
-          "txd", "u16be", "u16le", "u8", "vc1", "vmd", "voc", "wav",
-          "wc3movie", "wsaud", "wsvqa", "wv", "yuv4mpegpipe");
+      "MTV", "RoQ", "aac", "ac3", "aiff", "alaw", "amr", "apc", "ape",
+      "asf", "au", "avi", "avs", "bethsoftvid", "c93", "daud", "dsicin",
+      "dts", "dv", "dxa", "ea", "ea_cdata", "ffm", "film_cpk", "flac",
+      "flic", "flv", "gif", "gxf", "h261", "h263", "h264", "idcin",
+      "image2", "image2pipe", "ingenient", "ipmovie", "libnut", "m4v",
+      "matroska", "mjpeg", "mm", "mmf", "mov", "mp4", "m4a", "3gp",
+      "3g2", "mj2", "mp3", "mpc", "mpc8", "mpeg", "mpegts", "mpegtsraw",
+      "mpegvideo", "mulaw", "mxf", "nsv", "nut", "nuv", "ogg", "psxstr",
+      "rawvideo", "redir", "rm", "rtsp", "s16be", "s16le", "s8", "sdp",
+      "shn", "siff", "smk", "sol", "swf", "thp", "tiertexseq", "tta",
+      "txd", "u16be", "u16le", "u8", "vc1", "vmd", "voc", "wav",
+      "wc3movie", "wsaud", "wsvqa", "wv", "yuv4mpegpipe");
   private static final int AUTOCORRECT_LED = 2;
 
   // instance variables declared
@@ -103,7 +103,7 @@ public class SamGui extends SparkGui {
   private AutocorrectLineRepl repl;
 
   public SamGui(int port, String address, String db)
-          throws SQLException {
+      throws SQLException {
     this.port = port;
     serverAddress = address;
     ap = new AmplitudePanner();
@@ -113,7 +113,7 @@ public class SamGui extends SparkGui {
     clientId = new AtomicInteger();
     mq = new MetadataQuery(db);
     timeoutMap = new ConcurrentHashMap<String, Long>();
-    setInitialServerSongs();
+    serverSongs = new SongInfo[0];
     initAutocorrectValues(serverSongs);
   }
 
@@ -147,6 +147,7 @@ public class SamGui extends SparkGui {
     Spark.post("/editMetadata", new MetadataHandler());
     Spark.post("/getIP", new IPAddressHandler());
     Spark.post("/search", new SearchHandler());
+    Spark.get("/currentDir", new CurrentDirectoryHandler());
   }
 
   /**
@@ -168,7 +169,7 @@ public class SamGui extends SparkGui {
     @Override
     public ModelAndView handle(Request req, Response res) {
       Map<String, Object> variables =
-              new ImmutableMap.Builder<String, Object>().build();
+          new ImmutableMap.Builder<String, Object>().build();
 
       return new ModelAndView(variables, "home.ftl");
     }
@@ -191,7 +192,7 @@ public class SamGui extends SparkGui {
     @Override
     public ModelAndView handle(Request req, Response res) {
       Map<String, Object> variables =
-              new ImmutableMap.Builder<String, Object>().build();
+          new ImmutableMap.Builder<String, Object>().build();
 
       return new ModelAndView(variables, "server.ftl");
     }
@@ -214,7 +215,7 @@ public class SamGui extends SparkGui {
     @Override
     public ModelAndView handle(Request req, Response res) {
       Map<String, Object> variables =
-              new ImmutableMap.Builder<String, Object>().build();
+          new ImmutableMap.Builder<String, Object>().build();
 
       return new ModelAndView(variables, "client.ftl");
     }
@@ -237,7 +238,7 @@ public class SamGui extends SparkGui {
     @Override
     public ModelAndView handle(Request req, Response res) {
       Map<String, Object> variables =
-              new ImmutableMap.Builder<String, Object>().build();
+          new ImmutableMap.Builder<String, Object>().build();
 
       return new ModelAndView(variables, "songs.ftl");
     }
@@ -261,7 +262,7 @@ public class SamGui extends SparkGui {
      * @param timeoutMap 
      */
     public VolumeHandler(AmplitudePanner ap, AtomicBoolean quickUpdate, 
-            AtomicBoolean mute, AtomicBoolean noFocus, Map<String, Long> timeoutMap) {
+        AtomicBoolean mute, AtomicBoolean noFocus, Map<String, Long> timeoutMap) {
       this.ap = ap;
       this.quickUpdate = quickUpdate;
       this.mute = mute;
@@ -306,7 +307,7 @@ public class SamGui extends SparkGui {
         weight = 0;
       }
       Map<String, Object> variables =
-              ImmutableMap.of("volume", weight, "quick", quickUpdate.get());
+          ImmutableMap.of("volume", weight, "quick", quickUpdate.get());
       return GSON.toJson(variables);
     }
   }
@@ -329,7 +330,7 @@ public class SamGui extends SparkGui {
         address = addr[addr.length-1];
       }
       Map<String, Object> variables =
-              ImmutableMap.of("success", success, "address", address);
+          ImmutableMap.of("success", success, "address", address);
 
       return GSON.toJson(variables);
     }	  
@@ -353,7 +354,7 @@ public class SamGui extends SparkGui {
 
       Map<String, ClientPoint> allClients = ap.getClients();
       List<HashMap<String, Object>> clientInfo =
-              new ArrayList<HashMap<String, Object>>();
+          new ArrayList<HashMap<String, Object>>();
 
       for (ClientPoint c : allClients.values()) {
 
@@ -373,7 +374,7 @@ public class SamGui extends SparkGui {
         clientInfo.add(client);
       }
       Map<String, Object> variables =
-              ImmutableMap.of("clients", clientInfo);
+          ImmutableMap.of("clients", clientInfo);
 
       return GSON.toJson(variables);
     }
@@ -396,10 +397,10 @@ public class SamGui extends SparkGui {
 
       timeoutMap.put(String.valueOf(clientNumber),  (System.currentTimeMillis() / 1000L));
       Map<String, Object> variables =
-              new ImmutableMap.Builder<String, Object>()
-              .put("message", message).put("id", clientNumber)
-              .put("server_url", serverAddress)
-              .put("server_port", server.getPort()).put("success", 0).build();
+          new ImmutableMap.Builder<String, Object>()
+          .put("message", message).put("id", clientNumber)
+          .put("server_url", serverAddress)
+          .put("server_port", server.getPort()).put("success", 0).build();
       return GSON.toJson(variables);
     }
   }
@@ -411,7 +412,7 @@ public class SamGui extends SparkGui {
     String y1 = map.value("y");
     String id = map.value("id");
     Boolean quick =
-            Boolean.parseBoolean(request.queryMap().value("quick"));
+        Boolean.parseBoolean(request.queryMap().value("quick"));
     quickUpdate.set(quick);
     String name = request.queryMap().value("name");
     Double x = Double.parseDouble(x1);
@@ -430,7 +431,7 @@ public class SamGui extends SparkGui {
       return currentInfo();
     }   
     Map<String, Object> variables =
-            ImmutableMap.of("message", message, "success", 0);
+        ImmutableMap.of("message", message, "success", 0);
     return GSON.toJson(variables);
   }
 
@@ -485,7 +486,7 @@ public class SamGui extends SparkGui {
   public Object currentInfo() {
     String message = "Success";
     List<HashMap<String, Object>> clientInfo =
-            new ArrayList<HashMap<String, Object>>();
+        new ArrayList<HashMap<String, Object>>();
     Map<String, ClientPoint> allClients = ap.getClients();
     for (ClientPoint c : allClients.values()) {
 
@@ -520,7 +521,7 @@ public class SamGui extends SparkGui {
     }
 
     Map<String, Object> variables =
-            ImmutableMap.of("message", message, "success", 0, "clients", clientInfo);
+        ImmutableMap.of("message", message, "success", 0, "clients", clientInfo);
     return GSON.toJson(variables);
 
   }
@@ -589,9 +590,9 @@ public class SamGui extends SparkGui {
       }
 
       Map<String, Object> variables =
-              new ImmutableMap.Builder<String, Object>()
-              .put("socket_url", serverAddress)
-              .put("socket_port", server.getPort()).build();
+          new ImmutableMap.Builder<String, Object>()
+          .put("socket_url", serverAddress)
+          .put("socket_port", server.getPort()).build();
 
       return GSON.toJson(variables);
     }
@@ -637,7 +638,7 @@ public class SamGui extends SparkGui {
       File musicDirectory = new File(musicDirectoryPath);
 
       SamGui.emptyAndOverwriteFile(SamGui.DEFAULT_DIR_CONFIG_PATH,
-              musicDirectoryPath);
+          musicDirectoryPath);
 
       if (musicDirectory.getName().equals("")) {
         musicDirectory = new File(System.getProperty("user.home"));
@@ -646,7 +647,7 @@ public class SamGui extends SparkGui {
       File[] files = musicDirectory.listFiles();
 
       List<SongInfo> songs =
-              getSongInfoFromFlattenedDirectory(files, new ArrayList<>());
+          getSongInfoFromFlattenedDirectory(files, new ArrayList<>());
 
       serverSongs = songs.toArray(new SongInfo[songs.size()]);
 
@@ -695,8 +696,8 @@ public class SamGui extends SparkGui {
       int songId = server.getCurrentSongId();
 
       Map<String, Object> variables =
-              new ImmutableMap.Builder<String, Object>()
-              .put("song_id", songId).build();
+          new ImmutableMap.Builder<String, Object>()
+          .put("song_id", songId).build();
 
       return GSON.toJson(variables);
     }
@@ -750,40 +751,34 @@ public class SamGui extends SparkGui {
 
   }
 
-  private void setInitialServerSongs() {
-    try (BufferedReader r = new BufferedReader(
-            new FileReader(DEFAULT_DIR_CONFIG_PATH))) {
-      File defaultDir = new File(r.readLine());
-      File[] musicDir;
+  private class CurrentDirectoryHandler implements Route {
 
-      if (defaultDir.exists()) {
-        musicDir = defaultDir.listFiles();
-      } else {
+    @Override
+    public Object handle(Request request, Response response) {
+      try (BufferedReader r = new BufferedReader(
+          new FileReader(DEFAULT_DIR_CONFIG_PATH))) {
+        File defaultDir = new File(r.readLine());
+
+        if (defaultDir.exists()) {
+          return defaultDir.getAbsolutePath();
+        } else {
+          File iTunesDir = new File(getITunesDirectoryPath());
+          if (!iTunesDir.getName().equals("")) { //exists
+            return iTunesDir.getAbsolutePath();
+          } else {
+            return DEFAULT_MUSIC_DIR.getAbsolutePath();
+          }
+        }
+      } catch (Exception e) {
         File iTunesDir = new File(getITunesDirectoryPath());
         if (!iTunesDir.getName().equals("")) { //exists
-          musicDir = iTunesDir.listFiles();
+          return iTunesDir.getAbsolutePath();
         } else {
-          musicDir = DEFAULT_MUSIC_DIR.listFiles();
+          return DEFAULT_MUSIC_DIR.getAbsolutePath();
         }
       }
-
-      List<SongInfo> siList = getSongInfoFromFlattenedDirectory(musicDir,
-              new ArrayList<>());
-      serverSongs = siList.toArray(new SongInfo[siList.size()]);
-    } catch (IOException e) {
-      File[] musicDir;
-
-      File iTunesDir = new File(getITunesDirectoryPath());
-      if (!iTunesDir.getName().equals("")) { //exists
-        musicDir = iTunesDir.listFiles();
-      } else {
-        musicDir = DEFAULT_MUSIC_DIR.listFiles();
-      }
-
-      List<SongInfo> siList = getSongInfoFromFlattenedDirectory(musicDir,
-              new ArrayList<>());
-      serverSongs = siList.toArray(new SongInfo[siList.size()]);
     }
+
   }
 
   private String getITunesDirectoryPath() {
@@ -793,7 +788,7 @@ public class SamGui extends SparkGui {
     for (File subDir : userSubDirs) {
       if (subDir.getName().contains("Music")) {
         List<File> musicSubDirsList = (List<File>) FileUtils.listFilesAndDirs(
-                subDir, FalseFileFilter.FALSE, TrueFileFilter.TRUE);
+            subDir, FalseFileFilter.FALSE, TrueFileFilter.TRUE);
         for (File musicSubDir : musicSubDirsList) {
           if (musicSubDir.getName().equalsIgnoreCase("iTunes")) {
             return musicSubDir.getAbsolutePath();
@@ -806,11 +801,11 @@ public class SamGui extends SparkGui {
   }
 
   private List<SongInfo> getSongInfoFromFlattenedDirectory(File[] files,
-          List<SongInfo> songs) {
+      List<SongInfo> songs) {
     for (File f : files) {
       if (f.isDirectory()) {
         songs.addAll(getSongInfoFromFlattenedDirectory(f.listFiles(),
-                new ArrayList<>()));
+            new ArrayList<>()));
       }
 
       String[] fileNameArr = f.getName().split("\\.");
@@ -825,7 +820,7 @@ public class SamGui extends SparkGui {
         try {
           si = mq.getSongInfo(f);
         } catch (IOException | SAXException | TikaException
-                | SQLException e1) {
+            | SQLException e1) {
           si = getMissingSongInfo(f);
         }
 
@@ -873,7 +868,7 @@ public class SamGui extends SparkGui {
       List<String> sequenceCombinations = getSequenceCombinations(basePhrases);
       for (String sequenceCombination: sequenceCombinations) {
         List<SongInfo> matchedSongs = autocorrectSongInfoHM.getOrDefault(
-                sequenceCombination, new ArrayList<>());
+            sequenceCombination, new ArrayList<>());
         matchedSongs.add(si);
         autocorrectSongInfoHM.put(sequenceCombination, matchedSongs);
       }
@@ -906,7 +901,7 @@ public class SamGui extends SparkGui {
       }
 
       String[] basePhraseArr = basePhrase.toLowerCase().split(
-              CorpusDataStore.PUNCTUATION_WHITESPACE_REGEX);
+          CorpusDataStore.PUNCTUATION_WHITESPACE_REGEX);
       String sequenceCombination = basePhraseArr[0];
       sequenceCombinations.add(sequenceCombination);
       for (int i = 1; i < basePhraseArr.length; i++) {
@@ -919,7 +914,7 @@ public class SamGui extends SparkGui {
   }
 
   private static void emptyAndOverwriteFile(File file, String content) {
-    try (FileWriter fw = new FileWriter(file, false);) {
+    try (FileWriter fw = new FileWriter(file, false)) {
       fw.write(content);
     } catch (IOException e) {
       // TODO Auto-generated catch block
