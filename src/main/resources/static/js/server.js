@@ -1157,7 +1157,8 @@ $('#song-search').keydown(function(e){
 
 function addSongToGUIQueue(song_element) {
 	// disable the add to queue buttons
-	songsdiv.find("#queue-button").css("opacity", 0.0);
+	$(".queue-button").prop("disabled", true);
+	
 	$("#queue-info").remove();
 
 	// add it to gui queue witha album art and name/artist
@@ -1192,6 +1193,7 @@ function addSongToGUIQueue(song_element) {
 		var id = responseObject.song_id;
 		queue[id] = song_element;
 		addSongGUIHelper(song_element, id, song, removeButton);
+		$(".queue-button").prop("disabled", false);
 	});
 }
 
