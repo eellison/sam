@@ -418,8 +418,8 @@ function draw(clients, event) {
 		textLabels = text
             .attr("x", function(d) { 
             	if (d.id === "0") {
-            		return d.x-20;
             		changeVolumeLevel(d.volume);
+            		return d.x-20;
             	}
             	return d.x-10;})
             .attr("y", function(d) { return d.y-10; })
