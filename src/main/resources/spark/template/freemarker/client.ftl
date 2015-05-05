@@ -3,9 +3,8 @@
 	<input id="client-name" type="text" style="font-size: 18px; margin-top: 25px; text-align: center; border: none; background: transparent;" placeholder="Enter client name..."></input>
 	<div id="client-gui">
 		<label for="=clientpositions" style="margin-left: auto; margin-right: auto;">Click and drag your sound source</label></br>
-		<canvas id="clients-canvas">
-			
-		</canvas>
+		<div id="clients-canvas">
+		</div>
 	</div>
 	</br>
 	<div style="clear: both; position: fixed; min-width: 1100px; width: 80%; bottom: 0; left: 10%; float: left;">

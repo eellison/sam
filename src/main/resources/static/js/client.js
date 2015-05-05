@@ -65,22 +65,6 @@ $("#clients-canvas").on('mousedown', function(event){
 
 
 
-/* Old canvas
-$("#clients-canvas").click(function(event) {
-	if (connected) {
-		name = $("#client-name").val();
-		var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
-		var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-
-		$.post("http://" + server_url + "/updatePosition", {id : client_id, x : xPos, y : yPos, name: name}, 
-			function(responseJSON) {
-			
-		});
-	} else {
-		alert("Not connected to server");
-	}
-});
-*/
 
 /* Song Info */
 // function updateSongTime() {
@@ -131,34 +115,8 @@ function updateClientPositions() {
 	});
 }
 
-/* old draw_clients
-function draw_clients(clients) {
-	// Get the canvas
-	var canvas = $("#clients-canvas")[0];
-	canvas.width = CANVAS_SIZE;
-	canvas.height = CANVAS_SIZE;
-
-	//Get 2D context for canvas drawing
-	var ctx = canvas.getContext("2d");
-	ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-
-	for (var i in clients) {
-		var client = clients[i];
-		ctx.beginPath();
-
-		if (client.x != -1 || client.y != -1) {
-			ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
-		}
-
-		ctx.stroke();
-		ctx.font = "18px serif";
-	  	ctx.fillText(client.id, client.x - 10, client.y - 10);
-	}
-} */
 
 function draw_clients(saved_clients) {
- 	var time = 0;
- 	//pause button clicked
  	
  	if (saved_clients != null ){
  		circleGroupH.selectAll("circle").remove();
@@ -190,7 +148,7 @@ function draw_clients(saved_clients) {
  			return r;
  		});
  		circleEnter.style("stroke", "black");
- 		circleEnter.attr("fill", "black");
+ 		circleEnter.attr("fill", "none");
 	 	var prev = 	d3.selectAll("text");
 	 	prev.remove();
 
@@ -216,6 +174,9 @@ function draw_clients(saved_clients) {
             		if (d.name.length != 0) {
             			return d.name;
             		}
+            	}
+            	if (d.id === client_id) {
+            		return $("#client-name").val();
             	}
             	return d.id; })
             .attr("font-family", "sans-serif")
