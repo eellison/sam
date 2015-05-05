@@ -14,8 +14,9 @@
 				<span id="search-clear" class="glyphicon glyphicon-remove-circle"></span>
 			</div>
 			<div id="songs-bound-div-2">
+				<label id="search-info" style="margin-top: 10px; color: rgba(100, 100, 100, 0.5);">Search for your songs here. Click "Music Library" to change your music library.</label>
 				<div id="song-div">
-					<label id="search-info" style="margin-top: 10px; color: rgba(100, 100, 100, 0.5);">Search for your songs here. Click "Music Library" to change your music library.</label>
+
 				</div>
 			</div>
 		</div>
@@ -23,7 +24,7 @@
 			<label>Queue</label></br>
 			<div id="songs-bound-div-3">
 				<div id='queue-div'>
-					<label id="queue-info" style="margin-top: 10px; color: rgba(100, 100, 100, 0.5);">Search and add songs to your queue.</label>
+					<label id="queue-info" style="margin-top: 10px; color: rgba(100, 100, 100, 0.5);">Search and add songs to your queue</label>
 				</div>
 			</div>
 		</div>

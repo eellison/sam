@@ -15,7 +15,7 @@ var peer_client_ids = [];
 var peer_connections = {};
 var muted = false;
 var current_dir = "";
-var songsdiv = $("<div></div>");
+var songsdiv = $("#songs-div");
 var queuediv = $("#queue-div");
 var API_KEY = "0d73a4465bd208188cc852a95b011b22";
 
@@ -982,6 +982,7 @@ $('#song-search').on('input', function(e) {
 	var search = $("#song-search").val();
 
     if (search === "") {
+    	$("search-info").show();
     	songsdiv.remove();
     	return;
     }
@@ -993,6 +994,7 @@ $('#song-search').keydown(function(e){
     var search = $("#song-search").val();
 
     if (search === "") {
+    	$("search-info").show();
     	return;
     }
 
@@ -1016,7 +1018,7 @@ $('#song-search').keydown(function(e){
 			}
 
 			songsdiv.append(song);
-			var playbutton = $("<button id='queue-button'></button>");
+			var playbutton = $("<button class='queue-button'></button>");
 			playbutton.on("click", function(e) {
 				addSongToGUIQueue(elem);
 			});
@@ -1125,5 +1127,6 @@ function addSongGUIHelper(song_element, id, song, removeButton) {
 
 $("#search-clear").click(function(){
     $("#song-search").val('');
+    $("search-info").show();
     songsdiv.remove();
 });
