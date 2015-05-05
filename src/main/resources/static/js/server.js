@@ -326,6 +326,19 @@ $("#clear-focus").click(function(event) {
 	}
 });
 
+$("#info").click(function(event) {
+	if (running) {
+		var alertS = "Relocate the host location by right-clicking \n" + 
+			 "Drop a new focus point by shift-clicking \n" + 
+			 "Select and drag focus points by clicking and move your cursor \n" +
+			 "Delete a singular focus point by clicking alt and a focus location \n" + 
+			 "Mute a client by alt-clicking its location. Manually muted clients " +
+			 "will have a black center";
+		alert(alertS);
+	}
+});
+
+
 
 var secondsTimeout = new Date().getTime() / 1000;
 
