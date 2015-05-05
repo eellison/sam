@@ -298,6 +298,11 @@ function updateVariablesPost() {
 	var responseObject = JSON.parse(responseJSON);
 	var clients = responseObject.clients;
 	saved_clients = clients;
+	for (var i = 0; i < saved_clients.length; i++) {
+		if (saved_clients[i].id === "0") {
+			changeVolumeLevel(saved_clients[i].volume);
+		}
+	}
 	updateVolumeOfPeers();
 	draw(saved_clients);
 	});		
@@ -418,7 +423,6 @@ function draw(clients, event) {
 		textLabels = text
             .attr("x", function(d) { 
             	if (d.id === "0") {
-            		changeVolumeLevel(d.volume);
             		return d.x-20;
             	}
             	return d.x-10;})
