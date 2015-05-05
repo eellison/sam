@@ -24,7 +24,9 @@
 			</div>
 		</div>
 		<div id="server-canvas">
-			<label for="clientpositions">Client Positions</label></br>
+			<label for="clientpositions">Client Positions</label>
+
+			</br>
 			<div id="clients-canvas">
 			</div>
 			</br>
@@ -46,6 +48,8 @@
 			</div>
 			<p id="song-time" style="float: left;">0:00</p>
 			<button id="skip"></button>
+			</br>
+			<p id="song-info" style="color: rgba(165, 208, 254, 0.8); clear: both; text-align: center; vertical-align: middle; margin-top: -27px; width: 50%; margin-left: 26%; float: left;">No Song Playing</p>
 		</div>
 	</div>
 </div>

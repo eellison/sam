@@ -1,5 +1,7 @@
 package edu.brown.cs.group.sam;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.SQLException;
 
 import joptsimple.OptionParser;
@@ -46,11 +48,23 @@ public class Main {
     if (options.has("port")) {
       port = options.valueOf(portSpec);
     }
-
-    String address = DEFAULT_ADDR;
-    if (options.has("server")) {
-      address = options.valueOf(serverSpec);
+    // Automatically configure 
+    String address = "";
+    boolean success = true;
+    InetAddress ip = null;
+    try {
+      ip = InetAddress.getLocalHost();			
+    } catch (UnknownHostException e) {
+      success = false;
     }
+    if (success) {
+      String[]  addr = ip.getHostAddress().split("/");
+      address = addr[addr.length-1];
+    }
+//    String address = DEFAULT_ADDR;
+//    if (options.has("server")) {
+//      address = options.valueOf(serverSpec);
+//    }
 
     String db = DEFAULT_DB;
     if (options.has("db")) {

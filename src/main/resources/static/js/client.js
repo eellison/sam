@@ -34,19 +34,37 @@ var updateSongTitleTimer;
 var updateVolumeTimer;
 var updateClientPositions;
 
-$("#clients-canvas").click(function(event) {
+var svg = d3.select("#clients-canvas")
+   .append("svg:svg")
+   .attr("width", CANVAS_SIZE)
+   .attr("height", CANVAS_SIZE);
+
+svg.append("rect")
+    .attr("width", "100%")
+    .attr("height", "100%")
+    .attr("fill", "white")
+    .attr("fill-opacity", .5)
+    .attr("style", "outline: thin solid black;");
+
+var circleGroupH = svg.append("svg:g");
+var circleGroup; 
+
+
+
+$("#clients-canvas").on('mousedown', function(event){
 	if (connected) {
 		var xPos = event.pageX - $("#clients-canvas")[0].offsetLeft;
 		var yPos = event.pageY - $("#clients-canvas")[0].offsetTop;
-		alert("x:" + xPos + " y:" + yPos);
 
-		$.post("http://" + server_url + "/updatePosition", {id : client_id, x : xPos, y : yPos}, function(responseJSON) {
+		$.post("http://" + server_url + "/updatePosition", {id : client_id, x : xPos, y : yPos, name: name}, 
+			function(responseJSON) {
 			
 		});
-	} else {
-		alert("Not connected to server");
 	}
 });
+
+
+
 
 /* Song Info */
 // function updateSongTime() {
@@ -64,9 +82,13 @@ $("#clients-canvas").click(function(event) {
 // }
 
 /* Volume */
+
 function updateVolume() {
 	var name = "";
-	name = $.("#client-name");
+	name = $("#client-name").val();
+	if (name === null || name === undefined) {
+		name = "";
+	}
 	$.get("http://" + server_url + "/volume", {id : client_id, name: name}, function(responseJSON) {
 		var responseObject = JSON.parse(responseJSON);
 		volume = responseObject.volume;
@@ -93,45 +115,101 @@ function updateClientPositions() {
 	});
 }
 
-function draw_clients(clients) {
-	// Get the canvas
-	var canvas = $("#clients-canvas")[0];
-	canvas.width = CANVAS_SIZE;
-	canvas.height = CANVAS_SIZE;
 
-	//Get 2D context for canvas drawing
-	var ctx = canvas.getContext("2d");
-	ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+function draw_clients(saved_clients) {
+ 	
+ 	if (saved_clients != null ){
+ 		circleGroupH.selectAll("circle").remove();
+ 		circleGroup = circleGroupH.selectAll("circle").data(saved_clients);
+		var circleEnter = circleGroup.enter().append("circle");
+		circleEnter.attr("cx", function(client) { 
+ 			if (client.x == -1) {
+ 				return -50;
+ 			}
+ 			
+ 			return client.x;
+ 		});
+ 	
+ 		circleEnter.attr("cy", function(client) { 
+ 			if (client.y == -1) {
+ 				return -50;
+ 			}
+ 			
+ 			return client.y;
+ 		});
+ 		
+ 		circleEnter.attr("r", function(d) {	
+ 			var r = d.volume;
+ 			if (r === null || r === undefined) {
+ 				return 10 ;
+ 			}
+ 			r = 10*r;
+ 			r = Math.max(r, 1);
+ 			return r;
+ 		});
+ 		circleEnter.style("stroke", "black");
+ 		circleEnter.attr("fill", "none");
+	 	var prev = 	d3.selectAll("text");
+	 	prev.remove();
 
-	for (var i in clients) {
-		var client = clients[i];
-		console.log("drawing");
-		ctx.beginPath();
-		console.log(client.x);
-		console.log(client.y);
-		if (client.x != -1 || client.y != -1) {
-			ctx.arc(client.x, client.y, 10, 0, 2 * Math.PI);
-		}
+ 		text = svg.selectAll("text")
+                       .data(saved_clients)
+                        .enter()
+                        .append("text");
 
-		ctx.stroke();
-		ctx.font = "18px serif";
-	  	ctx.fillText(client.id, client.x - 10, client.y - 10);
-	}
+
+		//Add SVG Text Element Attributes
+		textLabels = text
+            .attr("x", function(d) { 
+            	if (d.id === "0") {
+            		return d.x-20;
+            	}
+            	return d.x-10;})
+            .attr("y", function(d) { return d.y-10; })
+            .text( function (d) { 
+            	if (d.id === "0") {
+            		return "Host";
+            	}
+            	if (d.id === client_id.toString()) {
+            		if ($("#client-name").val().length!=0) {
+            			return $("#client-name").val();
+            		}
+            		return d.id;
+            	}
+            	if (!(d.name === undefined || d.name === null)) {
+            		if (d.name.length != 0) {
+            			return d.name;
+            		}
+            	}
+            	return d.id; })
+            .attr("font-family", "sans-serif")
+            .attr("font-size", "20px")
+            .attr("fill", "black")
+            .attr("fill-opacity", .7);
+ 	}
 }
+
+
 prepareClientJoin();
 function prepareClientJoin() {
 	value = window.location.host + window.location.pathname;
 	var search = /(client)/i;
 	value = value.replace(search, "");
+	var slashI = value.indexOf("/")
+	value = value.substring(0, slashI) + value.substring(slashI+1, value.length);
 	url = value;
 	setupClient(url);
 	setupPlayer();
 };
 
+
+
+
+
 var updateVolumeTimer;
 function setupClient(url) {
 	if (!connected) {
-		$.post("http://" + url + "/connectClient", {name : "Name"})
+		$.post("http://" + url + "/connectClient", {name : ""})
 		.done(function(responseJSON) {
 			var responseObject = JSON.parse(responseJSON);
 
@@ -186,6 +264,76 @@ function setupSocketConnection(url, port) {
 	socket.on("server_id", function(data) {
 		connectPeer(data);
 	});
+
+	socket.on("song_info", function(data) {
+		var songPackage = JSON.parse(data);
+
+		updateCurrentTime(songPackage.current_time);
+		updateTotalTime(songPackage.total_time);
+		updateProgress(songPackage.progress);
+		updateAlbumArt(songPackage.album_art);
+		updateSongInfo(songPackage.info);
+	});
+}
+
+/* functions used to update the gui for song playing */
+function updateCurrentTime(time) {
+	var current_time = get_mins_from_seconds(time);
+
+	var seconds = current_time.sec;
+
+	if (seconds < 10) {
+		seconds = "0" + seconds;
+	}
+
+	var stringTime = current_time.min + ":" + seconds;
+	$("#current-time").text(stringTime);
+}
+
+function updateTotalTime(time) {
+	var total_time = get_mins_from_seconds(time);
+
+	var seconds = total_time.sec;
+
+	if (seconds < 10) {
+		seconds = "0" + seconds;
+	}
+
+	var stringTime = total_time.min + ":" + seconds;
+	$("#song-time").text(stringTime);
+}
+
+/* function used to convert from seconds to mins/seconds */
+function get_mins_from_seconds(seconds) {
+	var m = Math.floor(seconds / 60);
+	var s = seconds - 60 * m;
+
+	var time = {
+		min: Math.floor(m),
+		sec: Math.floor(s)
+	};
+
+	return time;
+}
+
+function updateProgress(percentage) {
+	//update the gui progress bar
+	var total_width = $("#progressbar").css("width");
+	var total = total_width.slice(0, total_width.length - 2);
+	var width = total * percentage;
+	$("#progressbar > div").css("width", width + "px");
+}
+
+function updateAlbumArt(art_url) {
+	if (typeof art_url != "undefined") {
+		$("#current-song").css("background-image", "url('" + art_url + "')");
+	} else {
+		$("#current-song").css("background-image", "url('../images/placeholder.png')");
+	}
+}
+
+function updateSongInfo(song_info) {
+	$("#song-info").text(song_info);
 }
 
 /* create a peer connection using peerjs api */

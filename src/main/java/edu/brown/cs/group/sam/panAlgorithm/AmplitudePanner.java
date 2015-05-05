@@ -3,6 +3,7 @@ package edu.brown.cs.group.sam.panAlgorithm;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.vividsolutions.jts.algorithm.ConvexHull;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -19,7 +20,7 @@ public class AmplitudePanner {
   private static double distanceExp;
   private Map<String, ClientPoint> clients;
   private Set<Coordinate> currentPoint;
-  private Map<String, Double> currentWeighting;
+  private ConcurrentHashMap<String, Double> currentWeighting;
 
   /**
    * @param ms - MusicServer to request data from;
@@ -44,7 +45,7 @@ public class AmplitudePanner {
       rolloff = 6.0;
     }
     clients = new HashMap<String, ClientPoint>();
-    currentWeighting = new HashMap<String, Double>();
+    currentWeighting = new ConcurrentHashMap<String, Double>();
     this.rolloff = rolloff;
     calculateDEXP();
   }
@@ -94,7 +95,7 @@ public class AmplitudePanner {
   }
 
   public void generateHull() {
-
+	
     Coordinate[] coordinates = new Coordinate[clients.size()];
     Set<String> keys = clients.keySet();
     int i = 0;
@@ -124,16 +125,15 @@ public class AmplitudePanner {
 
     if (currentPoint == null || clients.size() <= 1 || c1.size() == 0) {
       Set<String> keys = clients.keySet();
-      Map<String, Double> temp = new HashMap<String, Double>();
+      ConcurrentHashMap<String, Double> temp = new ConcurrentHashMap<String, Double>();
       for (String s : keys) {
         temp.put(s, 1.0);
       }
       currentWeighting = temp;
       return temp;
     }
-
     currentPoint = c1;
-    Map<String, Double> vol = new HashMap<String, Double>();
+    ConcurrentHashMap<String, Double> vol = new ConcurrentHashMap<String, Double>();
 
     for (String s : clients.keySet()) {
     	double volC = 0;
@@ -145,27 +145,32 @@ public class AmplitudePanner {
     currentWeighting = vol;
     return vol;
   }
-
-  public double getWeighting(Point p1, Coordinate vs) {
+  /**
+   * @param cP client point
+   * @param vs - point to calculate against
+   * @return
+   */
+  public double getWeighting(Point cP, Coordinate vs) {
 	  
 	Coordinate[] coord = new Coordinate[1];
 	coord[0] = new Coordinate(vs.x, vs.y);
 	CoordinateSequence seq = new CoordinateArraySequence(coord);
+    Point p1 = new Point(seq, new GeometryFactory());
 
-	double dist = 0;
-	double fade = 1;
+    double dist = 0;
+    double fade = 1;
     if (convexHull!=null && 
         !convexHull.getConvexHull().contains(p1)) {
       Coordinate cnew = placeWithinHull(p1, dist);
       double newDist = totalDistAway(cnew);
 
       double oldDist = totalDistAway(vs);
+
       fade = newDist / oldDist;
       vs = cnew;
     }
     double weight = 0;
-
-    double distPoint = cartesianDist(p1.getCoordinate(), vs, 0);
+    double distPoint = cartesianDist(cP.getCoordinate(), vs, 0);
     for (String s : clients.keySet()) {
       double di =
           cartesianDist(clients.get(s).getPoint().getCoordinate(), vs, 0);
@@ -179,6 +184,7 @@ public class AmplitudePanner {
     }
     return ((1 / weight)*fade);
   }
+  
 
   public double totalDistAway(Coordinate coord) {
 
@@ -209,10 +215,6 @@ public class AmplitudePanner {
 
     for (int i = 0; i < pointN; i++) {
       Coordinate c = coordinates[i];
-      System.out.println(i);
-      ;
-      System.out.println(c.x);
-      System.out.println(c.y);
     }
 
     Coordinate onHullCoord = null;
@@ -256,6 +258,7 @@ public class AmplitudePanner {
   
 
   public double getVolume(String id) {
+    calcluteVolume(currentPoint);
     return currentWeighting.get(id);
   }
 
