@@ -979,10 +979,10 @@ function addSongToGUIQueue(song_element) {
 
 	var song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div></div>");
 	if (typeof albumart != "undefined") {
-		song = $("<div><div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div></div>");
+		song = $("<div><div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + "</p></br><p class='song' style='margin-top: 0px;'>by " + _artist + "</p></div></div>");
 	} else {
 		if (typeof _title != 'undefined' && typeof _artist != 'undefined') {
-			song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div></div>");
+			song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + "</p></br><p class='song' style='margin-top: 0px;'>by " + _artist + "</p></div></div>");
 		}
 	}
 
@@ -1031,7 +1031,7 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 
 		$.get("http://ws.audioscrobbler.com/2.0/", {method : "album.getinfo", artist : _artist, album : _album, api_key : API_KEY, format : "json"})
 	    .done(function(responseJSONSong) {
-	    	var song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div></div>");
+	    	var song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:width:38px;height:38px;'><p class='song'>" + _title + "</p></br><p class='song' style='margin-top: 0px;'>by " + _artist + "</p></div></div>");
 
 	    	if (typeof responseJSONSong.error == 'undefined') {
 				var albumart = responseJSONSong.album.image[1]["#text"];
@@ -1040,12 +1040,12 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 				elem.albumarthighres = albumarthighres;
 				
 				if (typeof albumart != "undefined") {
-					song = $("<div><div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div></div>");
+					song = $("<div><div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + "</p></br><p class='song' style='margin-top: 0px;'>by " + _artist + "</p></div></div>");
 				} else {
 					if (typeof _title == 'undefined') {
 						song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown </p></div></div>");
 					} else {
-						song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div></div>");
+						song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + "</p></br><p class='song' style='margin-top: 0px;'>by " + _artist + "</p></div></div>");
 					}
 				}
 			}
@@ -1062,7 +1062,7 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 			songsdiv.append(song);
 		})
 	    .fail(function(xhr, textStatus, errorThrown) {
-	    	var song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div></div>");
+	    	var song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + "</p></br><p class='song' style='margin-top: 0px;'>by " + _artist + "</p></div></div>");
 			
 			if (typeof _title == 'undefined' || typeof _album == 'undefined' || typeof _artist == 'undefined') {
 				song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div></div>");

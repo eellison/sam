@@ -104,13 +104,15 @@ p.song {
     word-wrap: break-word;
     font-size: 12px;
     float: left;
-    width: 70%;
-    height: 70%;
-    margin-left: 10px;
-    margin-top: 8px;
+    width: 75%;
+    height: 12px;
+    margin-top: 4px;
     line-height: 12px;
     text-align: center;
     vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #queue-button {
@@ -313,9 +315,9 @@ h4.title {
     text-align: center;
     vertical-align: middle;
     word-wrap: break-word;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: table-cell;
 }
 
 #file-label-text {
@@ -325,11 +327,14 @@ h4.title {
     vertical-align: center;
     font-size: 10px;
     word-wrap: break-word;
-    height: 80px;
+    white-space: nowrap;
+    height: 50px;
     width: 45px;
     margin-left: 22.5px;
     margin-top: 25px;
     float: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .song {
