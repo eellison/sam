@@ -59,6 +59,7 @@ function getIP() {
 	    		var tweetBtn = $('<a></a>')
 			        .addClass('twitter-hashtag-button')
 			        .attr('data-text', "Join the Party! | " + value);
+
 			    $('#tweetBtn').append(tweetBtn);
 			    twttr.widgets;	
 				}
@@ -294,7 +295,7 @@ function updateVariablesPost() {
 		fociString = fociString + yfoc +  " , ";
 	}
 	//updates the host position as part of changeFocus
-	$.post("/changeFocus", {id: "0", x : xPos, y : yPos, quick: quick, pause: paused, focusPoints: fociString}, function(responseJSON) {
+	$.post("/changeFocus", {id: "0", x : xPos, y : yPos, quick: quick, mute: muted, pause: paused, focusPoints: fociString}, function(responseJSON) {
 	var responseObject = JSON.parse(responseJSON);
 	var clients = responseObject.clients;
 	saved_clients = clients;
@@ -303,12 +304,15 @@ function updateVariablesPost() {
 	});		
 }
 $("#mute").click(function(event) {
-	if (stream_started && !paused_stream) {
-		if (muted) {
-			$("#mute").text("Unmute");
-		} else {
-			$("#mute").text("Mute");
-		}
+	if (running) {
+		$.post("/mute", {}, function(responseJSON) {
+			muted = !muted;
+			if (muted) {
+				$("#mute").text("Unmute");
+			} else {
+				$("#mute").text("Mute");
+			}
+		});
 	}
 });
 
@@ -317,6 +321,7 @@ running = true;
 var text;
 var textLabels;
 var timer = setInterval(pulse, pulseTime/2);
+var postTimer = setInterval(updateVariablesPost, 1000);
 draw(saved_clients);
 function draw(clients, event) {
 	if (!running) {
@@ -423,7 +428,9 @@ function draw(clients, event) {
             		return "Host";
             	}
             	if (!(d.name === undefined || d.name === null)) {
-            		return d.name;
+            		if (d.name.length != 0) {
+            			return d.name;
+            		}
             	}
             	return d.id; })
             .attr("font-family", "sans-serif")
@@ -475,9 +482,9 @@ function setUpServer() {
 				socket_port = responseObject.socket_port;
 
 				// set up the socket io connection
-				setupSocketConnection(socket_url, socket_port);
+				// setupSocketConnection(socket_url, socket_port);
 			
-				var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
+				// var updateClientPositionsTimer = setInterval(updateClientPositions, 1000);
 			}
 		});
 	}
@@ -569,7 +576,7 @@ function playStream() {
 		audio_stream = remote.stream;
 
 		nowPlaying(queue[current_song_id]);
-		removeFirstFromGUIQueue();
+		removeFromGUIQueue(current_song_id);
 
 		// pass the stream to the peer
 		streamToPeers(remote.stream);
@@ -600,53 +607,24 @@ function count_song_time() {
 	}
 	update_current_time();
 	current_song_time++;
-
-	var progress = current_song_time / current_song_total_time;
-	update_progress(progress);
 }
 
 /* functions used to update the time shown on gui */
 function update_total_time() {
 	var total_time = get_mins_from_seconds(current_song_total_time);
-
-	var seconds = total_time.sec;
-
-	if (seconds < 10) {
-		seconds = "0" + seconds;
-	}
-
-	var stringTime = total_time.min + ":" + seconds;
+	var stringTime = total_time.min + ":" + total_time.sec;
 	$("#song-time").text(stringTime);
 }
 
 function update_current_time() {
 	var current_time = get_mins_from_seconds(current_song_time);
-	var seconds = current_time.sec;
-
-	if (seconds < 10) {
-		seconds = "0" + seconds;
-	}
-
-	var stringTime = current_time.min + ":" + seconds;
+	var stringTime = current_time.min + ":" + current_time.sec;
 	$("#current-time").text(stringTime);
 }
 
 function update_progress(percentage) {
 	//update the gui progress bar
-	var pixel_width = $("#progressbar").css("width");
-	var full_width = pixel_width.substring(0, pixel_width.length - 2);
-	var width = full_width * percentage;
 
-	$("#progressbar > div").css("width", width + "px");
-}
-
-function resetTimeAndProgress() {
-	clearInterval(song_timer);
-	current_song_time = 0;
-	current_song_total_time = 0;
-	update_current_time();
-	update_total_time();
-	update_progress(0);
 }
 
 /* function used to convert from seconds to mins/seconds */
@@ -655,8 +633,8 @@ function get_mins_from_seconds(seconds) {
 	var s = seconds - 60 * m;
 
 	var time = {
-		min: Math.floor(m),
-		sec: Math.floor(s)
+		min: m,
+		sec: s
 	};
 
 	return time;
@@ -758,19 +736,10 @@ function createSelfPeer() {
 $("#skip").prop('disabled', true);
 $("#skip").css("opacity", "0.3");
 
-// set hovering to change opacity
-$("#skip").on('mouseenter', function(event) {
-	$("#skip").css("opacity", "0.7");
-});
-$("#skip").on('mouseleave', function(event) {
-	$("#skip").css("opacity", "1");
-});
-
 /* define function used to skip to next song */
 $("#skip").on('click', function(event){
 	nextSong();
 });
-
 
 /* function used to get to the next song in the queue */
 function nextSong() {
@@ -779,7 +748,7 @@ function nextSong() {
 		// remove current song from queue
 		delete song_queue[current_song_id];
 		var index = song_ids.indexOf(current_song_id);
-		removeFirstFromGUIQueue();
+		removeFromGUIQueue(current_song_id);
 
 		if (index > -1) {
 			song_ids.splice(index, 1);
@@ -804,7 +773,7 @@ function nextSong() {
 			audio_stream = remote.stream;
 
 			nowPlaying(queue[current_song_id]);
-			removeFirstFromGUIQueue();
+			removeFromGUIQueue(current_song_id);
 
 			// pass the stream to the peer
 			streamToPeers(remote.stream);
@@ -812,8 +781,6 @@ function nextSong() {
 			source.stop();
 			source = null;
 			audio_stream = null;
-
-			resetTimeAndProgress();
 
 			// disable play and next buttons
 			$("#pause-play").prop('disabled', true);
@@ -841,17 +808,15 @@ function enqueue(song_ele) {
 
 /* get the next id for the song*/
 function nextId() {
-	//var index = song_ids.indexOf(current_song_id);
-	//eturn song_ids[index];
-	return 1;
+	var index = song_ids.indexOf(current_song_id);
+	return song_ids[index];
 }
 
 /* remove a song_element from the queue */
 function removeFromQueue(id) {
 	//Called by GUI
+
 	// remove it from list of song_elements
-	
-	queue.splice(id, 1);
 }
 
 function removeFirstFromGUIQueue() {
@@ -863,9 +828,9 @@ function nowPlaying(song_ele) {
 	//update album artwork
 	var albumarthighres = song_ele.albumarthighres;
 	if (typeof albumarthighres != "undefined") {
-		$("#current-song").css("background-image", "url('" + albumarthighres + "')");
+		$("current-song").css("background", "url('" + albumarthighres + "')");
 	} else {
-		$("#current-song").css("background-image", "url('../images/placeholder.png')");
+		$("current-song").css("background", "url('../images/placeholder.png')");
 	}
 }
 
@@ -874,15 +839,6 @@ function nowPlaying(song_ele) {
 var song_is_paused = true;
 $("#pause-play").prop('disabled', true);
 $("#pause-play").css("opacity", "0.3");
-
-// set hovering to change opacity
-$("#pause-play").on('mouseenter', function(event) {
-	$("#pause-play").css("opacity", "0.7");
-});
-$("#pause-play").on('mouseleave', function(event) {
-	$("#pause-play").css("opacity", "1");
-});
-
 
 /* define what happens when user pauses */
 $("#pause-play").on('click', function(event){
@@ -911,7 +867,7 @@ function empty_song_queue() {
 	return false;
 }
 
-$("#song-search").on("input", function(event) {
+$("#song-search").on("change", function(event) {
 $.post("/search", {line : $("song-search").val()}, function(responseJSON) {
 	songsdiv.remove();
 	songsdiv = $("<div id='songs-div'></div>");
@@ -983,24 +939,20 @@ function addSongToGUIQueue(song_element) {
 	var albumart = song_element.albumart;
 	var _title = song_element.title;
 	var _artist = song_element.artist;
-	var id = nextId();
 
-	var song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div></div>");
+	var song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>Unknown by Unknown</p></div>");
 	if (typeof albumart != "undefined") {
-		song = $("<div><div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div></div>");
+		song = $("<div class='song'><img src='" + albumart + "' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
 	} else {
 		if (typeof _title != 'undefined' && typeof _artist != 'undefined') {
-			song = $("<div><div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div></div>");
+			song = $("<div class='song'><img src='../images/placeholder.png' style='float:left;width:38px;height:38px;'><p class='song'>" + _title + " by " + _artist + "</p></div>");
 		}
 	}
 
-	var removeButton = $("<button id='remove-button'></button>");
-	removeButton.on("click", function(e) {
-		removeFromQueue(id);
-		song.remove();
+	song.on('click', function(e) {
+		addSongToGUIQueue(elem);
 	});
 
-	song.append(removeButton);
 	queuediv.append(song);
 	enqueue(song_element);
 }
@@ -1019,11 +971,6 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 		var _title = elem.title;
 		var _album = elem.album;
 		var _artist = elem.artist;
-		
-		var playbutton = $("<button id='queue-button'></button>");
-		playbutton.on("click", function(e) {
-			addSongToGUIQueue(elem);
-		});
 
 		$.get("http://ws.audioscrobbler.com/2.0/", {method : "album.getinfo", artist : _artist, album : _album, api_key : API_KEY, format : "json"})
 	    .done(function(responseJSONSong) {
@@ -1071,6 +1018,11 @@ $.post("/chooseMusicDirectory", {dir : current_dir}, function(responseJSON) {
 			song.append(playbutton);
 			songsdiv.append(song);
 	    });
+
+	    var playbutton = $("<button id='queue-button'></button>");
+		playbutton.on("click", function(e) {
+			addSongToGUIQueue(elem);
+		});
 	});
 
 	$("#songs-bound-div-2").append(songsdiv);
