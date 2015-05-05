@@ -34,6 +34,9 @@ var current_song_time = 0;
 var current_song_total_time = 0;
 var song_timer = null;
 var paused_stream = false;
+var current_song_info = "";
+var current_albumarthighres = "";
+var current_percentage = 0;
 
 var address;
 var localAddress;
@@ -593,7 +596,23 @@ function count_song_time() {
 		update_total_time();
 	}
 	update_current_time();
+
+	sendSongInfo();
+
 	current_song_time++;
+}
+
+/* function used to send song info to all clients */
+function sendSongInfo() {
+	var songPackage = {
+		current_time: current_song_time,
+		total_time: current_song_total_time,
+		progress: current_percentage,
+		album_art: current_albumarthighres,
+		info: current_song_info
+	};
+
+	socket.emit('song_info', JSON.stringify(songPackage));
 }
 
 /* functions used to update the time shown on gui */
@@ -612,8 +631,8 @@ function update_total_time() {
 function update_current_time() {
 	var current_time = get_mins_from_seconds(current_song_time);
 
-	var percentage = current_song_time / current_song_total_time;
-	update_progress(percentage);
+	current_percentage = current_song_time / current_song_total_time;
+	update_progress(current_percentage);
 
 	var seconds = current_time.sec;
 	if (seconds < 10) {
@@ -640,6 +659,7 @@ function resetTimeAndProgress() {
 	update_total_time();
 	update_progress(0);
 	clearAlbumArt();
+	clearSongInfo();
 }
 
 /* function used to convert from seconds to mins/seconds */
@@ -834,16 +854,28 @@ function removeFirstFromGUIQueue() {
 
 function nowPlaying(song_ele) {
 	//update album artwork
-	var albumarthighres = song_ele.albumarthighres;
-	if (typeof albumarthighres != "undefined") {
-		$("#current-song").css("background-image", "url('" + albumarthighres + "')");
+	current_albumarthighres = song_ele.albumarthighres;
+	if (typeof current_albumarthighres != "undefined") {
+		$("#current-song").css("background-image", "url('" + current_albumarthighres + "')");
 	} else {
 		$("#current-song").css("background-image", "url('../images/placeholder.png')");
 	}
+
+	// update song info
+	var artist_name = song_ele.artist;
+	var song_name = song_ele.title;
+	current_song_info = song_name + " by " + artist_name;
+	$("#song-info").text(current_song_info);
 }
 
 function clearAlbumArt() {
+	current_albumarthighres = "../images/placeholder.png";
 	$("#current-song").css("background-image", "url('../images/placeholder.png')");
+}
+
+function clearSongInfo() {
+	current_song_info = "No Song Playing";
+	$("#song-info").text("No Song Playing");
 }
 
 // variable used to define if the song is paused or not
@@ -884,6 +916,10 @@ function empty_song_queue() {
 		return true;
 	}
 	return false;
+}
+
+window.onfocus = function() {
+  console.log("alert");
 }
 
 $("#song-search").on("change", function(event) {

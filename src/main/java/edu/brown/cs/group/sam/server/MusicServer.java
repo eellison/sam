@@ -58,6 +58,15 @@ public class MusicServer extends Server {
         client.sendEvent("server_id", serverId);
       }
     });
+    
+    server.addEventListener("song_info", String.class, new DataListener<String>() {
+      @Override
+      public void onData(SocketIOClient client, String data,
+          AckRequest ackSender) throws Exception {
+        BroadcastOperations br = server.getBroadcastOperations();
+        br.sendEvent("song_info", data);
+      }
+    });
   }
 
   public int getCurrentSongId() {
