@@ -10,17 +10,22 @@
 		<div id='songs-wrapper'>
 			<label>Click to add songs to the queue</label></br>
 			<div class="btn-group" style="width: 100%;">
-				<input type="search" id="song-search" class="form-control" placeholder="Search by song, album, or artist"></input>
+				<input type="search" id="song-search" class="form-control" placeholder="Search by song, album, artist, or filename"></input>
 				<span id="search-clear" class="glyphicon glyphicon-remove-circle"></span>
 			</div>
 			<div id="songs-bound-div-2">
-			
+				<label id="search-info" style="margin-top: 10px; color: rgba(100, 100, 100, 0.5);">Search for your songs here. Click "Music Library" to change your music library</label>
+				<div id="song-div">
+
+				</div>
 			</div>
 		</div>
 		<div id="queue-wrapper">
 			<label>Queue</label></br>
 			<div id="songs-bound-div-3">
-				<div id='queue-div'></div>
+				<div id='queue-div'>
+					<label id="queue-info" style="margin-top: 10px; color: rgba(100, 100, 100, 0.5);">Search and add songs to your queue</label>
+				</div>
 			</div>
 		</div>
 		<div id="server-canvas">
@@ -34,7 +39,7 @@
 				<button class="btn btn-default" id="clear-focus">Clear Focus</button>
 				<button class="btn btn-default" id="info">Info</button>
 				<button class="btn btn-default" id="mute">Mute</button>
-				<a class="btn btn-default" href="/songs" role="button" target="_blank">Select Directory</a>
+				<a class="btn btn-default" href="/songs" role="button" target="_blank">Music Library</a>
 			</div>
 		</div>
 	</div>
