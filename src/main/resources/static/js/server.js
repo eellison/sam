@@ -374,8 +374,26 @@ function draw(clients, event) {
  			r = Math.max(r, 1);
  			return r;
  		});
+
  		circleEnter.style("stroke", "black");
  		circleEnter.attr("fill", "none");
+ 		// function(d) {
+ 		// 	var volume = d.volume;
+ 		// 	if (r === null || r === undefined || paused ===true) {
+ 		// 		volume =1;
+ 		// 	}
+ 		// 	var R = (255 * volume);
+			// var	G = (255 * (1 - volume));
+			// var B = 0;
+ 		//  	return d3.rgb(R, G, b)
+
+ 		// });
+
+ 	// 	var R = (255 * volume);
+		// var	G = (255 * (1 - volume));
+		// var B = 0;
+
+
 	 	var prev = 	d3.selectAll("text");
 	 	prev.remove();
 
@@ -585,6 +603,9 @@ function update_total_time() {
 function update_current_time() {
 	var current_time = get_mins_from_seconds(current_song_time);
 
+	var percentage = current_song_time / current_song_total_time;
+	update_progress(percentage);
+
 	var seconds = current_time.sec;
 	if (seconds < 10) {
 		seconds = "0" + seconds;
@@ -596,6 +617,9 @@ function update_current_time() {
 
 function update_progress(percentage) {
 	//update the gui progress bar
+	var total_width = $("#progressbar").css("width");
+	var total = total_width.slice(0, total_width.length - 2);
+	var width = total * percentage;
 	$("#progressbar > div").css("width", width + "px");
 }
 
@@ -607,6 +631,7 @@ function resetTimeAndProgress() {
 	update_total_time();
 	update_progress(0);
 	clearAlbumArt();
+	clearSongInfo();
 }
 
 /* function used to convert from seconds to mins/seconds */
@@ -768,6 +793,7 @@ function nextSong() {
 			source.stop();
 			source = null;
 			audio_stream = null;
+			resetTimeAndProgress();
 
 			// disable play and next buttons
 			$("#pause-play").prop('disabled', true);
@@ -806,10 +832,20 @@ function nowPlaying(song_ele) {
 	} else {
 		$("#current-song").css("background-image", "url('../images/placeholder.png')");
 	}
+
+	// update song info
+	var artist_name = song_ele.artist;
+	var song_name = song_ele.title;
+	var song_info = song_name + " by " + artist_name;
+	$("#song-info").text(song_info);
 }
 
 function clearAlbumArt() {
 	$("#current-song").css("background-image", "url('../images/placeholder.png')");
+}
+
+function clearSongInfo() {
+	$("#song-info").text("No Song Playing");
 }
 
 // variable used to define if the song is paused or not
@@ -942,7 +978,7 @@ function addSongToGUIQueue(song_element) {
 	queuediv.append(song);
 
 	var removeButton = $("<button id='remove-button'></button>");
-	removeButton.prop('disabled', true);
+	removeButton.prop("disabled", true);
 	removeButton.css("opacity", "0.3");
 
 	song.append(removeButton);
@@ -957,10 +993,11 @@ function addSongToGUIQueue(song_element) {
 }
 
 function addSongGUIHelper(song_element, id, song, removeButton) {
-	removeButton.prop('disabled', false);
+	removeButton.prop("disabled", false);
 	removeButton.css("opacity", "1.0");
 
 	removeButton.on("click", function(e) {
+		console.log("clicked");
 		removeFromQueue(id);
 		song.remove();
 	});

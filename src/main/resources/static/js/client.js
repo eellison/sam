@@ -49,6 +49,8 @@ $("#clients-canvas").click(function(event) {
 	}
 });
 
+
+
 /* Song Info */
 // function updateSongTime() {
 // 	$.get("http://" + server_url + "/songTime", {id : client_id}, function(responseJSON) {
