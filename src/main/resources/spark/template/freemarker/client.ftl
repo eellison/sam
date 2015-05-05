@@ -1,6 +1,6 @@
 <#assign content>
 <div id="client-gui">
-	<h2 id="client-title" class="title" style="text-align: center;">Client</h2>
+	<input id="client-name" type="text" style="font-size: 18px; margin-top: 25px; text-align: center; border: none; background: transparent;" placeholder="Enter client name..."></input>
 	<div id="client-gui">
 		<label for="=clientpositions" style="margin-left: auto; margin-right: auto;">Click and drag your sound source</label></br>
 		<canvas id="clients-canvas">
