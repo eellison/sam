@@ -529,7 +529,6 @@ public class SamGui extends SparkGui {
       ap.calcluteVolume(pointSet);      
       for (String s: timeoutMap.keySet()) {
     	  if (((System.currentTimeMillis() / 1000L) - timeoutMap.get(s)) > TIMEOUT) {
-    		  System.out.println(timeoutMap.get(s));
     		  timeoutMap.remove(s);
     		  ap.removeClient(s);
     	  }
