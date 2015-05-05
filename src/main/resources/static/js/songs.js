@@ -29,7 +29,7 @@ function queryFilesystem(dir) {
 		});
 
 		files.forEach(function(elem) {
-			var file = $("<button class='file-button'></button>");
+			var file = $("<button class='file-button'><p id='file-label-text'>" + elem.name + "</p></button>");
 			
 			file.on('click', function(e) {
 				
