@@ -631,6 +631,7 @@ function resetTimeAndProgress() {
 	update_total_time();
 	update_progress(0);
 	clearAlbumArt();
+	clearSongInfo();
 }
 
 /* function used to convert from seconds to mins/seconds */
@@ -831,10 +832,20 @@ function nowPlaying(song_ele) {
 	} else {
 		$("#current-song").css("background-image", "url('../images/placeholder.png')");
 	}
+
+	// update song info
+	var artist_name = song_ele.artist;
+	var song_name = song_ele.title;
+	var song_info = song_name + " by " + artist_name;
+	$("#song-info").text(song_info);
 }
 
 function clearAlbumArt() {
 	$("#current-song").css("background-image", "url('../images/placeholder.png')");
+}
+
+function clearSongInfo() {
+	$("#song-info").text("No Song Playing");
 }
 
 // variable used to define if the song is paused or not
