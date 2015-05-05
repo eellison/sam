@@ -857,6 +857,7 @@ function removeFromQueue(id) {
 function removeFirstFromGUIQueue() {
 	//removeFromGUI
 	//Called by queue
+	$('#queue-div').find('div').first().remove();
 }
 
 function nowPlaying(song_ele) {
