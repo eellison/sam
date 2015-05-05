@@ -49,7 +49,7 @@ public class Main {
       port = options.valueOf(portSpec);
     }
     // Automatically configure 
-    String address = "";
+    String address = DEFAULT_ADDR;
     boolean success = true;
     InetAddress ip = null;
     try {
@@ -61,10 +61,6 @@ public class Main {
       String[]  addr = ip.getHostAddress().split("/");
       address = addr[addr.length-1];
     }
-//    String address = DEFAULT_ADDR;
-//    if (options.has("server")) {
-//      address = options.valueOf(serverSpec);
-//    }
 
     String db = DEFAULT_DB;
     if (options.has("db")) {
