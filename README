@@ -1,3 +1,5 @@
+"Synchronized Audio Manipulation"
+
 Project originally developed for the Introduction to Software Engineering (cs32) course at Brown University.
 
 This project is a web application designed for synchronizing audio output of clients and enabling the manipulation of sound behavior using focal point analysis. The back end is written in Java, and the front end is mainly Javascript.
