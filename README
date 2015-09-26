@@ -1,9 +1,7 @@
 Project originally developed for the Introduction to Software Engineering (cs32) course at Brown University.
 
-This project is a web application designed for synchronizing audio output of clients and enabling the manipulation
-of sound behavior using focal point analysis. The back end is written in Java, and the front end is mainly Javascript.
+This project is a web application designed for synchronizing audio output of clients and enabling the manipulation of sound behavior using focal point analysis. The back end is written in Java, and the front end is mainly Javascript.
 
-The WebRTC API has been used to allow for synchronization of audio and the SocketIO API is used for simple 
-communication between the back end and front end.
+The WebRTC API has been used to allow for synchronization of audio and the SocketIO API is used for simple communication between the back end and front end.
 
 This project is developed and maintained with Elias Ellison, Young-Rae Kim and Vanya Cohen.
