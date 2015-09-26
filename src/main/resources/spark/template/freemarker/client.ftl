@@ -26,6 +26,7 @@
 	<script src="js/socket.io.js"></script>
 	<script src="js/d3.js"></script>
 	<script src="js/client.js"></script>
+	<script src="js/peerjs/lib/peer.js"></script>
 	<script src="http://cdn.peerjs.com/0.3/peer.js"></script>
 </#assign>
 <#include "main.ftl">

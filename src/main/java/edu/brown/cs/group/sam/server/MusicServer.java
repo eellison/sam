@@ -24,7 +24,7 @@ public class MusicServer extends Server {
   private static final Gson GSON = new Gson();
 
   /* a key used for RTC peer to peer connections */
-  private static final String PEER_KEY = "ve090qsyoiil766r";
+  private static final String PEER_KEY = "9k6zqhy8imeljtt9";
   private String serverId = "";
   private List<String> clientIds = new ArrayList<String>();
   private AtomicInteger trackId = new AtomicInteger(-1);

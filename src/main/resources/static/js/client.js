@@ -62,24 +62,6 @@ $("#clients-canvas").on('mousedown', function(event){
 	}
 });
 
-
-
-
-/* Song Info */
-// function updateSongTime() {
-// 	$.get("http://" + server_url + "/songTime", {id : client_id}, function(responseJSON) {
-// 		var responseObject = JSON.parse(responseJSON);
-// 		$("#song-length").text(responseObject.songLength);
-// 	});
-// }
-
-// function updateSongTitle() {
-// 	$.get("http://" + server_url + "/songTitle", {id : client_id}, function(responseJSON) {
-// 		var responseObject = JSON.parse(responseJSON);
-// 		$("#song-title").text(responseObject.songTitle);
-// 	});
-// }
-
 /* Volume */
 
 function updateVolume() {
